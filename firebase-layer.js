@@ -167,7 +167,8 @@
     const isNew = !site.__id;
     const data = clean({
       name: site.name, desc: site.desc || '', url: site.url,
-      firebaseUrl: site.firebaseUrl || '', githubUrl: site.githubUrl || '', icon: site.icon || '',
+      firebaseUrl: site.firebaseUrl || '', githubUrl: site.githubUrl || '',
+      appsScriptUrl: site.appsScriptUrl || '', driveUrl: site.driveUrl || '', icon: site.icon || '',
       accentColor: site.accentColor || '', // สีแถบข้างการ์ด "#RRGGBB" — '' = ใช้สีตามหมวด
       rowBreakAfter: !!site.rowBreakAfter,
       order: site.order != null ? site.order : Date.now(),
@@ -224,7 +225,10 @@
        master/zones         { version, updatedAt, items: [เขตพื้นที่รับผิดชอบ] }
        master/workcodes     { version, updatedAt, items: [รหัสงาน { code, name, nameEn, units: [หน่วยนับ], parent, output?, description? }] }
        master/assets_<ปีงบ> { version, updatedAt, fiscalYear, items: [ราคาประเมินทรัพย์สิน] }
+       master/manuals       { version, updatedAt, items: [ทะเบียนคู่มือกรมทางหลวง] }
+       master/traffic_std   { version, updatedAt, updatedBy, items: [], manual, sources, signDistances, taper, … } (หลายตารางในเอกสารเดียว)
        master_history/{id}  { docId, fromVersion, toVersion, summary, before (JSON), at }
+         before = รายการ items เดิม หรือ ถ้าเป็นเอกสารหลายตาราง = { ชื่อตาราง: ข้อมูลเดิม } (กู้คืนได้ทั้งคู่)
      ========================================================================== */
   // Firestore เก็บ "รายการซ้อนในรายการ" ไม่ได้ ช่วง กม. ของสายทาง [[เริ่ม, สิ้นสุด], ...] จึงเก็บเป็น [{from, to}, ...]
   // หน้าเว็บและ master-client.js ใช้รูปแบบ [[เริ่ม, สิ้นสุด]] เหมือนเดิม — แปลงที่นี่ที่เดียว
@@ -267,12 +271,24 @@
         if ((expectVersion || 0) !== curVersion) {
           throw new Error('ข้อมูลชุดนี้ถูกแก้ไขจากที่อื่นระหว่างที่คุณกำลังแก้ (รุ่น ' + curVersion + ') กรุณาโหลดหน้าใหม่แล้วแก้อีกครั้ง');
         }
-        const data = Object.assign({}, extra || {}, { items: encodeItems(items), version: curVersion + 1, updatedAt: nowIso() });
+        const u = auth.currentUser;
+        const data = Object.assign({}, extra || {}, {
+          items: encodeItems(items), version: curVersion + 1, updatedAt: nowIso(),
+          updatedBy: u && u.email ? u.email.replace(/@index\.invalid$/, '') : ''
+        });
+        // เอกสารหลายตาราง (เช่น traffic_std): เก็บทุกตารางเดิมไว้ในประวัติ ไม่ใช่แค่ items
+        const sectionKeys = Object.keys(extra || {}).filter(function (k) { return k !== 'fiscalYear'; });
+        let before = '[]';
+        if (cur.exists && sectionKeys.length) {
+          const old = cur.data(), snap = {};
+          sectionKeys.forEach(function (k) { if (old[k] !== undefined) snap[k] = old[k]; });
+          before = JSON.stringify(snap);
+        } else if (cur.exists) before = JSON.stringify(decodeItems(cur.data().items));
         tx.set(ref, data);
         tx.set(histRef, {
           docId: docId, fromVersion: curVersion, toVersion: curVersion + 1,
           summary: String(summary || '').slice(0, 2000),
-          before: cur.exists ? JSON.stringify(decodeItems(cur.data().items)) : '[]',
+          before: before,
           at: nowIso()
         });
         return curVersion + 1;
