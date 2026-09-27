@@ -173,6 +173,7 @@
   .pill.ok { background: #DDF3E6; color: var(--green); }
   .pill.ok::before { content: '● '; font-size: 0.7em; vertical-align: 1px; }
   .pill.off { background: #EEF0F3; color: #77808D; }
+  .pill.warn { background: #FDE8E6; color: var(--red); font-weight: 600; }
   .row-actions { white-space: nowrap; text-align: right; }
   .empty { padding: 36px 20px; text-align: center; color: var(--ink-light); }
   .panel.empty { padding: 48px 20px; }
@@ -251,7 +252,7 @@
       <img class="top-logo" id="top-logo" src="assets/mascot-logo-badge.png" alt="">
       <div class="top-title">
         <h1>ฐานข้อมูลกลาง</h1>
-        <p class="sub">สายทาง · เขตพื้นที่ · เขตทาง · ผิวทาง · ราคาประเมินทรัพย์สิน ที่ทุกระบบงานใช้ร่วมกัน</p>
+        <p class="sub">สายทาง · เขตพื้นที่ · เขตทาง · ผิวทาง · ราคาประเมินทรัพย์สิน · มาตรฐานงานจราจร · คู่มือกรมทางหลวง ที่ทุกระบบงานใช้ร่วมกัน</p>
       </div>
       <div class="top-actions">
         <span class="who" id="who"></span>
@@ -303,6 +304,8 @@
     { key: 'surface', label: 'ผิวทาง', icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18"/>' },
     { key: 'workcodes', label: 'รหัสงาน', icon: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>' },
     { key: 'assets', label: 'ราคาประเมินทรัพย์สิน', icon: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>' },
+    { key: 'trafficstd', label: 'มาตรฐานงานจราจร', icon: '<path d="M12 3 4 21h16L12 3z"/><path d="M8.5 14h7M10 10h4"/>' },
+    { key: 'manuals', label: 'คู่มือกรมทางหลวง', icon: '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>' },
     { key: 'io', label: 'นำเข้า / ส่งออก', icon: '<path d="M7 10l5-5 5 5"/><path d="M12 5v11"/><path d="M4 19h16"/>' },
     { key: 'history', label: 'ประวัติการแก้ไข', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' }
   ];
@@ -323,6 +326,10 @@
     surfHw: '*',
     wcSearch: '',
     wcGroup: '21000',   // เริ่มที่งานบำรุงปกติ (ที่หมวดใช้บ่อยที่สุด)
+    tsSec: 'signDistances', // ตารางย่อยที่เปิดอยู่ในแท็บมาตรฐานงานจราจร
+    tsVerifyOnly: false,
+    manCat: '*',
+    manSearch: '',
     history: null
   };
   // เปิดแท็บตามลิงก์ก่อน (เช่น master-data.html#routes จากปุ่ม "แก้ไขที่ฐานข้อมูลกลาง" ในระบบงาน) ไม่มีจึงใช้แท็บล่าสุดที่เปิด
@@ -440,6 +447,8 @@
     else if (S.tab === 'surface') renderSurface(v);
     else if (S.tab === 'workcodes') renderWorkCodes(v);
     else if (S.tab === 'assets') renderAssets(v);
+    else if (S.tab === 'trafficstd') renderTrafficStd(v);
+    else if (S.tab === 'manuals') renderManuals(v);
     else if (S.tab === 'io') renderIO(v);
     else renderHistory(v);
     renderSaveBar();
@@ -465,6 +474,8 @@
       if (t.key === 'rightofway' && S.drafts.rightofway) n = 1;
       if (t.key === 'surface' && S.drafts.surface) n = 1;
       if (t.key === 'workcodes' && S.drafts.workcodes) n = 1;
+      if (t.key === 'trafficstd' && S.drafts.traffic_std) n = 1;
+      if (t.key === 'manuals' && S.drafts.manuals) n = 1;
       if (t.key === 'assets') n = Object.keys(S.drafts).filter(function (k) { return /^assets_/.test(k); }).length;
       return '<button type="button" class="tab' + (S.tab === t.key ? ' active' : '') + '" data-tab="' + t.key + '">' + tabIcon(t) + esc(t.label) +
         (n ? '<span class="badge" title="มีการแก้ไขที่ยังไม่บันทึก">' + n + '</span>' : '') + '</button>';
@@ -474,7 +485,7 @@
   function docMeta(docId) {
     const m = S.master[docId];
     if (!m) return 'ยังไม่มีข้อมูลในฐานข้อมูลกลาง';
-    return 'รุ่นที่ ' + m.version + ' · แก้ไขล่าสุด ' + fmtDateTime(m.updatedAt);
+    return 'รุ่นที่ ' + m.version + ' · แก้ไขล่าสุด ' + fmtDateTime(m.updatedAt) + (m.updatedBy ? ' โดย ' + m.updatedBy : '');
   }
 
   function renderSaveBar() {
@@ -491,6 +502,8 @@
     if (docId === 'rightofway') return 'บัญชีเขตทาง';
     if (docId === 'surface') return 'ผิวทาง';
     if (docId === 'workcodes') return 'รหัสงาน';
+    if (docId === 'traffic_std') return 'มาตรฐานงานจราจร';
+    if (docId === 'manuals') return 'คู่มือกรมทางหลวง';
     const m = docId.match(/^assets_(\d{4})$/);
     return m ? 'ราคาประเมินปีงบ ' + m[1] : docId;
   }
@@ -934,6 +947,305 @@
       });
   }
 
+  /* ----- มาตรฐานงานจราจร (master/traffic_std) -----
+     เอกสารเดียวมีหลายตาราง (signDistances, taper, coneSpacing, buffer, signs, layouts …) เก็บเป็นช่องของเอกสาร ไม่ใช่ items
+     ทุกแถวอ้างอิงเลขหน้า: page = เลขหน้าที่พิมพ์ในคู่มือ (เช่น 1-6) · pdfPage = ลำดับหน้าในไฟล์ PDF · src = รหัสคู่มือใน sources
+     verify = true แปลว่าคู่มือไม่ระบุ/ไม่ชัด/ขัดกัน ต้องตรวจสอบก่อนใช้ */
+  const TS_REF_COLS = [['ref', 'อ้างอิง (ตาราง/รูป/ข้อ)', 'text'], ['page', 'หน้า (ตามเล่ม)', 'text'], ['pdfPage', 'หน้า PDF', 'num'], ['src', 'รหัสคู่มือ', 'text'], ['note', 'หมายเหตุ', 'text', 1], ['verify', 'ต้องตรวจสอบ', 'bool']];
+  const SPD = [['speedMin', 'ความเร็วต่ำสุด (กม./ชม.)', 'num'], ['speedMax', 'ความเร็วสูงสุด', 'num']];
+  const TS_SECTIONS = [
+    { key: 'signDistances', label: 'ระยะป้ายเตือนล่วงหน้า', refCols: true, hintKey: 'signDistanceMeaning',
+      cols: [['roadType', 'ประเภทถนน', 'select', ['all', '2lane', 'multilane', 'median', 'motorway']], ['roadLabel', 'ชนิดถนนตามคู่มือ', 'text', 1]].concat(SPD, [['d1', 'ระยะ ก (ม.)', 'num'], ['d2', 'ระยะ ข (ม.)', 'num'], ['d3', 'ระยะ ค (ม.)', 'num']]) },
+    { key: 'advanceSigns', label: 'ป้ายล่วงหน้า 1–2 กม.', refCols: true,
+      cols: [['roadType', 'ประเภทถนน', 'select', ['2lane', 'multilane', 'median', 'all']], ['distances', 'ระยะจากพื้นที่ก่อสร้าง (ม.) คั่นด้วย ,', 'list'], ['sign', 'ป้าย', 'text']] },
+    { key: 'advanceRules', label: 'หลักการติดตั้งป้าย', refCols: true,
+      cols: [['topic', 'หัวข้อ', 'text', 1], ['value', 'ค่า/ข้อกำหนด', 'textarea', 1], ['unit', 'หน่วย', 'text'], ['condition', 'เงื่อนไข', 'text', 1]] },
+    { key: 'taper', label: 'สูตรช่วงเบี่ยง (Taper)', refCols: true,
+      cols: SPD.concat([['formula', 'สูตร', 'text'], ['power', 'กำลังของ S', 'num'], ['divisor', 'ตัวหาร', 'num']]) },
+    { key: 'taperTable', label: 'ตารางระยะสอบเข้า L', refCols: true,
+      cols: [['speed', 'ความเร็ว (กม./ชม.)', 'num'], ['lengths', 'Offset W (ม.) = L (ม.) คั่นด้วย ,', 'pairs', 1]] },
+    { key: 'taperTypes', label: 'ชนิดการสอบเข้า', refCols: true,
+      cols: [['type', 'รหัสชนิด', 'text'], ['label', 'ชนิด', 'text', 1], ['factor', 'ตัวคูณ L', 'num'], ['min', 'ต่ำสุด (ม.)', 'num'], ['max', 'สูงสุด (ม.)', 'num'], ['rule', 'ข้อกำหนด', 'text', 1]] },
+    { key: 'coneSpacing', label: 'ระยะห่างกรวย/อุปกรณ์', refCols: true,
+      cols: [['device', 'อุปกรณ์', 'text', 1]].concat(SPD, [['taper', 'ช่วงเบี่ยง (ม.)', 'num'], ['tangent', 'ช่วงขนาน (ม.)', 'num'], ['curve', 'ทางโค้ง (ม.)', 'num'], ['rule', 'ข้อกำหนด', 'textarea', 1]]) },
+    { key: 'buffer', label: 'ระยะกันชน (Buffer)', refCols: true, hintKey: 'bufferNote',
+      cols: [['kind', 'ชนิด', 'select', ['longitudinal', 'shadowVehicle']], ['speed', 'ความเร็ว (กม./ชม.)', 'num'], ['length', 'ระยะ (ม.)', 'num']] },
+    { key: 'lateralBuffer', label: 'กันชนด้านข้าง', refCols: true,
+      cols: [['device', 'อุปกรณ์กั้นแนว', 'text', 1], ['length', 'ระยะ (ม.)', 'text']] },
+    { key: 'termination', label: 'ช่วงสิ้นสุดเขตงาน', refCols: true,
+      cols: [['item', 'รายการ', 'text', 1], ['length', 'ระยะ (ม.)', 'num'], ['rule', 'ข้อกำหนด', 'text', 1]] },
+    { key: 'signs', label: 'ป้ายและอุปกรณ์', refCols: true,
+      cols: [['code', 'รหัส', 'text'], ['name', 'ชื่อ', 'text', 1], ['kind', 'ประเภท', 'select', ['บังคับ', 'เตือน', 'แนะนำ', 'อุปกรณ์']], ['usage', 'การใช้งาน', 'textarea', 1], ['size', 'ขนาด', 'text'], ['color', 'สี', 'text']] },
+    { key: 'layouts', label: 'ผังมาตรฐาน', refCols: true, layout: true,
+      cols: [['id', 'รหัสผัง', 'text'], ['name', 'ชื่อผัง', 'text', 1], ['category', 'ลักษณะงาน', 'text'], ['roadType', 'ประเภทถนน', 'select', ['2lane', 'multilane', 'median', 'all']]] },
+    { key: 'guidePostSpacing', label: 'หลักนำทางในโค้ง', refKey: 'guidePostRef',
+      cols: [['radius', 'รัศมี (ม.)', 'num'], ['S', 'ในโค้ง S', 'num'], ['S1', 'นอกโค้ง S1', 'num'], ['S2', 'S2', 'num'], ['S3', 'S3', 'num']] },
+    { key: 'excavation', label: 'อุปกรณ์กั้นงานขุด', refKey: 'excavationRef',
+      cols: [['speed', 'ความเร็ว', 'text'], ['offset', 'ห่างขอบทางเดินรถ', 'text'], ['d5_25', 'ลึก 5–25 ซม.', 'text'], ['d26_50', 'ลึก 26–50 ซม.', 'text'], ['over50', 'ลึกกว่า 50 ซม.', 'text']] },
+    { key: 'conflicts', label: 'ค่าที่ไม่ตรงกัน',
+      cols: [['topic', 'เรื่อง', 'text', 1], ['primary', 'แหล่งหลัก (เล่ม 3 ปี 2561)', 'text', 1], ['other', 'แหล่งอื่น', 'text', 1], ['otherSrc', 'รหัสแหล่งอื่น', 'text'], ['otherPdfPage', 'หน้า PDF แหล่งอื่น', 'num'], ['verify', 'ต้องตรวจสอบ', 'bool']] },
+    { key: 'extras', label: 'ข้อมูลเพิ่มเติม', refCols: true,
+      cols: [['topic', 'เรื่อง', 'text', 1], ['value', 'ค่า/ข้อกำหนด', 'textarea', 1]] },
+    { key: 'sources', label: 'คู่มือที่อ้างอิง',
+      cols: [['id', 'รหัส', 'text'], ['manualId', 'รหัสในทะเบียนคู่มือ', 'text'], ['title', 'ชื่อคู่มือ', 'text', 1], ['edition', 'ฉบับ', 'text'], ['year', 'ปี (พ.ศ.)', 'num'], ['url', 'ลิงก์ PDF (Google Drive)', 'text', 1], ['file', 'ไฟล์ในเครื่อง', 'text', 1], ['primary', 'แหล่งหลัก', 'bool'], ['note', 'หมายเหตุ', 'text', 1]] }
+  ];
+  const TS_META = ['items', 'version', 'updatedAt', 'updatedBy'];
+  function tsSection(key) { return TS_SECTIONS.find(function (s) { return s.key === key; }) || TS_SECTIONS[0]; }
+  function tsCols(sec) { return sec.refCols ? sec.cols.concat(TS_REF_COLS) : sec.cols; }
+  function tsSaved() {
+    const m = S.master.traffic_std;
+    if (!m) return null;
+    const o = {};
+    Object.keys(m).forEach(function (k) { if (TS_META.indexOf(k) < 0) o[k] = m[k]; });
+    return o;
+  }
+  function tsDoc() { return S.drafts.traffic_std ? S.drafts.traffic_std.extra : tsSaved(); }
+  function tsEdit(mutate, msg) {
+    const d = clone(tsDoc() || {});
+    mutate(d);
+    draft('traffic_std', [], msg, d);
+  }
+  // ลิงก์เปิด PDF ของคู่มือที่หน้านั้น (ต้องใส่ url ในตาราง "คู่มือที่อ้างอิง" ก่อน)
+  function tsSrcUrl(doc, src, pdfPage) {
+    const s = ((doc && doc.sources) || []).find(function (x) { return x.id === src; });
+    if (!s || !s.url) return '';
+    return s.url + (pdfPage && !/drive\.google\.com/.test(s.url) ? '#page=' + pdfPage : '');
+  }
+  function tsPageCell(doc, x) {
+    if (!x || (x.page == null && x.pdfPage == null && !x.ref)) return '<span class="hint">–</span>';
+    const txt = (x.ref ? esc(x.ref) + '<br>' : '') + '<span class="hint">หน้า ' + esc(x.page == null ? '–' : x.page) + (x.pdfPage ? ' · PDF ' + esc(x.pdfPage) : '') +
+      (x.src && x.src !== 'v3-2561' ? ' · ' + esc(x.src) : '') + '</span>';
+    const url = tsSrcUrl(doc, x.src, x.pdfPage);
+    return url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener" title="เปิดคู่มือ">' + txt + '</a>' : txt;
+  }
+  function tsVerifyCell(x) {
+    return x && x.verify ? '<span class="pill warn" title="' + esc(x.note || '') + '">⚠ ต้องตรวจสอบ</span>' : '';
+  }
+  function tsFmt(v, type) {
+    if (v == null || v === '') return '<span class="hint">–</span>';
+    if (type === 'bool') return v ? '✔' : '';
+    if (type === 'list') return esc((v || []).join(', '));
+    if (type === 'pairs') return (v || []).map(function (p) { return '<span class="pill">' + esc(p.w) + ' ม. → ' + esc(p.L) + '</span>'; }).join(' ');
+    if (type === 'num') return fmtNum(v);
+    return esc(v);
+  }
+
+  function renderTrafficStd(v) {
+    const doc = tsDoc();
+    const sec = tsSection(S.tsSec);
+    let h = '<div class="panel">';
+    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('traffic_std')) + '</p></div>';
+    if (S.owner) h += '<label class="btn" style="cursor:pointer">นำเข้าตารางจากคู่มือ (trafficstd-seed.json)<input type="file" id="ts-file" accept=".json,application/json" hidden></label>';
+    h += '</div>';
+    if (!doc) {
+      h += '<div class="empty">ยังไม่มีมาตรฐานงานจราจรในฐานข้อมูลกลาง' + (S.owner ? '<br>กด "นำเข้าตารางจากคู่มือ" แล้วเลือกไฟล์ <b>trafficstd-seed.json</b> ตรวจดูแล้วกดบันทึก' : '') + '</div>';
+      v.innerHTML = h + '</div>';
+      return;
+    }
+    const man = doc.manual || {};
+    h += '<div class="banner info" style="margin-bottom:10px"><b>' + esc(man.title || 'ยังไม่ระบุคู่มือหลัก') + '</b>' + (man.edition ? ' · ' + esc(man.edition) : '') +
+      (man.url ? ' · <a href="' + esc(man.url) + '" target="_blank" rel="noopener">เปิด PDF</a>' : ' · <span class="hint">ยังไม่ใส่ลิงก์ PDF</span>') +
+      (man.note ? '<div class="hint">' + esc(man.note) + '</div>' : '') +
+      (S.owner ? ' <button class="btn sm" type="button" data-act="ts-manual">แก้ไขข้อมูลคู่มือ</button>' : '') + '</div>';
+    // ตัวเลขรวมค่าที่ต้องตรวจสอบ
+    let nVerify = 0;
+    const per = {};
+    TS_SECTIONS.forEach(function (s) {
+      const rows = doc[s.key] || [];
+      let n = rows.filter(function (x) { return x && x.verify; }).length;
+      if (s.layout) rows.forEach(function (l) { n += (l.items || []).filter(function (it) { return /ตรวจสอบ/.test(it.note || ''); }).length; });
+      per[s.key] = n; nVerify += n;
+    });
+    h += '<div class="stats">' + stat('ตารางย่อย', TS_SECTIONS.length, 'ตาราง') + stat('ป้ายและอุปกรณ์', (doc.signs || []).length, 'รายการ') +
+      stat('ผังมาตรฐาน', (doc.layouts || []).length, 'ผัง') + stat('ต้องตรวจสอบ', nVerify, 'จุด') + '</div>';
+    h += '<div class="toolbar"><select id="ts-sec" style="width:auto">' + TS_SECTIONS.map(function (s) {
+      return '<option value="' + s.key + '"' + (s.key === sec.key ? ' selected' : '') + '>' + esc(s.label) + ' (' + (doc[s.key] || []).length + ')' + (per[s.key] ? ' ⚠' + per[s.key] : '') + '</option>';
+    }).join('') + '</select>' +
+      '<label class="chk"><input type="checkbox" id="ts-verify"' + (S.tsVerifyOnly ? ' checked' : '') + '> เฉพาะที่ต้องตรวจสอบ</label><div class="grow"></div>';
+    if (S.owner) h += '<button class="btn primary" type="button" data-act="ts-add">+ เพิ่มแถว</button>';
+    h += '</div>';
+    if (sec.hintKey && doc[sec.hintKey]) h += '<p class="hint">' + esc(doc[sec.hintKey]) + '</p>';
+    if (sec.refKey && doc[sec.refKey]) h += '<p class="hint">อ้างอิง: ' + tsPageCell(doc, doc[sec.refKey]) + '</p>';
+    const base = (tsSaved() || {})[sec.key] || [];
+    const rows = (doc[sec.key] || []).map(function (x, i) { return { x: x, i: i }; }).filter(function (r) {
+      if (!S.tsVerifyOnly) return true;
+      return r.x.verify || (sec.layout && (r.x.items || []).some(function (it) { return /ตรวจสอบ/.test(it.note || ''); }));
+    });
+    if (!rows.length) h += '<div class="empty">' + ((doc[sec.key] || []).length ? 'ไม่มีแถวที่ต้องตรวจสอบในตารางนี้' : 'ยังไม่มีข้อมูลในตารางนี้') + '</div>';
+    else if (sec.layout) h += tsLayoutsHtml(doc, rows, base);
+    else {
+      const cols = sec.cols;
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr>' + cols.map(function (c) { return '<th' + (c[2] === 'num' ? ' class="num"' : '') + '>' + esc(c[1]) + '</th>'; }).join('') +
+        (sec.refCols ? '<th>อ้างอิง</th><th></th>' : '') + (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+      rows.forEach(function (r) {
+        const x = r.x, changed = !base[r.i] || sameKey(base[r.i]) !== sameKey(x);
+        h += '<tr class="' + (S.drafts.traffic_std && changed ? 'changed' : '') + '">' + cols.map(function (c) {
+          const cls = c[2] === 'num' ? 'num' : (c[3] ? 'wrap' : '');
+          return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + tsFmt(x[c[0]], c[2]) + '</td>';
+        }).join('') +
+          (sec.refCols ? '<td style="white-space:normal;min-width:120px">' + tsPageCell(doc, x) + '</td><td>' + tsVerifyCell(x) + (x.note ? '<div class="hint" style="white-space:normal;min-width:160px">' + esc(x.note) + '</div>' : '') + '</td>' : '') +
+          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="ts-edit" data-id="' + r.i + '">แก้ไข</button> ' +
+            '<button class="btn sm danger" type="button" data-act="ts-del" data-id="' + r.i + '">ลบ</button></td>' : '') + '</tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+    h += '<p class="hint" style="margin-top:8px">ระบบงานอื่นอ่านข้อมูลนี้ผ่าน master-client.js (อ่านอย่างเดียว) · กดที่เลขหน้าเพื่อเปิดคู่มือ (ต้องใส่ลิงก์ PDF ในตาราง "คู่มือที่อ้างอิง") · ⚠ = คู่มือไม่ระบุ/ไม่ชัด/ขัดกัน ต้องตรวจกับต้นฉบับ แก้แล้วเอาเครื่องหมายออก</p>';
+    v.innerHTML = h + '</div>';
+  }
+
+  function tsLayoutsHtml(doc, rows, base) {
+    let h = '';
+    rows.forEach(function (r) {
+      const l = r.x, changed = !base[r.i] || sameKey(base[r.i]) !== sameKey(l);
+      h += '<div class="hist-item"' + (S.drafts.traffic_std && changed ? ' style="background:var(--amber-soft)"' : '') + '>' +
+        '<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 300px"><b>' + esc(l.name) + '</b> <span class="pill">' + esc(l.category || '') + '</span> ' +
+        '<span class="pill off">' + esc(l.roadType || '') + '</span> ' + tsVerifyCell(l) + '<div class="hint">รหัส ' + esc(l.id) + ' · ' + tsPageCell(doc, l) + '</div></div>' +
+        (S.owner ? '<div class="row-actions"><button class="btn sm" type="button" data-act="ts-edit" data-id="' + r.i + '">แก้ไข</button> <button class="btn sm danger" type="button" data-act="ts-del" data-id="' + r.i + '">ลบ</button></div>' : '') + '</div>' +
+        '<details style="margin-top:6px"' + (rows.length === 1 ? ' open' : '') + '><summary class="hint" style="cursor:pointer">รายการอุปกรณ์ตามลำดับทิศทางรถวิ่ง (' + (l.items || []).length + ')</summary>' +
+        '<div class="table-wrap" style="margin-top:6px"><table><thead><tr><th class="num">ลำดับ</th><th>อุปกรณ์/ป้าย</th><th>รหัส</th><th>ระยะ/ตำแหน่ง</th><th>ฝั่ง</th><th>หมายเหตุ</th></tr></thead><tbody>' +
+        (l.items || []).map(function (it) {
+          const warn = /ตรวจสอบ/.test(it.note || '');
+          return '<tr><td class="num">' + esc(it.seq) + '</td><td class="wrap">' + esc(it.device) + '</td><td>' + esc(it.code) + '</td><td class="wrap">' + esc(it.distanceRule) +
+            (it.ruleKey ? '<div class="hint">' + esc(it.ruleKey) + '</div>' : '') + '</td><td>' + esc(it.side) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(it.note) + '</td></tr>';
+        }).join('') + '</tbody></table></div></details></div>';
+    });
+    return h;
+  }
+
+  // ผังมาตรฐาน: 1 บรรทัด = 1 อุปกรณ์ "อุปกรณ์ | รหัส | ระยะ/ตำแหน่ง | ฝั่ง | หมายเหตุ | ruleKey"
+  function layoutItemsToText(items) {
+    return (items || []).map(function (it) { return [it.device, it.code, it.distanceRule, it.side, it.note, it.ruleKey].map(function (s) { return String(s == null ? '' : s).replace(/\|/g, '/'); }).join(' | '); }).join('\n');
+  }
+  function layoutItemsFromText(text) {
+    return String(text || '').split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean).map(function (line, i) {
+      const p = line.split('|').map(function (s) { return s.trim(); });
+      return { seq: i + 1, device: p[0] || '', code: p[1] || '', distanceRule: p[2] || '', side: p[3] || '', note: p[4] || '', ruleKey: p[5] || '' };
+    });
+  }
+
+  function tsInput(c, val) {
+    const name = c[0], label = c[1], type = c[2], full = c[3] ? 'full' : '';
+    if (type === 'bool') return '<label class="chk' + (full ? ' full' : '') + '"><input type="checkbox" name="' + name + '"' + (val ? ' checked' : '') + '> ' + esc(label) + '</label>';
+    if (type === 'select') return '<label class="f">' + esc(label) + '<select name="' + name + '">' + c[3].map(function (o) { return '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>';
+    if (type === 'textarea') return '<label class="f full">' + esc(label) + '<textarea name="' + name + '" rows="3">' + esc(val) + '</textarea></label>';
+    if (type === 'list') return field(name, label, (val || []).join(', '), 'text', '', full);
+    if (type === 'pairs') return field(name, label, (val || []).map(function (p) { return p.w + '=' + p.L; }).join(', '), 'text', 'placeholder="1.5=25, 2=30, 3.5=55"', 'full');
+    return field(name, label, val, type === 'num' ? 'number' : 'text', type === 'num' ? 'step="any"' : '', full);
+  }
+  function tsRead(c, f) {
+    const v = f[c[0]], type = c[2];
+    if (type === 'bool') return !!v;
+    if (type === 'num') return num(v);
+    if (type === 'list') return String(v || '').split(/[,;]+/).map(function (s) { return num(s.trim()); }).filter(function (n) { return n != null; });
+    if (type === 'pairs') {
+      const out = String(v || '').split(/[,;]+/).map(function (s) {
+        const m = s.split('=');
+        return m.length === 2 ? { w: num(m[0].trim()), L: num(m[1].trim()) } : null;
+      });
+      if (out.some(function (p) { return !p || p.w == null || p.L == null; })) throw new Error('รูปแบบ ' + c[1] + ' ไม่ถูกต้อง ต้องเป็น W=L คั่นด้วย ,');
+      return out;
+    }
+    return String(v == null ? '' : v).trim();
+  }
+
+  function tsRowForm(i) {
+    const sec = tsSection(S.tsSec), doc = tsDoc() || {};
+    const isNew = i == null;
+    const prim = (doc.sources || []).find(function (s) { return s.primary; });
+    const x = isNew ? { src: prim ? prim.id : '', verify: false } : (doc[sec.key] || [])[i];
+    const cols = tsCols(sec);
+    let body = '<div class="form-grid">' + cols.map(function (c) { return tsInput(c, x[c[0]]); }).join('');
+    if (sec.layout) body += '<label class="f full">อุปกรณ์ตามลำดับทิศทางรถวิ่ง (1 บรรทัดต่อ 1 รายการ: อุปกรณ์ | รหัส | ระยะ/ตำแหน่ง | ฝั่ง | หมายเหตุ | ruleKey)<textarea name="__items" rows="12" style="font-size:.85rem">' + esc(layoutItemsToText(x.items)) + '</textarea></label>';
+    body += '</div><p class="hint">ค่าที่คู่มือไม่ระบุให้เว้นว่าง แล้วติ๊ก "ต้องตรวจสอบ" · หน้า (ตามเล่ม) = เลขที่พิมพ์ในคู่มือ เช่น 1-6 · หน้า PDF = ลำดับหน้าในไฟล์</p>';
+    openModal((isNew ? 'เพิ่มแถว: ' : 'แก้ไขแถว: ') + sec.label, body, function (f) {
+      const o = Object.assign({}, isNew ? {} : x);
+      cols.forEach(function (c) { o[c[0]] = tsRead(c, f); });
+      if (sec.layout) {
+        o.items = layoutItemsFromText(f.__items);
+        if (!o.id || !o.name) return 'กรุณาใส่รหัสผังและชื่อผัง';
+        if ((doc.layouts || []).some(function (l, j) { return l.id === o.id && j !== i; })) return 'มีรหัสผัง ' + o.id + ' อยู่แล้ว';
+      }
+      if (sec.key === 'signs' && o.code && (doc.signs || []).some(function (s, j) { return s.code === o.code && j !== i; })) return 'มีป้ายรหัส ' + o.code + ' อยู่แล้ว';
+      const label = o.code || o.name || o.topic || o.device || o.item || o.roadLabel || o.label || o.id || (o.speed != null ? o.speed + ' กม./ชม.' : '') || ('แถว ' + ((isNew ? (doc[sec.key] || []).length : i) + 1));
+      tsEdit(function (d) {
+        d[sec.key] = d[sec.key] || [];
+        if (isNew) d[sec.key].push(o); else d[sec.key][i] = o;
+      }, (isNew ? 'เพิ่ม' : 'แก้ไข') + sec.label + ': ' + String(label).slice(0, 60) + (o.verify ? ' (ต้องตรวจสอบ)' : ''));
+    });
+    const m = document.querySelector('#modal-root .modal');
+    if (m && (sec.layout || cols.length > 8)) m.style.maxWidth = '760px';
+  }
+
+  function tsManualForm() {
+    const doc = tsDoc() || {}, x = doc.manual || {};
+    openModal('ข้อมูลคู่มือหลักของมาตรฐานงานจราจร',
+      '<div class="form-grid">' + field('title', 'ชื่อคู่มือ', x.title, 'text', '', 'full') + field('edition', 'ฉบับ', x.edition) + field('year', 'ปี (พ.ศ.)', x.year, 'number') +
+      field('url', 'ลิงก์ PDF (Google Drive)', x.url, 'text', 'placeholder="https://drive.google.com/…"', 'full') + field('manualId', 'รหัสในทะเบียนคู่มือ', x.manualId) +
+      '<label class="f full">หมายเหตุ<textarea name="note" rows="3">' + esc(x.note) + '</textarea></label></div>' +
+      '<p class="hint">ไฟล์ PDF ไม่เก็บในฐานข้อมูล เก็บแค่ลิงก์ · ลิงก์ของแหล่งอื่นแก้ที่ตาราง "คู่มือที่อ้างอิง"</p>',
+      function (f) {
+        const o = { title: f.title.trim(), edition: f.edition.trim(), year: num(f.year), url: f.url.trim(), manualId: f.manualId.trim(), note: f.note.trim() };
+        tsEdit(function (d) {
+          d.manual = o;
+          // ลิงก์ของแหล่งหลักใน sources ให้ตรงกับคู่มือหลัก
+          (d.sources || []).forEach(function (s) { if (s.primary && o.url) s.url = o.url; });
+        }, 'แก้ไขข้อมูลคู่มือหลัก' + (x.url !== o.url ? ' (ลิงก์ PDF)' : ''));
+      });
+  }
+
+  /* ----- ทะเบียนคู่มือกรมทางหลวง (master/manuals) ----- */
+  const MAN_CATS = [{ key: 'maintenance', label: 'งานบำรุงรักษาทางหลวง' }, { key: 'safety', label: 'งานอำนวยความปลอดภัย' }, { key: 'other', label: 'อื่น ๆ' }];
+  function manCatLabel(k) { const c = MAN_CATS.find(function (x) { return x.key === k; }); return c ? c.label : (k || ''); }
+  function renderManuals(v) {
+    const all = items('manuals').slice().sort(function (a, b) { return String(a.category).localeCompare(String(b.category)) || String(a.id).localeCompare(String(b.id), 'th', { numeric: true }); });
+    const q = S.manSearch.trim().toLowerCase();
+    const list = all.filter(function (x) {
+      if (S.manCat !== '*' && x.category !== S.manCat) return false;
+      return !q || (x.id + ' ' + x.title + ' ' + (x.edition || '') + ' ' + (x.note || '')).toLowerCase().indexOf(q) >= 0;
+    });
+    const changed = changedIds('manuals', 'id');
+    let h = '<div class="panel"><div class="toolbar"><select id="man-cat" style="width:auto"><option value="*">ทุกหมวด</option>' + MAN_CATS.map(function (c) {
+      return '<option value="' + c.key + '"' + (S.manCat === c.key ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+    }).join('') + '</select><div class="grow"><input type="search" id="man-search" placeholder="ค้นหาชื่อคู่มือ…" value="' + esc(S.manSearch) + '"></div>';
+    if (S.owner) h += '<button class="btn primary" type="button" data-act="man-add">+ เพิ่มคู่มือ</button>';
+    h += '</div><p class="meta">' + esc(docMeta('manuals')) + ' · ทั้งหมด ' + all.length + ' เล่ม' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
+    h += '<p class="hint">ทะเบียนคู่มือกลาง เก็บชื่อ ฉบับ และลิงก์ PDF (ไม่เก็บไฟล์) · "ใช้ในข้อมูลกลาง" = ชุดข้อมูลที่ถอดมาจากคู่มือเล่มนั้น</p>';
+    if (!all.length) h += '<div class="empty">ยังไม่มีทะเบียนคู่มือ' + (S.owner ? ' นำเข้าไฟล์ trafficstd-seed.json ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div>';
+    else {
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>ชื่อคู่มือ</th><th>หมวด</th><th>ฉบับ</th><th class="num">หน้า</th><th>ใช้ในข้อมูลกลาง</th><th>PDF</th>' + (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+      list.forEach(function (x) {
+        h += '<tr class="' + [changed.has(x.id) ? 'changed' : '', x.supersededBy ? 'muted' : ''].join(' ') + '"><td>' + esc(x.id) + '</td><td class="wrap" style="min-width:280px">' + esc(x.title) +
+          (x.note ? '<div class="hint">' + esc(x.note) + '</div>' : '') + (x.supersededBy ? '<div class="hint">มีฉบับใหม่กว่า: ' + esc(x.supersededBy) + '</div>' : '') + '</td>' +
+          '<td>' + esc(manCatLabel(x.category)) + '</td><td>' + esc(x.edition) + '</td><td class="num">' + fmtNum(x.pages) + '</td><td>' + (x.usedBy ? '<span class="pill">' + esc(x.usedBy) + '</span>' : '') + '</td>' +
+          '<td>' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">เปิด</a>' : '<span class="hint" title="' + esc(x.file || '') + '">ยังไม่มีลิงก์</span>') + '</td>' +
+          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="man-edit" data-id="' + esc(x.id) + '">แก้ไข</button> <button class="btn sm danger" type="button" data-act="man-del" data-id="' + esc(x.id) + '">ลบ</button></td>' : '') + '</tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+    v.innerHTML = h + '</div>';
+  }
+  function manualForm(x) {
+    const isNew = !x;
+    x = x || { category: S.manCat !== '*' ? S.manCat : 'safety' };
+    openModal(isNew ? 'เพิ่มคู่มือ' : 'แก้ไขคู่มือ ' + x.id,
+      '<div class="form-grid">' + field('id', 'รหัส *', x.id, 'text', isNew ? 'placeholder="เช่น safety-12"' : 'readonly') +
+      '<label class="f">หมวด<select name="category">' + MAN_CATS.map(function (c) { return '<option value="' + c.key + '"' + (c.key === x.category ? ' selected' : '') + '>' + esc(c.label) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f full">ชื่อคู่มือ *<textarea name="title" rows="2">' + esc(x.title) + '</textarea></label>' +
+      field('edition', 'ฉบับ/พิมพ์ครั้งที่', x.edition) + field('year', 'ปี (พ.ศ.)', x.year, 'number') + field('pages', 'จำนวนหน้า', x.pages, 'number') +
+      field('usedBy', 'ใช้ในข้อมูลกลาง (รหัสเอกสาร)', x.usedBy, 'text', 'placeholder="เช่น traffic_std"') +
+      field('url', 'ลิงก์ PDF (Google Drive)', x.url, 'text', '', 'full') + field('file', 'ไฟล์ในเครื่อง (ในโฟลเดอร์คู่มือกรมทางหลวง)', x.file, 'text', '', 'full') +
+      field('supersededBy', 'มีฉบับใหม่กว่า (รหัส)', x.supersededBy) + field('note', 'หมายเหตุ', x.note, 'text', '', 'full') + '</div>',
+      function (f) {
+        const o = { id: f.id.trim(), category: f.category, title: f.title.trim(), edition: f.edition.trim(), year: num(f.year), pages: num(f.pages), usedBy: f.usedBy.trim(), url: f.url.trim(), file: f.file.trim(), note: f.note.trim() };
+        if (f.supersededBy.trim()) o.supersededBy = f.supersededBy.trim();
+        if (!o.id || !o.title) return 'กรุณาใส่รหัสและชื่อคู่มือ';
+        const list = items('manuals').slice();
+        if (isNew && list.some(function (r) { return r.id === o.id; })) return 'มีรหัส ' + o.id + ' อยู่แล้ว';
+        if (isNew) list.push(o); else list[list.findIndex(function (r) { return r.id === x.id; })] = o;
+        draft('manuals', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'คู่มือ ' + o.id + ' ' + o.title.slice(0, 50));
+      });
+  }
+
   /* ----- ราคาประเมินทรัพย์สิน ----- */
   // ราคาของปีงบ fy = ราคาที่บันทึกในปีนั้น หรือถ้าปีนั้นไม่มีการแก้ราคา ใช้ปีงบล่าสุดก่อนหน้าที่มีราคา
   function assetYearUsed(fy) { return fiscalYears().filter(function (y) { return y <= fy && items(assetDocId(y)).length; })[0] || null; }
@@ -1036,7 +1348,7 @@
     if (S.owner) {
       h += '<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">' +
         '<h3 style="font-weight:500">นำเข้าข้อมูล</h3>' +
-        '<p class="hint">รองรับไฟล์: <b>master-seed.json</b> (สายทาง + ราคาประเมิน จากระบบงานโจรกรรม) · <b>rightofway-seed.json</b> (บัญชีเขตทาง 19.3.67) · <b>surface-seed.json</b> (ลักษณะผิวทาง 19.8.69) · <b>workcodes-seed.json</b> (รายละเอียดรหัสงาน ธ.ค. 2565) · ไฟล์สำรองของหน้านี้ · ไฟล์เขตพื้นที่ที่ส่งออกจากระบบงาน<br>' +
+        '<p class="hint">รองรับไฟล์: <b>master-seed.json</b> (สายทาง + ราคาประเมิน จากระบบงานโจรกรรม) · <b>rightofway-seed.json</b> (บัญชีเขตทาง 19.3.67) · <b>surface-seed.json</b> (ลักษณะผิวทาง 19.8.69) · <b>workcodes-seed.json</b> (รายละเอียดรหัสงาน ธ.ค. 2565) · <b>trafficstd-seed.json</b> (มาตรฐานงานจราจร + ทะเบียนคู่มือ) · ไฟล์สำรองของหน้านี้ · ไฟล์เขตพื้นที่ที่ส่งออกจากระบบงาน<br>' +
         'ข้อมูลที่นำเข้าจะเป็นฉบับร่างก่อน ตรวจดูในแต่ละแท็บแล้วค่อยกดบันทึก</p>' +
         '<div class="form-grid" style="max-width:640px">' +
         '<label class="f">ราคาประเมินในไฟล์ ให้เป็นของปีงบ<input type="number" id="imp-fy" value="' + currentFiscalYear() + '" min="2560" max="2700"></label>' +
@@ -1146,8 +1458,10 @@
     const out = $('imp-result');
     try {
       const data = JSON.parse(await file.text());
-      const mode = $('imp-mode').value;
-      const fy = Number($('imp-fy').value) || currentFiscalYear();
+      // ปุ่มนำเข้าในแท็บมาตรฐานงานจราจรไม่มีตัวเลือก ใช้ "ทับ" (ถามยืนยันก่อนถ้ามีข้อมูลอยู่แล้ว)
+      if (!$('imp-mode') && tsDoc() && !confirm('มีมาตรฐานงานจราจรในฐานข้อมูลกลางอยู่แล้ว นำเข้าแทนที่ทั้งชุดหรือไม่?\n(ยังไม่บันทึกจนกว่าจะกดบันทึก)')) return;
+      const mode = $('imp-mode') ? $('imp-mode').value : 'replace';
+      const fy = Number($('imp-fy') ? $('imp-fy').value : 0) || currentFiscalYear();
       const report = [];
       const zonesIn = Array.isArray(data) ? data : data.zones;
       if (data.routes) report.push(mergeInto('routes', data.routes.map(normRoute), 'id', mode, null, 'สายทาง'));
@@ -1155,24 +1469,41 @@
       if (data.surface) report.push(mergeInto('surface', data.surface.map(normSurface), 'id', mode, null, 'ผิวทาง'));
       if (data.rightofway) report.push(mergeInto('rightofway', data.rightofway.map(normRow), 'id', mode, null, 'บัญชีเขตทาง'));
       if (data.workcodes) report.push(mergeInto('workcodes', data.workcodes.map(normWorkCode).filter(function (x) { return /^\d{5}$/.test(x.code) && x.name; }), 'code', mode, null, 'รหัสงาน'));
+      if (data.manuals) report.push(mergeInto('manuals', data.manuals.filter(function (x) { return x && x.id && x.title; }), 'id', mode, null, 'ทะเบียนคู่มือ'));
+      if (data.trafficStd && typeof data.trafficStd === 'object') {
+        // มาตรฐานงานจราจรเป็นเอกสารเดียวหลายตาราง: นำเข้าทั้งชุด (ถ้ามีอยู่แล้วและเลือก "ข้าม" จะไม่ทับ)
+        const has = !!tsDoc();
+        if (has && mode === 'skip') report.push('มาตรฐานงานจราจร: ข้าม (มีข้อมูลอยู่แล้ว เลือก "ใช้ข้อมูลจากไฟล์ทับ" ถ้าต้องการแทนที่)');
+        else {
+          const t = clone(data.trafficStd);
+          TS_META.forEach(function (k) { delete t[k]; });
+          const nv = TS_SECTIONS.reduce(function (s, sec) { return s + (t[sec.key] || []).filter(function (x) { return x && x.verify; }).length; }, 0);
+          draft('traffic_std', [], 'นำเข้ามาตรฐานงานจราจรจากคู่มือ' + (has ? ' (แทนที่ทั้งชุด)' : '') + ': ' +
+            TS_SECTIONS.filter(function (sec) { return (t[sec.key] || []).length; }).map(function (sec) { return sec.label + ' ' + t[sec.key].length; }).join(', '), t);
+          report.push('มาตรฐานงานจราจร: ' + (has ? 'แทนที่ทั้งชุด' : 'นำเข้า') + ' · ต้องตรวจสอบ ' + nv + ' แถว');
+          S.tsSec = 'signDistances';
+        }
+      }
       if (data.materials) report.push(mergeInto(assetDocId(fy), data.materials.map(normAsset), 'key', mode, { fiscalYear: fy }, 'ราคาประเมินปีงบ ' + fy));
       if (data.assets && typeof data.assets === 'object') {
         Object.keys(data.assets).forEach(function (y) {
           report.push(mergeInto(assetDocId(Number(y)), data.assets[y].map(normAsset), 'key', mode, { fiscalYear: Number(y) }, 'ราคาประเมินปีงบ ' + y));
         });
       }
-      if (!report.length) throw new Error('ไม่พบข้อมูลสายทาง / เขตพื้นที่ / รหัสงาน / ราคาประเมิน ในไฟล์นี้');
+      if (!report.length) throw new Error('ไม่พบข้อมูลสายทาง / เขตพื้นที่ / รหัสงาน / ราคาประเมิน / มาตรฐานงานจราจร / คู่มือ ในไฟล์นี้');
+      if (S.tab === 'trafficstd') { render(); toast(report.join(' · ') + ' — ยังไม่ได้บันทึก ตรวจดูแล้วกด "บันทึกลงฐานข้อมูลกลาง"'); return; }
       S.tab = 'io'; render();
       $('imp-result').innerHTML = '✔ อ่านไฟล์ ' + esc(file.name) + ' แล้ว<br>' + report.map(esc).join('<br>') + '<br><b>ยังไม่ได้บันทึก</b> ตรวจดูในแต่ละแท็บแล้วกด "บันทึกลงฐานข้อมูลกลาง"';
     } catch (e) {
-      out.innerHTML = '<span style="color:var(--red)">นำเข้าไม่สำเร็จ: ' + esc(e.message) + '</span>';
+      if (out) out.innerHTML = '<span style="color:var(--red)">นำเข้าไม่สำเร็จ: ' + esc(e.message) + '</span>';
+      else alert('นำเข้าไม่สำเร็จ: ' + e.message);
     }
   }
 
   function doExport() {
     const assets = {};
     fiscalYears().forEach(function (y) { const a = items(assetDocId(y)); if (a.length) assets[y] = a; });
-    const data = { format: 'cn-master', exportedAt: new Date().toISOString(), routes: items('routes'), zones: items('zones'), rightofway: items('rightofway'), surface: items('surface'), workcodes: items('workcodes'), assets: assets };
+    const data = { format: 'cn-master', exportedAt: new Date().toISOString(), routes: items('routes'), zones: items('zones'), rightofway: items('rightofway'), surface: items('surface'), workcodes: items('workcodes'), manuals: items('manuals'), trafficStd: tsDoc(), assets: assets };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1304,6 +1635,24 @@
         }
         break;
       }
+      case 'ts-add': tsRowForm(null); break;
+      case 'ts-edit': tsRowForm(Number(id)); break;
+      case 'ts-manual': tsManualForm(); break;
+      case 'ts-del': {
+        const sec = tsSection(S.tsSec), x = (tsDoc()[sec.key] || [])[Number(id)];
+        const label = x && (x.code || x.name || x.topic || x.device || x.item || x.roadLabel || x.label || x.id || (x.speed != null ? x.speed + ' กม./ชม.' : ''));
+        if (x && confirm('ลบแถว "' + label + '" ออกจากตาราง ' + sec.label + '?')) {
+          tsEdit(function (d) { d[sec.key].splice(Number(id), 1); }, 'ลบ' + sec.label + ': ' + String(label).slice(0, 60));
+        }
+        break;
+      }
+      case 'man-add': manualForm(null); break;
+      case 'man-edit': manualForm(items('manuals').find(function (x) { return x.id === id; })); break;
+      case 'man-del': {
+        const x = items('manuals').find(function (r) { return r.id === id; });
+        if (confirm('ลบคู่มือ ' + x.id + ' ' + x.title + ' ออกจากทะเบียน?')) draft('manuals', items('manuals').filter(function (r) { return r.id !== id; }), 'ลบคู่มือ ' + x.id);
+        break;
+      }
       case 'asset-add': assetForm(null); break;
       case 'asset-edit': assetForm(assetView(currentFiscalYear()).find(function (x) { return x.key === id; })); break;      case 'export': doExport(); break;
       case 'hist-reload': S.history = null; render(); break;
@@ -1311,8 +1660,9 @@
         const x = S.history.find(function (h) { return h.__id === id; });
         if (!x) break;
         if (confirm('โหลด' + docTitle(x.docId) + ' รุ่น ' + x.fromVersion + ' กลับมาเป็นฉบับร่าง?\n(ยังไม่บันทึกจนกว่าจะกดบันทึก)')) {
-          const extra = /^assets_/.test(x.docId) ? { fiscalYear: Number(x.docId.slice(7)) } : null;
-          draft(x.docId, JSON.parse(x.before || '[]'), 'กู้คืนเป็นฉบับรุ่น ' + x.fromVersion, extra);
+          const before = JSON.parse(x.before || '[]');
+          if (!Array.isArray(before)) draft(x.docId, [], 'กู้คืนเป็นฉบับรุ่น ' + x.fromVersion, before); // เอกสารหลายตาราง (traffic_std)
+          else draft(x.docId, before, 'กู้คืนเป็นฉบับรุ่น ' + x.fromVersion, /^assets_/.test(x.docId) ? { fiscalYear: Number(x.docId.slice(7)) } : null);
           toast('โหลดฉบับรุ่น ' + x.fromVersion + ' เป็นฉบับร่างแล้ว ตรวจดูแล้วกดบันทึก');
         }
         break;
@@ -1326,7 +1676,10 @@
     else if (e.target.id === 'surf-hw') { S.surfHw = e.target.value; render(); }
     else if (e.target.id === 'wc-group') { S.wcGroup = e.target.value; render(); }
     else if (e.target.id === 'row-area') { S.rowInArea = e.target.checked; render(); }
-    else if (e.target.id === 'imp-file' && e.target.files[0]) doImport(e.target.files[0]);
+    else if (e.target.id === 'ts-sec') { S.tsSec = e.target.value; render(); }
+    else if (e.target.id === 'ts-verify') { S.tsVerifyOnly = e.target.checked; render(); }
+    else if (e.target.id === 'man-cat') { S.manCat = e.target.value; render(); }
+    else if ((e.target.id === 'imp-file' || e.target.id === 'ts-file') && e.target.files[0]) doImport(e.target.files[0]);
   });
   document.addEventListener('input', function (e) {
     if (e.target.id === 'asset-search') {
@@ -1339,6 +1692,11 @@
       const pos = e.target.selectionStart;
       render();
       const el = $('wc-search'); el.focus(); el.setSelectionRange(pos, pos);
+    } else if (e.target.id === 'man-search') {
+      S.manSearch = e.target.value;
+      const pos = e.target.selectionStart;
+      render();
+      const el = $('man-search'); el.focus(); el.setSelectionRange(pos, pos);
     }
   });
 

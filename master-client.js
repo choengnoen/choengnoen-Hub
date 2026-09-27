@@ -23,6 +23,22 @@
      CNMaster.onChange(function (what) { ... })  // เรียกเมื่อเจ้าของแก้ข้อมูลกลาง what = 'routes' | 'zones' | 'assets_2569' ...
      CNMaster.adminRoutes()                      // สายทางในรูปแบบของระบบบริหารหมวด (routeNo, ranges เป็นกิโลเมตร)
 
+     มาตรฐานงานจราจร (คู่มือกรมทางหลวง) — อ่านอย่างเดียว ทุกฟังก์ชันคืนค่าพร้อมที่มา { ref, page, pdfPage, src, manual, url, verify, note }
+     (page = เลขหน้าในคู่มือ เช่น "1-6" · verify = true คือค่าที่ต้องตรวจสอบ ควรแสดงเตือนผู้ใช้) · ยังไม่มีข้อมูล/โหลดไม่ได้ คืน null
+     ** ห้ามทำปุ่ม/ลิงก์แก้ไขมาตรฐานงานจราจรในระบบงาน แก้ได้ที่ฐานข้อมูลกลางเท่านั้น **
+     CNMaster.trafficStd()                        // ข้อมูลทั้งชุด { manual, sources, signDistances, taper, taperTable, coneSpacing, buffer, signs, layouts, ... }
+     CNMaster.signDistances(80, '2lane')          // { d1, d2, d3, fromTaper: [ไกลสุด, กลาง, ใกล้สุด], advance: [1000], ... }
+                                                  //   roadType: '2lane' | 'multilane' | 'median' | 'motorway' (ไม่ระบุ = ทั่วไป)
+                                                  //   fromTaper ใช้แทน signDistances(v) เดิมของระบบผังจราจรได้ตรง ๆ (ระยะจากต้นช่วงเบี่ยงถึงป้ายแต่ละชุด)
+     CNMaster.taperLength(80, 3.5)                // { length: 175, raw, formula, W, S, type: 'merging', basis: 'table'|'formula', ... }
+     CNMaster.taperLength(80, 3.5, 'shoulder')    //   type: 'merging' | 'shifting' | 'shoulder' | 'oneLaneTwoWay' | 'downstream'
+     CNMaster.coneSpacing(80)                     // { taper: 10, tangent: 10, curve: null, device, rows: [ทุกอุปกรณ์], ... }
+     CNMaster.bufferLength(80)                    // { length: 125, speedUsed: 80, kind: 'longitudinal', ... } · bufferLength(80, 'shadowVehicle')
+     CNMaster.layout('lane-2lane-alternate')      // ผังมาตรฐาน { id, name, category, roadType, items: [{ seq, device, code, distanceRule, ruleKey, side, note }], ... }
+     CNMaster.layouts({ roadType: '2lane' })      // รายการผังทั้งหมด (กรองตาม roadType / category ได้)
+     CNMaster.sign('ตค.4')                        // ป้าย { code, name, kind, usage, size, color, ... }
+     CNMaster.manuals()                           // ทะเบียนคู่มือกรมทางหลวง · CNMaster.findManual('safety-06-1')
+
    หน่วย กม. ในฐานข้อมูลกลางเก็บเป็น "เมตร" เสมอ (223+650 = 223650)
    ปีงบประมาณเป็น พ.ศ. เริ่ม 1 ต.ค. ของปีก่อนหน้า
    ========================================================================== */
@@ -134,7 +150,8 @@
     });
   }
   let watchedFy = M.fiscalYear();
-  M.ready = Promise.all([watchDoc('routes'), watchDoc('zones'), watchDoc('rightofway'), watchDoc('surface'), watchDoc('workcodes'), watchAssetYears(watchedFy)]).then(function () { return M; });
+  M.ready = Promise.all([watchDoc('routes'), watchDoc('zones'), watchDoc('rightofway'), watchDoc('surface'), watchDoc('workcodes'),
+    watchDoc('traffic_std'), watchDoc('manuals'), watchAssetYears(watchedFy)]).then(function () { return M; });
   // เปิดหน้าค้างข้าม 1 ต.ค. → เริ่มอ่านราคาปีงบใหม่ แล้วแจ้งระบบงานให้ใช้ราคาชุดใหม่ (ไม่ต้องรีเฟรช)
   setInterval(function () {
     const fy = M.fiscalYear();
@@ -237,6 +254,166 @@
     return list('workcodes').find(function (x) { return String(x.code) === c; }) || null;
   };
   M.unitsOf = function (code) { const w = M.findWorkCode(code); return w && Array.isArray(w.units) ? w.units.slice() : []; };
+
+  /* ---------- มาตรฐานงานจราจร (master/traffic_std) — ถอดจากคู่มือกรมทางหลวง ---------- */
+  const TS_META = ['items', 'version', 'updatedAt', 'updatedBy'];
+  function ts() {
+    const d = docs.traffic_std;
+    if (!d) return null;
+    const keys = Object.keys(d).filter(function (k) { return TS_META.indexOf(k) < 0; });
+    return keys.length ? d : null;
+  }
+  function tsCopy(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+  M.trafficStd = function () {
+    const d = ts();
+    if (!d) return null;
+    const o = tsCopy(d);
+    TS_META.forEach(function (k) { if (k !== 'updatedAt' && k !== 'updatedBy') delete o[k]; });
+    return o;
+  };
+  // ที่มาของค่า (แนบกับทุกผลลัพธ์ ให้ระบบงานแสดง "คู่มือ … หน้า …" ได้)
+  function refOf(row) {
+    const d = ts() || {};
+    const src = (row && row.src) || '';
+    const s = (d.sources || []).find(function (x) { return x.id === src; }) || (d.sources || []).find(function (x) { return x.primary; }) || {};
+    const man = s.title ? s : (d.manual || {});
+    const url = s.url || (s.primary ? (d.manual || {}).url : '') || '';
+    return {
+      ref: (row && row.ref) || '', page: row && row.page != null ? row.page : '', pdfPage: (row && row.pdfPage) || null, src: src || s.id || '',
+      manual: [man.title, man.edition].filter(Boolean).join(' '), url: url && row && row.pdfPage && !/drive\.google\.com/.test(url) ? url + '#page=' + row.pdfPage : url,
+      verify: !!(row && row.verify), note: (row && row.note) || ''
+    };
+  }
+  function withRef(row, extra) { return Object.assign(refOf(row), extra || {}); }
+  function normRoadType(t) {
+    const s = String(t == null ? '' : t).toLowerCase();
+    if (!s) return 'all';
+    if (/motor|พิเศษ/.test(s)) return 'motorway';
+    if (/median|เกาะ|divided/.test(s)) return 'median';
+    if (/multi|หลาย|^[46]/.test(s)) return 'multilane';
+    if (/2|two|สอง|สวน/.test(s)) return '2lane';
+    return 'all';
+  }
+  function inSpeed(r, v) {
+    return (r.speedMin == null || v >= r.speedMin) && (r.speedMax == null || v <= r.speedMax);
+  }
+
+  // ระยะป้ายเตือนล่วงหน้า (ตาราง 1-1) — d1 = ระยะ ก, d2 = ระยะ ข, d3 = ระยะ ค
+  M.signDistances = function (speed, roadType) {
+    const d = ts();
+    if (!d || !(d.signDistances || []).length) return null;
+    const v = Number(speed) || 0, rt = normRoadType(roadType);
+    let rows = d.signDistances.filter(function (r) { return r.roadType === rt; });
+    if (!rows.some(function (r) { return inSpeed(r, v); })) rows = d.signDistances.filter(function (r) { return r.roadType === 'all' || !r.roadType; });
+    if (!rows.length) rows = d.signDistances.slice();
+    let row = rows.find(function (r) { return inSpeed(r, v); });
+    let outOfRange = false;
+    if (!row) { // ความเร็วนอกตาราง ใช้แถวที่ใกล้ที่สุด
+      outOfRange = true;
+      const sorted = rows.slice().sort(function (a, b) { return (a.speedMax || 0) - (b.speedMax || 0); });
+      row = v < (sorted[0].speedMin || 0) ? sorted[0] : sorted[sorted.length - 1];
+    }
+    const a = row.d1, b = row.d2, c = row.d3;
+    const adv = (d.advanceSigns || []).find(function (x) { return x.roadType === rt; }) || null;
+    const out = withRef(row, {
+      speed: v, roadType: rt, roadLabel: row.roadLabel || '', d1: a, d2: b, d3: c, spacing: [a, b, c],
+      fromTaper: a == null || b == null || c == null ? null : [a + b + c, a + b, a],
+      advance: adv ? (adv.distances || []).slice() : [], advanceRef: adv ? refOf(adv) : null
+    });
+    if (outOfRange) { out.verify = true; out.note = ('ความเร็ว ' + v + ' กม./ชม. ไม่อยู่ในตาราง ใช้แถว "' + (row.roadLabel || '') + '" ' + (out.note || '')).trim(); }
+    return out;
+  };
+
+  // ความยาวช่วงเบี่ยง (ตาราง 1-3 / สมการ 1-1, 1-2) — laneWidth = ความกว้าง Offset W (ม.) ไม่ระบุ = 3.5
+  M.taperLength = function (speed, laneWidth, type) {
+    const d = ts();
+    if (!d || !(d.taper || []).length) return null;
+    const S = Number(speed) || 0, W = laneWidth == null || laneWidth === '' ? 3.5 : Number(laneWidth), t = type || 'merging';
+    const tt = (d.taperTypes || []).find(function (x) { return x.type === t; }) || null;
+    const f = d.taper.find(function (r) { return inSpeed(r, S); }) || null;
+    const tbl = (d.taperTable || []).find(function (r) { return r.speed === S; });
+    const cell = tbl && (tbl.lengths || []).find(function (p) { return p.w === W; });
+    let L = null, raw = null, basis = '', src = null;
+    if (cell) { L = cell.L; raw = cell.L; basis = 'table'; src = tbl; }
+    else if (f && f.divisor) { raw = W * Math.pow(S, f.power || 1) / f.divisor; L = Math.round(raw / 5) * 5; basis = 'formula'; src = f; }
+    if (L == null) return withRef(f || tt, { length: null, raw: null, W: W, S: S, type: t, basis: '', verify: true, note: 'ไม่มีสูตร/ตารางสำหรับความเร็วนี้' });
+    let len = L;
+    if (tt && tt.factor != null) len = Math.ceil(L * tt.factor);
+    else if (tt && tt.max != null) len = tt.max;
+    const out = withRef(src, {
+      length: len, L: L, raw: Math.round(raw * 10) / 10, W: W, S: S, type: t, factor: tt ? tt.factor : 1, min: tt ? tt.min : null, max: tt ? tt.max : null,
+      rule: tt ? tt.rule : '', formula: f ? f.formula : '', basis: basis, typeRef: tt ? refOf(tt) : null
+    });
+    if (basis === 'formula') out.note = ('คำนวณจากสูตร ปัดเป็นทวีคูณ 5 ม. ตามรูปแบบตาราง 1-3 ' + (out.note || '')).trim();
+    if (f && f.verify) out.verify = true;
+    if (tt && tt.verify) out.verify = true;
+    return out;
+  };
+
+  // ระยะห่างกรวย/อุปกรณ์จัดช่องจราจร — คู่มือไม่แยกตามความเร็ว (ใช้ได้ทุกความเร็ว ถ้าแถวไม่ระบุช่วงความเร็ว)
+  M.coneSpacing = function (speed) {
+    const d = ts();
+    if (!d || !(d.coneSpacing || []).length) return null;
+    const v = Number(speed) || 0;
+    const rows = d.coneSpacing.filter(function (r) { return inSpeed(r, v); });
+    if (!rows.length) return null;
+    const main = rows.find(function (r) { return /กรวย/.test(r.device || ''); }) || rows[0];
+    return withRef(main, {
+      speed: v, device: main.device, taper: main.taper, tangent: main.tangent, curve: main.curve, rule: main.rule || '',
+      rows: rows.map(function (r) { return withRef(r, { device: r.device, taper: r.taper, tangent: r.tangent, curve: r.curve, rule: r.rule || '' }); })
+    });
+  };
+
+  // ระยะกันชน — kind: 'longitudinal' (ตาราง 1-4, ค่าเริ่มต้น) | 'shadowVehicle' (ตาราง 1-6) · ความเร็วที่ไม่มีในตารางใช้แถวถัดขึ้นไป
+  M.bufferLength = function (speed, kind) {
+    const d = ts();
+    if (!d || !(d.buffer || []).length) return null;
+    const v = Number(speed) || 0, k = kind || 'longitudinal';
+    const rows = d.buffer.filter(function (r) { return (r.kind || 'longitudinal') === k; }).sort(function (a, b) { return a.speed - b.speed; });
+    if (!rows.length) return null;
+    let row = rows.find(function (r) { return r.speed >= v; });
+    const over = !row;
+    if (over) row = rows[rows.length - 1];
+    const out = withRef(row, { speed: v, speedUsed: row.speed, kind: k, length: row.length });
+    if (over) { out.verify = true; out.note = ('ความเร็วเกินตาราง ใช้ค่าที่ ' + row.speed + ' กม./ชม. ' + (out.note || '')).trim(); }
+    return out;
+  };
+
+  M.layouts = function (filter) {
+    const d = ts();
+    if (!d) return [];
+    const f = filter || {};
+    const rt = f.roadType ? normRoadType(f.roadType) : '';
+    return (d.layouts || []).filter(function (l) {
+      if (rt && l.roadType !== rt && l.roadType !== 'all') return false;
+      return !f.category || String(l.category || '').indexOf(f.category) >= 0;
+    }).map(function (l) { return withRef(l, tsCopy(l)); });
+  };
+  M.layout = function (id) {
+    const d = ts();
+    const l = d && (d.layouts || []).find(function (x) { return x.id === id; });
+    return l ? withRef(l, tsCopy(l)) : null;
+  };
+  // รหัสป้าย พิมพ์ได้หลายแบบ: 'ตค.4', 'ตค 4', 'ตค4' → 'ตค.4'
+  function normSignCode(c) {
+    const m = String(c == null ? '' : c).replace(/\s+/g, '').match(/^([ก-๙a-zA-Z]+)\.?(\d+)$/);
+    return m ? m[1] + '.' + m[2] : String(c || '').trim();
+  }
+  M.sign = function (code) {
+    const d = ts();
+    if (!d) return null;
+    const c = normSignCode(code);
+    const s = (d.signs || []).find(function (x) { return x.code && normSignCode(x.code) === c; });
+    return s ? withRef(s, tsCopy(s)) : null;
+  };
+  M.signs = function (kind) {
+    const d = ts();
+    return d ? (d.signs || []).filter(function (s) { return !kind || s.kind === kind; }).map(function (s) { return withRef(s, tsCopy(s)); }) : [];
+  };
+
+  /* ---------- ทะเบียนคู่มือกรมทางหลวง (master/manuals) ---------- */
+  M.manuals = function (category) { return list('manuals').filter(function (x) { return !category || x.category === category; }); };
+  M.findManual = function (id) { return list('manuals').find(function (x) { return x.id === id; }) || null; };
 
   /* ---------- ราคาประเมินทรัพย์สิน (แยกปีงบ) ---------- */
   M.loadAssets = function (fy) { return watchDoc('assets_' + fy).then(function () { return list('assets_' + fy); }); };
