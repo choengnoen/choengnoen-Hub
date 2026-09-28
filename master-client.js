@@ -3,7 +3,7 @@
    ข้อมูลจริงอยู่ใน Firestore ของ CN-Hub (โปรเจกต์ choengnoen-index) แก้ไขได้ที่หน้า master-data.html เท่านั้น
 
    วิธีใช้ในระบบงาน (วางหลัง firebase-*-compat.js และก่อน firebase-layer.js ของระบบนั้น):
-     <script src="https://choengnoen.github.io/choengnoen-hub/master-client.js"></script>
+     <script src="https://choengnoen.github.io/choengnoen-Hub/master-client.js"></script>
 
      await CNMaster.ready;                       // รอข้อมูลชุดแรก (สายทาง + เขตพื้นที่ + ราคาประเมินปีงบปัจจุบัน)
      CNMaster.routes()                           // สายทางทั้งหมด (รวมที่โอนแล้ว) — รูปแบบเดียวกับ routes เดิมของระบบอุบัติเหตุ/โจรกรรม
@@ -66,7 +66,7 @@
      ระบบงานไม่ต้องเขียนโค้ดเพิ่ม: <img alt="ตรากรมทางหลวง"> หรือ <img data-cn-emblem> จะถูกเปลี่ยนเป็นตรากลางให้อัตโนมัติ
      (รวมรูปที่สร้างทีหลังด้วย innerHTML) · ไอคอนแท็บ ใส่ <link rel="icon" data-cn-emblem> ถ้าต้องการให้ใช้ตรากลางด้วย
      โหลดตรากลางไม่ได้ (ออฟไลน์/ฮับล่ม) = ใช้ไฟล์ logo ของระบบนั้นต่อไปตามเดิม */
-  M.EMBLEM_URL = 'https://choengnoen.github.io/choengnoen-hub/assets/doh-emblem.png';
+  M.EMBLEM_URL = 'https://choengnoen.github.io/choengnoen-Hub/assets/doh-emblem.png';
   (function () {
     const SEL = 'img[data-cn-emblem], img[alt="ตรากรมทางหลวง"], link[rel~="icon"][data-cn-emblem]';
     function apply(root) {
@@ -163,7 +163,7 @@
   M.version = function (docId) { return docs[docId] ? docs[docId].version : 0; };
   M.updatedAt = function (docId) { return docs[docId] ? (docs[docId].updatedAt || '') : ''; };
   // ลิงก์หน้าแก้ไขข้อมูลกลาง (ใช้ทำปุ่ม "แก้ไขที่ฐานข้อมูลกลาง" ในระบบงาน)
-  M.EDIT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-data.html';
+  M.EDIT_URL = 'https://choengnoen.github.io/choengnoen-Hub/master-data.html';
   // ลิงก์ไปแท็บที่ต้องการ: 'routes' | 'zones' | 'rightofway' | 'surface' | 'workcodes' | 'assets'
   M.editUrl = function (tab) { return M.EDIT_URL + (tab ? '#' + tab : ''); };
 
