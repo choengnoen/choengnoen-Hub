@@ -316,16 +316,6 @@
     gap: 14px;
   }
 
-  /* ตัวดันบรรทัด: การ์ดไหนตั้ง rowBreakAfter: true จะมีตัวนี้ต่อท้าย
-     กินเต็มความกว้าง 1 บรรทัด (แต่มองไม่เห็น) เพื่อดันการ์ดถัดไปขึ้นบรรทัดใหม่
-     ส่วนตัวการ์ดเองยังคงขนาดปกติและชิดซ้าย เพราะไม่ได้ยืดเต็มแถวเอง */
-  .card-grid .row-break {
-    grid-column: 1 / -1;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
   .card {
     background: var(--white);
     border-radius: var(--radius);
@@ -1304,7 +1294,6 @@
                 <label class="swatch swatch-custom" title="เลือกสีอื่น">🎨<input type="color" id="site-color-custom"></label>
               </div>
             </div>
-            <label class="checkbox-row"><input type="checkbox" id="site-rowbreak" ${site && site.rowBreakAfter ? 'checked' : ''}> ขึ้นบรรทัดใหม่หลังการ์ดนี้</label>
             <div class="modal-error" id="site-error"></div>
           </div>
           <div class="modal-actions">
@@ -1363,8 +1352,7 @@
         appsScriptUrl: document.getElementById('site-appsscript').value.trim(),
         driveUrl: document.getElementById('site-drive').value.trim(),
         icon: document.getElementById('site-icon').value.trim(),
-        accentColor: accentColor,
-        rowBreakAfter: document.getElementById('site-rowbreak').checked
+        accentColor: accentColor
       };
       try { await FBL.saveSite(CATS[catId].col, payload); closeModal(); }
       catch (e) { errorEl.textContent = e.message || 'บันทึกไม่สำเร็จ'; }
@@ -1518,12 +1506,6 @@
             card.appendChild(handle);
           }
           grid.appendChild(card);
-          if (site.rowBreakAfter) {
-            const rowBreak = document.createElement('div');
-            rowBreak.className = 'row-break';
-            grid.appendChild(rowBreak);
-            card.rowBreakEl = rowBreak; // ตัวดันบรรทัดย้ายตามการ์ดไปด้วยตอนลาก
-          }
         });
         if (isOwner && !arrange) {
           const addBtn = document.createElement('button');
@@ -1554,7 +1536,7 @@
     cardDrag = {
       card: card, grid: grid,
       offX: e.clientX - r.left, offY: e.clientY - r.top,
-      from: { next: (card.rowBreakEl || card).nextSibling } // ไว้คืนที่เดิมถ้าถูกขัดจังหวะ
+      from: { next: card.nextSibling } // ไว้คืนที่เดิมถ้าถูกขัดจังหวะ
     };
     card.classList.add('dragging');
     document.body.classList.add('is-dragging');
@@ -1587,12 +1569,20 @@
     if (target) {
       const cards = Array.prototype.slice.call(d.grid.querySelectorAll('.card'));
       if (cards.indexOf(d.card) < cards.indexOf(target)) {
-        const after = target.rowBreakEl || target;
-        d.grid.insertBefore(d.card, after.nextSibling);
+        d.grid.insertBefore(d.card, target.nextSibling);
       } else {
         d.grid.insertBefore(d.card, target);
       }
-      if (d.card.rowBreakEl) d.grid.insertBefore(d.card.rowBreakEl, d.card.nextSibling);
+    } else {
+      // ลากไปช่องว่างหลังการ์ดใบสุดท้าย (ขวามือแถวสุดท้าย หรือใต้ลงไป) — ย้ายไปไว้ท้ายสุด
+      const others = Array.prototype.filter.call(d.grid.querySelectorAll('.card'), function (c) { return c !== d.card; });
+      const last = others[others.length - 1];
+      const g = d.grid.getBoundingClientRect();
+      if (last && e.clientX >= g.left && e.clientX <= g.right) {
+        const lr = last.getBoundingClientRect();
+        const pastLast = e.clientY > lr.bottom || (e.clientY >= lr.top && e.clientX > lr.right);
+        if (pastLast && e.clientY <= g.bottom + 40 && d.card !== d.grid.lastElementChild) d.grid.appendChild(d.card);
+      }
     }
     placeDraggedCard(e.clientX, e.clientY);
     // ลากไปใกล้ขอบจอบน/ล่าง ให้หน้าเลื่อนตาม
@@ -1623,7 +1613,6 @@
     if (!cardDrag) return;
     const d = finishCardDrag();
     d.grid.insertBefore(d.card, d.from.next);
-    if (d.card.rowBreakEl) d.grid.insertBefore(d.card.rowBreakEl, d.card.nextSibling);
   }
 
   /* ---------- โหมดจัดลำดับ: กด "จัดลำดับ" → ลากได้หลายครั้ง → กด "บันทึก" หรือ "ยกเลิก" ---------- */

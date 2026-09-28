@@ -170,7 +170,6 @@
       firebaseUrl: site.firebaseUrl || '', githubUrl: site.githubUrl || '',
       appsScriptUrl: site.appsScriptUrl || '', driveUrl: site.driveUrl || '', icon: site.icon || '',
       accentColor: site.accentColor || '', // สีแถบข้างการ์ด "#RRGGBB" — '' = ใช้สีตามหมวด
-      rowBreakAfter: !!site.rowBreakAfter,
       order: site.order != null ? site.order : Date.now(),
       updatedAt: nowIso()
     });
