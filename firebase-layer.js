@@ -186,11 +186,14 @@
 
   // เรียงลำดับการ์ดใหม่ตามรายการ id ที่ส่งมา (ลากวางบนหน้าเว็บ)
   // ให้เลข order ใหม่ 10, 20, 30… แล้วบันทึกพร้อมกันทุกใบในคำสั่งเดียว — ไม่สำเร็จจะไม่มีใบไหนเปลี่ยน
-  FBL.reorderSites = async function (col, ids) {
+  // breaks (ถ้ามี) = true/false ตามลำดับเดียวกับ ids — true คือขึ้นบรรทัดใหม่หลังการ์ดใบนั้น
+  FBL.reorderSites = async function (col, ids, breaks) {
     try {
       const batch = db.batch();
       ids.forEach(function (id, i) {
-        batch.update(db.collection(col).doc(id), { order: (i + 1) * 10 });
+        const data = { order: (i + 1) * 10 };
+        if (breaks) data.breakAfter = !!breaks[i];
+        batch.update(db.collection(col).doc(id), data);
       });
       await batch.commit();
     } catch (e) { throw new Error(thErr(e)); }
