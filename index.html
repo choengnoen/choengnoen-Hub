@@ -1232,7 +1232,7 @@
               <input type="text" id="auth-id" autocomplete="off">
             </div>
             <div class="modal-field">
-              <label>รหัสผ่าน${isBootstrap ? ' (อย่างน้อย 6 ตัวอักษร)' : ''}</label>
+              <label>รหัสผ่าน${isBootstrap ? ' (อย่างน้อย 8 ตัวอักษร)' : ''}</label>
               <div class="pw-wrap"><input type="password" id="auth-pw" autocomplete="off">${PW_TOGGLE_BTN}</div>
             </div>
             ${isBootstrap ? `
@@ -1262,7 +1262,7 @@
       try {
         if (isBootstrap) {
           const pw2 = document.getElementById('auth-pw2').value;
-          if (pw.length < 6) { errorEl.textContent = 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร'; return; }
+          if (pw.length < 8) { errorEl.textContent = 'รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร'; return; }
           if (pw !== pw2) { errorEl.textContent = 'รหัสผ่านสองช่องไม่ตรงกัน'; return; }
           await FBL.bootstrapOwner(id, pw);
           hasOwnerAccount = true;
