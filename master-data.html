@@ -66,16 +66,24 @@
     text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 10px rgba(255,255,255,0.9); }
   .top-inner .sub { margin: 2px 0 0; color: #16324F; font-size: 0.92rem;
     text-shadow: 0 0 2px #fff, 0 0 6px rgba(255,255,255,0.9); }
-  .top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  /* แถบเดียวรวมกลุ่ม: สถานะเจ้าของ | ออกจากระบบ | หน้าหลัก */
+  .top-actions { margin-left: auto; display: inline-flex; align-items: stretch; flex-wrap: wrap; overflow: hidden;
+    background: rgba(255,255,255,0.92); border-radius: 14px; box-shadow: 0 8px 20px -8px rgba(10,42,79,0.55); }
   .top a, .top button.link {
-    color: var(--deep); text-decoration: none; font-weight: 600; font-size: 0.9rem;
-    border: 1px solid rgba(10,42,79,0.2); border-radius: 10px; padding: 7px 14px;
-    background: rgba(255,255,255,0.6); cursor: pointer; backdrop-filter: blur(4px);
-    transition: background 0.15s ease;
+    display: inline-flex; align-items: center; gap: 7px; color: var(--deep); text-decoration: none; font-family: inherit;
+    font-weight: 600; font-size: 0.9rem; padding: 10px 16px; background: transparent; border: 0;
+    border-left: 1px solid var(--line); cursor: pointer; transition: background 0.15s ease;
   }
-  .top a:hover, .top button.link:hover { background: rgba(255,255,255,0.9); }
-  .who:not(:empty) { font-size: 0.82rem; font-weight: 600; color: var(--white); background: var(--green);
-    border-radius: 999px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+  .top a:hover, .top button.link:hover { background: var(--hover); }
+  .top .who:empty { display: none; }
+  .top .who:empty + button.link { border-left: 0; }
+  .top button.link::before, .top a::before { content: ''; width: 16px; height: 16px; flex: none; background: currentColor;
+    -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
+  .top button.link { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='M16 17l5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E"); }
+  .top a { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l9-8 9 8'/%3E%3Cpath d='M5 10v10h14V10'/%3E%3C/svg%3E"); }
+  .who:not(:empty) { display: inline-flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 600; color: var(--green);
+    background: #EAF8F0; padding: 10px 16px; }
+  .who:not(:empty)::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
 
   main { max-width: 1180px; margin: -40px auto 0; padding: 0 16px 40px; position: relative; }
 
@@ -90,25 +98,28 @@
   .banner.err::before { content: '⛔'; }
   #banners .banner { box-shadow: 0 4px 14px -8px rgba(10,42,79,0.3); }
 
-  /* ---------- แท็บ ----------
-     จัดเป็นตาราง 6 คอลัมน์ (11 แท็บ = 2 แถว) ให้เห็นครบทุกแท็บ ไม่ตกขอบจอ */
+  /* ---------- แท็บ (เมนูด้านซ้าย แบ่งกลุ่ม) ---------- */
+  .layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .content { min-width: 0; }
   .tabs {
-    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin-bottom: 14px; padding: 6px;
+    position: sticky; top: 12px; padding: 10px;
     background: var(--white); border-radius: 16px; border: 1px solid var(--line);
     box-shadow: 0 8px 24px -14px rgba(10,42,79,0.35);
   }
+  .tabs .gname { font-family: 'Kanit', sans-serif; font-size: 0.72rem; letter-spacing: 0.06em; font-weight: 500; color: var(--ink-light); margin: 12px 10px 4px; }
+  .tabs .gname:first-child { margin-top: 4px; }
   .tab {
-    display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0;
-    border: none; background: transparent; border-radius: 11px; padding: 9px 10px; cursor: pointer;
-    color: var(--ink-light); font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 0.92rem; line-height: 1.3; text-align: center;
+    width: 100%; display: flex; align-items: center; gap: 10px; min-width: 0; position: relative;
+    border: none; background: transparent; border-radius: 11px; padding: 9px 12px; cursor: pointer;
+    color: var(--ink-light); font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 0.92rem; line-height: 1.3; text-align: left;
     transition: background 0.15s ease, color 0.15s ease;
   }
   .tab svg { width: 17px; height: 17px; flex: none; }
+  .tab .badge { margin-left: auto; }
   .tab:hover { background: var(--hover); color: var(--blue-bottom); }
-  .tab.active {
-    background: linear-gradient(180deg, var(--blue-top), var(--blue-bottom)); color: var(--white);
-    box-shadow: 0 6px 14px -6px var(--blue-glow), inset 0 1px 0 rgba(255,255,255,0.12);
-  }
+  .tab.active { background: var(--hover); color: var(--blue-top); font-weight: 600; }
+  .tab.active svg { color: var(--blue-bottom); }
+  .tab.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 4px; border-radius: 4px; background: linear-gradient(180deg, var(--blue-top), var(--blue-bottom)); }
   .tab .badge { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--amber); color: #4A3500; font-size: 0.72rem; font-weight: 700; text-align: center; line-height: 18px; }
 
   /* ---------- กล่องเนื้อหา ---------- */
@@ -174,6 +185,39 @@
   .pill.off { background: #EEF0F3; color: #77808D; }
   .pill.warn { background: #FDE8E6; color: var(--red); font-weight: 600; }
   .row-actions { white-space: nowrap; text-align: right; }
+  /* รหัสงาน: เมนูหมวดย่อยด้านซ้าย + ตารางด้านขวา · เจ้าของคลิกแถวเพื่อแก้ไข */
+  .wc-split { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
+  .wc-side { border-right: 1px solid var(--line-soft); padding-right: 10px; max-height: 70vh; overflow: auto; }
+  .wc-it { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; font: inherit; text-align: left; border: none; background: none; color: var(--ink); padding: 9px 10px; border-radius: 10px; cursor: pointer; }
+  .wc-it:hover { background: #EEF4FB; }
+  .wc-it.on { background: var(--blue-top); color: var(--white); }
+  .wc-it .n { flex: none; background: #EEF0F3; color: var(--ink-light); border-radius: 999px; padding: 0 8px; font-size: 0.76rem; line-height: 20px; }
+  .wc-it.on .n { background: rgba(255,255,255,0.22); color: var(--white); }
+  .wc-it.sb { font-size: 0.85rem; padding: 5px 10px 5px 24px; border-radius: 8px; color: var(--ink-light); }
+  .wc-it.sb.on { background: #DCE8F8; color: var(--blue-top); font-weight: 600; }
+  tr.wc-edit-row { cursor: pointer; }
+  tr.wc-edit-row:hover td { background: #F3F8FE; }
+  .wc-pen { opacity: 0; color: var(--ink-light); font-size: 0.85rem; margin-left: 4px; }
+  tr.wc-edit-row:hover .wc-pen { opacity: 1; }
+  .wc-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 600; color: var(--deep); }
+  @media (max-width: 760px) { .wc-split { grid-template-columns: 1fr; } .wc-side { border: none; padding: 0; max-height: 34vh; } }
+  /* แท็บเลือกสายทาง (หน้าเขตพื้นที่) */
+  .hw-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+  .hw-tab { font: inherit; font-size: 0.86rem; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); color: var(--ink-light); cursor: pointer; }
+  .hw-tab span { font-size: 0.78rem; opacity: 0.7; }
+  .hw-tab:hover { background: var(--hover); color: var(--blue-bottom); }
+  .hw-tab.on { background: #DCEBFA; border-color: var(--blue-bottom); color: var(--blue-top); font-weight: 600; }
+  table.zone-tbl { table-layout: fixed; }
+  tr.clickable { cursor: pointer; }
+  table.zone-tbl td { overflow: hidden; text-overflow: ellipsis; }
+  table.zone-tbl td.wrap { white-space: normal; min-width: 0; }
+  /* ตารางสายทางแบบกระชับ: แถวเดียว ไม่ต้องเลื่อนซ้าย-ขวา คลิกแถวเพื่อแก้ไข */
+  table.compact { font-size: 0.84rem; }
+  table.compact th, table.compact td { padding: 8px 8px; }
+  table.compact .km { display: block; white-space: nowrap; }
+  table.compact .ctl { color: var(--ink-light); font-size: 0.8rem; }
+  table.compact tr.clickable { cursor: pointer; }
+  .btn.danger-link { margin-right: auto; color: var(--red); }
   .empty { padding: 36px 20px; text-align: center; color: var(--ink-light); }
   .panel.empty { padding: 48px 20px; }
 
@@ -187,6 +231,35 @@
   table.gap-tbl input.km { min-width: 84px; width: 96px; }
   table.gap-tbl input:focus { outline: none; border-color: var(--blue-bottom); box-shadow: 0 0 0 3px rgba(20,100,180,0.15); }
   .pill.err { background: #C9302C; color: var(--white); font-weight: 600; }
+  .v-top { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .v-ring { --p: 0; width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(var(--green) calc(var(--p) * 1%), var(--line-soft) 0); display: grid; place-items: center; flex: none; }
+  .v-ring span { width: 64px; height: 64px; border-radius: 50%; background: var(--white); display: grid; place-items: center; font-family: 'Kanit', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--blue-top); }
+  .v-txt { flex: 1 1 260px; min-width: 0; }
+  .v-split { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .v-list { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .v-li { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-bottom: 1px solid var(--line-soft); background: var(--white); padding: 11px 12px; cursor: pointer; text-align: left; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 0.92rem; color: var(--ink); }
+  .v-li:last-child { border-bottom: 0; }
+  .v-li:hover { background: var(--hover); }
+  .v-li.on { background: var(--hover); box-shadow: inset 4px 0 0 var(--blue-bottom); color: var(--blue-top); }
+  .v-dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; flex: none; font-family: 'Sarabun', sans-serif; }
+  .v-dot.ok { background: #E3F5EA; color: var(--green); } .v-dot.warn { background: var(--amber); color: #4A3500; } .v-dot.err { background: var(--red); color: var(--white); }
+  .v-sub { display: block; font-family: 'Sarabun', sans-serif; font-weight: 400; font-size: 0.76rem; color: var(--ink-light); }
+  .v-main { min-width: 0; }
+  .v-sec { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .v-sec-hd { display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: #F4F8FC; }
+  .v-sec-hd .ti { flex: 1; font-family: 'Kanit', sans-serif; font-weight: 500; color: var(--deep); font-size: 0.95rem; }
+  .v-row { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-top: 1px solid var(--line-soft); cursor: pointer; }
+  .v-row:hover { background: var(--hover); }
+  .v-row .tx { flex: 1; line-height: 1.5; font-size: 0.92rem; }
+  .v-row .chev { color: var(--ink-light); font-size: 1.1rem; }
+  .v-ok { text-align: center; padding: 44px 20px; color: var(--green); }
+  .v-ok .big { font-size: 2.4rem; }
+  @media (max-width: 760px) {
+    .v-split { grid-template-columns: minmax(0, 1fr); }
+    .v-list { display: flex; overflow-x: auto; }
+    .v-li { width: auto; white-space: nowrap; border-bottom: 0; border-right: 1px solid var(--line-soft); flex: none; }
+    .v-li.on { box-shadow: inset 0 -4px 0 var(--blue-bottom); }
+  }
 
   /* ---------- แถบบันทึก ---------- */
   .savebar { position: sticky; bottom: 12px; margin-top: 14px; background: linear-gradient(180deg, var(--blue-top), var(--blue-bottom)); color: var(--white);
@@ -235,22 +308,85 @@
   .hist-item { border: 1px solid var(--line); border-left: 4px solid var(--sky-1); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; background: var(--white); }
   .hist-item:hover { border-left-color: var(--blue-bottom); background: #FAFCFF; }
   .hist-item pre { white-space: pre-wrap; margin: 8px 0; font-family: inherit; font-size: 0.88rem; background: var(--zebra); border-radius: 8px; padding: 8px 10px; }
+  /* ประวัติ: จัดกลุ่มตามเอกสาร */
+  .h-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .h-chip { border: 1px solid var(--line); background: var(--white); border-radius: 999px; padding: 4px 13px; font-size: 0.84rem; cursor: pointer; color: var(--ink-light); }
+  .h-chip:hover { border-color: var(--blue-bottom); }
+  .h-chip.on { background: #DCEBFA; border-color: var(--blue-bottom); color: var(--blue-top); font-weight: 600; }
+  .h-tag { display: inline-block; min-width: 44px; text-align: center; padding: 1px 9px; border-radius: 999px; font-size: 0.76rem; font-weight: 600; margin-right: 6px; }
+  .h-tag.add { background: #DDF3E6; color: var(--green); }
+  .h-tag.edit { background: #FFF3D6; color: #B7791F; }
+  .h-tag.del { background: #FDECEA; color: var(--red); }
+  .h-tag.sys { background: #DCEBFA; color: var(--blue-top); }
+  .h-grp { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; background: var(--white); overflow: hidden; }
+  .h-gh { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; background: var(--zebra); }
+  .h-gh:hover { background: var(--hover); }
+  .h-gh h4 { margin: 0; font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1rem; color: var(--deep); }
+  .h-gh .h-cnt { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .h-gh .h-car { color: var(--ink-light); transition: transform .15s; }
+  .h-grp.open .h-car { transform: rotate(90deg); }
+  .h-gb { display: none; padding: 14px 16px 16px; }
+  .h-grp.open .h-gb { display: block; }
+  .h-chain { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; }
+  .h-chain .ln { width: 14px; height: 2px; background: var(--line); }
+  .h-vchip { border: 1px solid var(--line); background: var(--white); border-radius: 999px; padding: 4px 14px; cursor: pointer; font-family: 'Kanit', sans-serif; font-size: 0.88rem; color: var(--ink-light); }
+  .h-vchip:hover { border-color: var(--blue-bottom); }
+  .h-vchip.on { background: var(--blue-bottom); color: var(--white); border-color: var(--blue-bottom); }
+  .h-vinfo { background: var(--zebra); border: 1px solid var(--line-soft); border-radius: 10px; padding: 12px 14px; }
+  .h-vinfo .top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; font-size: 0.86rem; color: var(--ink-light); }
+  .h-vinfo ul { list-style: none; margin: 0; padding: 0; }
+  .h-vinfo li { padding: 3px 0; font-size: 0.9rem; line-height: 1.5; }
   .panel h3 { color: var(--deep); font-weight: 600 !important; display: flex; align-items: center; gap: 8px; }
   .panel h3::before { content: ''; width: 6px; height: 20px; border-radius: 3px; background: linear-gradient(180deg, var(--sky-1), var(--blue-bottom)); }
   #imp-result:not(:empty) { background: #F2F8FE; border: 1px solid #CFE2F5; border-radius: 10px; padding: 10px 12px; line-height: 1.7; }
 
+  /* ---------- แท็บนำเข้า / ส่งออก ---------- */
+  .io-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; }
+  .io-grid.solo { grid-template-columns: minmax(0, 420px); }
+  .io-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: 0 6px 20px -14px rgba(10,42,79,0.35); }
+  .io-card h3 { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--deep); }
+  .io-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; background: linear-gradient(180deg, var(--sky-3), #DCEBF8); color: var(--blue-bottom); }
+  .io-ico svg, .io-drop-ico svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .io-export { background: linear-gradient(160deg, var(--blue-top), var(--blue-bottom)); border: 0; color: var(--white); }
+  .io-export h3 { color: var(--white); margin-top: 14px; }
+  .io-export .io-ico { background: rgba(255,255,255,0.16); color: var(--white); }
+  .io-export p { color: #D6E6F7; font-size: 0.9rem; line-height: 1.6; margin: 12px 0 18px; }
+  .io-export .btn { width: 100%; background: var(--white); color: var(--blue-top); border-color: var(--white); }
+  .io-export .btn:hover { background: #E8F2FC; }
+  .io-head { display: flex; gap: 12px; align-items: center; }
+  .io-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .io-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 32px 16px; cursor: pointer;
+    border: 2px dashed #B7D1EA; background: #F7FAFD; border-radius: 14px; transition: 0.15s; }
+  .io-drop:hover, .io-drop.over { background: var(--hover); border-color: var(--blue-bottom); }
+  .io-drop input[type=file] { display: none; }
+  .io-drop-ico { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: var(--white);
+    background: linear-gradient(180deg, var(--blue-top), var(--blue-bottom)); box-shadow: 0 10px 20px -10px rgba(16,80,160,0.8); }
+  .io-drop-ico svg { width: 26px; height: 26px; }
+  .io-drop b { font-family: 'Kanit', sans-serif; font-weight: 500; color: var(--deep); font-size: 1.05rem; }
+  .io-types { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .io-chip { font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--hover); color: var(--blue-bottom); border: 1px solid #CFE2F5; }
+  @media (max-width: 860px) { .io-grid { grid-template-columns: 1fr; } .io-form { grid-template-columns: 1fr; } }
+
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--deep); color: var(--white); padding: 11px 18px;
     border-radius: 12px; z-index: 80; font-size: 0.92rem; max-width: calc(100% - 32px); box-shadow: 0 12px 30px -10px rgba(10,42,79,0.6); }
 
+  /* จอแคบ: เมนูด้านซ้ายเปลี่ยนเป็นแถบเลื่อนแนวนอนด้านบน */
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .tabs { position: static; display: flex; gap: 4px; overflow-x: auto; padding: 8px; }
+    .tabs .gname { display: none; }
+    .tab { width: auto; white-space: nowrap; flex: none; }
+    .tab.active::before { display: none; }
+    .tab.active { background: linear-gradient(180deg, var(--blue-top), var(--blue-bottom)); color: var(--white); box-shadow: 0 6px 14px -6px var(--blue-glow); }
+    .tab.active svg { color: var(--white); }
+  }
   @media (max-width: 600px) {
     header.top { padding: 16px 16px 52px; }
     .top-logo { width: 46px; height: 46px; }
     .top-inner h1 { font-size: 1.3rem; }
     .top-inner .sub { font-size: 0.82rem; }
-    .top-actions { margin-left: 0; width: 100%; }
+    .top-actions { margin-left: 0; max-width: 100%; }
     .form-grid { grid-template-columns: 1fr; }
-    .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .tab { justify-content: flex-start; padding: 8px 10px; font-size: 0.88rem; }
     .panel { padding: 12px; }
     .modal-head, .modal-actions { padding-left: 16px; padding-right: 16px; }
     .modal-body { padding: 6px 16px 12px; }
@@ -263,12 +399,11 @@
       <img class="top-logo" id="top-logo" src="assets/mascot-logo-badge.png" alt="">
       <div class="top-title">
         <h1>ฐานข้อมูลกลาง</h1>
-        <p class="sub">สายทาง · เขตพื้นที่ · เขตทาง · ผิวทาง · ราคาประเมินทรัพย์สิน · มาตรฐานงานจราจร · คู่มือกรมทางหลวง ที่ทุกระบบงานใช้ร่วมกัน</p>
       </div>
       <div class="top-actions">
         <span class="who" id="who"></span>
         <button class="link" id="btn-login" type="button">เข้าสู่ระบบเจ้าของ</button>
-        <a href="index.html">← กลับหน้าหลัก</a>
+        <a href="index.html">หน้าหลัก</a>
       </div>
     </div>
   </header>
@@ -285,12 +420,16 @@
 
   <main>
     <div id="banners"></div>
-    <div class="tabs" id="tabs"></div>
-    <div id="view"></div>
-    <div class="savebar" id="savebar" hidden>
-      <div class="grow" id="savebar-text"></div>
-      <button class="btn" id="btn-discard" type="button">ยกเลิกการแก้ไข</button>
-      <button class="btn primary" id="btn-save" type="button">บันทึกลงฐานข้อมูลกลาง</button>
+    <div class="layout">
+      <nav class="tabs" id="tabs"></nav>
+      <div class="content">
+        <div id="view"></div>
+        <div class="savebar" id="savebar" hidden>
+          <div class="grow" id="savebar-text"></div>
+          <button class="btn" id="btn-discard" type="button">ยกเลิกการแก้ไข</button>
+          <button class="btn primary" id="btn-save" type="button">บันทึกลงฐานข้อมูลกลาง</button>
+        </div>
+      </div>
     </div>
   </main>
   <div id="modal-root"></div>
@@ -321,6 +460,11 @@
     { key: 'io', label: 'นำเข้า / ส่งออก', icon: '<path d="M7 10l5-5 5 5"/><path d="M12 5v11"/><path d="M4 19h16"/>' },
     { key: 'history', label: 'ประวัติการแก้ไข', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' }
   ];
+  const TAB_GROUPS = [
+    { name: 'ข้อมูลถนน', keys: ['routes', 'zones', 'rightofway', 'surface'] },
+    { name: 'ข้อมูลอ้างอิง', keys: ['workcodes', 'assets', 'trafficstd', 'manuals'] },
+    { name: 'เครื่องมือ', keys: ['validate', 'io', 'history'] }
+  ];
   function tabIcon(t) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + t.icon + '</svg>'; }
 
   /* ---------- สถานะหน้าเว็บ ---------- */
@@ -333,17 +477,24 @@
     fy: currentFiscalYear(),
     assetSearch: '',
     assetCat: '*',
+    assetSrc: '*',      // กรองตามที่มาของราคา: * ทั้งหมด / new ปรับราคาปีนี้ / old ใช้ราคาปีก่อน
     rowHw: '*',
+    zoneHw: '*',        // กรองเขตพื้นที่ตามหมายเลขสายทาง
     rowInArea: true,    // แสดงเฉพาะช่วงที่ทับกับสายทางที่หมวดดูแล
     surfHw: '*',
     wcSearch: '',
-    wcGroup: '21000',   // เริ่มที่งานบำรุงปกติ (ที่หมวดใช้บ่อยที่สุด)
+    wcGroup: '*',       // หมวดย่อยที่เลือก (เช่น 21100) · '*' = ทั้งหมด
+    wcSub: '*',         // หัวข้อระดับถัดไปในหมวดย่อย (เช่น 21110)
     tsSec: 'signDistances', // ตารางย่อยที่เปิดอยู่ในแท็บมาตรฐานงานจราจร
     tsVerifyOnly: false,
     manCat: '*',
     manSearch: '',
     gapFill: {},        // key ช่วงเขตพื้นที่ที่ขาด → ข้อมูลที่กรอกไว้ในตาราง "สิ่งที่ต้องไปหาข้อมูลมาเติม" (เก็บในเครื่องกันหาย)
-    history: null
+    history: null,
+    histDoc: '*',       // กรองประวัติตามเอกสาร
+    histSearch: '',
+    histOpen: {},       // docId → กล่องเอกสารที่กางอยู่
+    histSel: {}         // docId → id ของรุ่นที่เลือกดู
   };
   try { S.gapFill = JSON.parse(localStorage.getItem('cn_master_gapfill') || '{}') || {}; } catch (_) { S.gapFill = {}; }
   // เปิดแท็บตามลิงก์ก่อน (เช่น master-data.html#routes จากปุ่ม "แก้ไขที่ฐานข้อมูลกลาง" ในระบบงาน) ไม่มีจึงใช้แท็บล่าสุดที่เปิด
@@ -482,7 +633,7 @@
   function savedAssets(fy) { const m = S.master[assetDocId(fy)]; return !!(m && m.items && m.items.length); }
 
   function renderTabs() {
-    $('tabs').innerHTML = TABS.map(function (t) {
+    function tabBtn(t) {
       let n = 0;
       if (t.key === 'routes' && S.drafts.routes) n = 1;
       if (t.key === 'zones' && S.drafts.zones) n = 1;
@@ -494,6 +645,11 @@
       if (t.key === 'assets') n = Object.keys(S.drafts).filter(function (k) { return /^assets_/.test(k); }).length;
       return '<button type="button" class="tab' + (S.tab === t.key ? ' active' : '') + '" data-tab="' + t.key + '">' + tabIcon(t) + esc(t.label) +
         (n ? '<span class="badge" title="มีการแก้ไขที่ยังไม่บันทึก">' + n + '</span>' : '') + '</button>';
+    }
+    $('tabs').innerHTML = TAB_GROUPS.map(function (g) {
+      return '<div class="gname">' + g.name + '</div>' + g.keys.map(function (k) {
+        return tabBtn(TABS.filter(function (t) { return t.key === k; })[0]);
+      }).join('');
     }).join('');
   }
 
@@ -543,18 +699,18 @@
       h += '<div class="stats">' + stat('สายทางที่ดูแล', act.length, 'ตอน') + stat('ระยะทางจริง', fmtNum(sum('distanceActual'), 3), 'กม.') +
         stat('เทียบ 2 ช่องจราจร', fmtNum(sum('distance2Lane'), 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum('asphalt'), 3), 'กม.') +
         stat('ผิวคอนกรีต', fmtNum(sum('concrete'), 3), 'กม.') + '</div>';
-      h += '<div class="table-wrap"><table><thead><tr><th>ทางหลวง</th><th>ตอนควบคุม</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
-        '<th class="num">ระยะจริง (กม.)</th><th class="num">ระยะ 2 ช่องจราจร</th><th class="num">ลาดยาง</th><th class="num">คอนกรีต</th><th class="num">ปริมาณงาน</th><th>สถานะ</th>' +
-        (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+      h += '<div class="table-wrap"><table class="compact"><thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
+        '<th class="num" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num">ลาดยาง</th><th class="num">คอนกรีต</th><th class="num">ปริมาณงาน</th><th>สถานะ</th>' +
+        '</tr></thead><tbody>';
       list.forEach(function (r) {
-        const cls = [changed.has(r.id) ? 'changed' : '', r.status === 'transferred' ? 'muted' : ''].join(' ');
-        h += '<tr class="' + cls + '"><td><b>' + esc(r.highway) + '</b></td><td>' + esc(r.controlNo) + '</td><td class="wrap">' + esc(r.section) + '</td>' +
-          '<td class="wrap" style="min-width:150px">' + esc(fmtRanges(r.kmRanges)) + '</td>' +
+        const cls = [changed.has(r.id) ? 'changed' : '', r.status === 'transferred' ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ');
+        h += '<tr class="' + cls + '"' + (S.owner ? ' data-act="route-edit" data-id="' + esc(r.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '>' +
+          '<td><b>' + esc(r.highway) + '</b> <span class="ctl">' + esc(r.controlNo) + '</span></td><td>' + esc(r.section) + '</td>' +
+          '<td>' + (r.kmRanges || []).map(function (k) { return '<span class="km">' + esc(fmtKm(k[0]) + ' – ' + fmtKm(k[1])) + '</span>'; }).join('') + '</td>' +
           '<td class="num">' + fmtNum(r.distanceActual, 3) + '</td><td class="num">' + fmtNum(r.distance2Lane, 3) + '</td>' +
           '<td class="num">' + fmtNum(r.asphalt, 3) + '</td><td class="num">' + fmtNum(r.concrete, 3) + '</td><td class="num">' + fmtNum(r.workQty, 3) + '</td>' +
           '<td>' + (r.status === 'transferred' ? '<span class="pill off" title="' + esc(r.transferNote || '') + '">โอนแล้ว ' + esc(r.transferredDate || '') + '</span>' : '<span class="pill ok">ดูแลอยู่</span>') + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="route-edit" data-id="' + esc(r.id) + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="route-del" data-id="' + esc(r.id) + '">ลบ</button></td>' : '') + '</tr>';
+          '</tr>';
       });
       h += '</tbody></table></div>';
       h += '<p class="hint" style="margin-top:8px">ถ้าโอนสายทางให้หมวดอื่น แนะนำให้เปลี่ยนสถานะเป็น "โอนแล้ว" แทนการลบ เพื่อไม่ให้เคสเก่าที่อ้างถึงสายทางนี้เสีย</p>';
@@ -603,6 +759,11 @@
         if (isNew) list.push(o); else list[list.findIndex(function (x) { return x.id === r.id; })] = o;
         draft('routes', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'สายทาง ' + o.highway + ' ตอน ' + o.controlNo);
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="route-del" data-id="' + esc(r.id) + '">ลบสายทางนี้</button>');
+    }
   }
 
   /* ----- เขตพื้นที่ ----- */
@@ -612,23 +773,35 @@
       return Number(a.highway) - Number(b.highway) || (a.kmStart - b.kmStart);
     });
     const changed = changedIds('zones', 'id');
+    const hws = [];
+    list.forEach(function (z) { const k = String(z.highway); if (hws.indexOf(k) < 0) hws.push(k); });
+    if (S.zoneHw !== '*' && hws.indexOf(S.zoneHw) < 0) S.zoneHw = '*';
+    const all = list;
+    const shown = S.zoneHw === '*' ? all : all.filter(function (z) { return String(z.highway) === S.zoneHw; });
     let h = '<div class="panel">';
-    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('zones')) + ' · ' + list.length + ' ช่วง</p></div>';
+    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('zones')) + ' · ' + all.length + ' ช่วง</p></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="zone-add"' + (routes.length ? '' : ' disabled title="เพิ่มสายทางก่อน"') + '>+ เพิ่มเขตพื้นที่</button>';
     h += '</div>';
     h += '<p class="hint">ใช้เติมข้อมูล สภ. / ตำบล / อำเภอ / จังหวัด อัตโนมัติเมื่อระบบงานบันทึกเคสตาม กม. ที่เกิดเหตุ</p>';
     if (!list.length) h += '<div class="empty">ยังไม่มีเขตพื้นที่ (ระบบงานโจรกรรมและขออนุญาตมีข้อมูลชุดนี้อยู่ จะดึงมารวมตอนเชื่อมต่อระบบ)</div>';
     else {
-      h += '<div class="table-wrap"><table><thead><tr><th>ทางหลวง</th><th>ช่วง กม.</th><th>ฝั่ง</th><th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน</th>' +
-        (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
-      list.forEach(function (z) {
-        h += '<tr class="' + (changed.has(z.id) ? 'changed' : '') + '"><td><b>' + esc(z.highway) + '</b>' + (z.routeId ? ' <span class="hint">' + esc(z.routeId) + '</span>' : '') + '</td>' +
+      h += '<div class="hw-tabs">';
+      [['*', 'ทั้งหมด', all.length]].concat(hws.map(function (k) {
+        return [k, 'ทล.' + k, all.filter(function (z) { return String(z.highway) === k; }).length];
+      })).forEach(function (t) {
+        h += '<button type="button" class="hw-tab' + (S.zoneHw === t[0] ? ' on' : '') + '" data-act="zone-hw" data-id="' + esc(t[0]) + '">' + esc(t[1]) + ' <span>' + t[2] + '</span></button>';
+      });
+      h += '</div>';
+      h += '<div class="table-wrap"><table class="zone-tbl"><colgroup><col style="width:9%"><col style="width:17%"><col style="width:10%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:11%"><col style="width:14%"></colgroup>' +
+        '<thead><tr><th>ทางหลวง</th><th>ช่วง กม.</th><th>ฝั่ง</th><th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน</th></tr></thead><tbody>';
+      shown.forEach(function (z) {
+        h += '<tr class="' + (changed.has(z.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="zone-edit" data-id="' + esc(z.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '>' +
+          '<td><b>' + esc(z.highway) + '</b></td>' +
           '<td>' + esc(fmtKm(z.kmStart) + ' – ' + fmtKm(z.kmEnd)) + '</td><td>' + esc(z.side) + '</td><td>' + esc(z.station) + '</td>' +
-          '<td>' + esc(z.tambon) + '</td><td>' + esc(z.amphoe) + '</td><td>' + esc(z.changwat) + '</td><td class="wrap">' + esc((z.moobans || []).join(', ')) + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="zone-edit" data-id="' + esc(z.id) + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="zone-del" data-id="' + esc(z.id) + '">ลบ</button></td>' : '') + '</tr>';
+          '<td>' + esc(z.tambon) + '</td><td>' + esc(z.amphoe) + '</td><td>' + esc(z.changwat) + '</td><td class="wrap">' + esc((z.moobans || []).join(', ')) + '</td></tr>';
       });
       h += '</tbody></table></div>';
+      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -665,6 +838,11 @@
         if (isNew) list.push(o); else list[list.findIndex(function (x) { return x.id === z.id; })] = o;
         draft('zones', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'เขตพื้นที่ ทล.' + o.highway + ' ' + fmtKm(o.kmStart) + '–' + fmtKm(o.kmEnd));
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="zone-del" data-id="' + esc(z.id) + '">ลบเขตพื้นที่นี้</button>');
+    }
   }
 
   /* ----- บัญชีเขตทาง (ความกว้างเขตทางจากศูนย์กลางทาง ซ้าย/ขวา) ----- */
@@ -677,9 +855,21 @@
   }
   function fmtW(v) { return v == null ? '–' : Number(v).toFixed(2); }
 
+  // แท็บเลือกสายทาง (ใช้กับบัญชีเขตทาง / ผิวทาง) — act = ชื่อ data-act ที่เก็บค่าตัวกรอง
+  function hwTabsHtml(all, hws, cur, act) {
+    let h = '<div class="hw-tabs">';
+    [['*', 'ทั้งหมด', all.length]].concat(hws.map(function (k) {
+      return [k, 'ทล.' + k, all.filter(function (z) { return String(z.highway) === k; }).length];
+    })).forEach(function (t) {
+      h += '<button type="button" class="hw-tab' + (cur === t[0] ? ' on' : '') + '" data-act="' + act + '" data-id="' + esc(t[0]) + '">' + esc(t[1]) + ' <span>' + t[2] + '</span></button>';
+    });
+    return h + '</div>';
+  }
+
   function renderRow(v) {
     const all = items('rightofway');
     const hws = Array.from(new Set(all.map(function (x) { return String(x.highway); }))).sort(function (a, b) { return Number(a) - Number(b); });
+    if (S.rowHw !== '*' && hws.indexOf(S.rowHw) < 0) S.rowHw = '*';
     const areaFilter = S.rowInArea && items('routes').length > 0; // ยังไม่มีสายทาง = กรองไม่ได้ แสดงทั้งหมด
     const list = all.filter(function (x) {
       if (S.rowHw !== '*' && String(x.highway) !== S.rowHw) return false;
@@ -689,28 +879,25 @@
     });
     const changed = changedIds('rightofway', 'id');
     let h = '<div class="panel"><div class="toolbar">' +
-      '<select id="row-hw" style="width:auto"><option value="*">ทุกสายทาง</option>' + hws.map(function (x) {
-        return '<option value="' + esc(x) + '"' + (S.rowHw === x ? ' selected' : '') + '>ทล.' + esc(x) + '</option>';
-      }).join('') + '</select>' +
       '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>' +
       '<div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + ' · ทั้งหมด ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
     h += '<p class="hint">ความกว้างวัดจากศูนย์กลางทางไปแต่ละฝั่ง (เมตร) ใช้ในงานระวังชี้แนวเขตที่ดิน งานขออนุญาตในเขตทาง และงานรุกล้ำเขตทาง</p>';
+    if (all.length) h += hwTabsHtml(all, hws, S.rowHw, 'row-hw');
     if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>ทางหลวง</th><th>ตอน</th><th class="num">ลำดับ</th><th>ช่วง กม.</th>' +
-        '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th>' + (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+        '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th></tr></thead><tbody>';
       list.forEach(function (x) {
         const warn = /^ตรวจสอบ/.test(x.note || '');
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + '"><td><b>' + esc(x.highway) + '</b></td><td>' + esc(x.controlNo) + '</td><td class="num">' + esc(x.seq) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td>' + esc(x.controlNo) + '</td><td class="num">' + esc(x.seq) + '</td>' +
           '<td style="white-space:nowrap">' + esc(x.kmStart === x.kmEnd ? fmtKm(x.kmStart) : fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td>' +
           '<td class="num">' + fmtW(x.left) + '</td><td class="num">' + fmtW(x.right) + '</td>' +
-          '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="row-edit" data-id="' + esc(x.id) + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="row-del" data-id="' + esc(x.id) + '">ลบ</button></td>' : '') + '</tr>';
+          '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td></tr>';
       });
       h += '</tbody></table></div>';
+      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -749,6 +936,11 @@
         if (isNew) list.push(o); else list[list.findIndex(function (r) { return r.id === x.id; })] = o;
         draft('rightofway', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'เขตทาง ทล.' + o.highway + ' ลำดับ ' + o.seq + ' (' + fmtKm(o.kmStart) + '–' + fmtKm(o.kmEnd) + ' ซ้าย ' + fmtW(o.left) + ' ขวา ' + fmtW(o.right) + ')');
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="row-del" data-id="' + esc(x.id) + '">ลบช่วงนี้</button>');
+    }
   }
 
   /* ----- ผิวทาง (ลักษณะผิวทางรายช่วง แยกซ้าย/ขวาทาง) ----- */
@@ -761,28 +953,25 @@
     const list = all.filter(function (x) { return S.surfHw === '*' || String(x.highway) === S.surfHw; })
       .sort(function (a, b) { return Number(a.highway) - Number(b.highway) || a.kmStart - b.kmStart || String(a.side).localeCompare(String(b.side)); });
     const changed = changedIds('surface', 'id');
-    let h = '<div class="panel"><div class="toolbar">' +
-      '<select id="surf-hw" style="width:auto"><option value="*">ทุกสายทาง</option>' + hws.map(function (x) {
-        return '<option value="' + esc(x) + '"' + (S.surfHw === x ? ' selected' : '') + '>ทล.' + esc(x) + '</option>';
-      }).join('') + '</select><div class="grow"></div>';
+    if (S.surfHw !== '*' && hws.indexOf(S.surfHw) < 0) S.surfHw = '*';
+    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="surf-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('surface')) + ' · ทั้งหมด ' + all.length + ' แถว' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
     h += '<p class="hint">จำนวนช่องจราจรนับต่อทิศทาง (แต่ละช่วงมีแถวซ้ายทางและขวาทาง) ใช้คำนวณระยะเทียบ 2 ช่องจราจร / ลาดยาง / คอนกรีต ของสายทางได้ที่แท็บ "สายทาง"</p>';
+    if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>ทางหลวง</th><th>ตอน</th><th>ช่วง กม.</th><th class="num">ระยะ (กม.)</th><th>ทิศทาง</th>' +
-        '<th class="num">ช่องจราจร</th><th class="num">กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th class="num">ไหล่ซ้าย (ม.)</th><th class="num">ไหล่ขวา (ม.)</th><th>ข้อมูล ณ</th>' +
-        (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+        '<th class="num">ช่องจราจร</th><th class="num">กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th class="num">ไหล่ซ้าย (ม.)</th><th class="num">ไหล่ขวา (ม.)</th><th>ข้อมูล ณ</th></tr></thead><tbody>';
       list.forEach(function (x) {
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + '"><td><b>' + esc(x.highway) + '</b></td><td>' + esc(x.controlNo) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="surf-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td>' + esc(x.controlNo) + '</td>' +
           '<td style="white-space:nowrap">' + esc(fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td><td class="num">' + fmtNum((x.kmEnd - x.kmStart) / 1000, 3) + '</td>' +
           '<td>' + esc(SIDE_TH[x.side] || x.side) + '</td><td class="num">' + esc(x.lanes) + '</td><td class="num">' + fmtW(x.laneWidth) + '</td>' +
           '<td>' + (x.surface === 'conc' ? '<span class="pill">คอนกรีต</span>' : esc(SURF[x.surface || ''])) + '</td>' +
-          '<td class="num">' + fmtW(x.shoulderLeftWidth) + '</td><td class="num">' + fmtW(x.shoulderRightWidth) + '</td><td>' + esc(x.asOf) + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="surf-edit" data-id="' + esc(x.id) + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="surf-del" data-id="' + esc(x.id) + '">ลบ</button></td>' : '') + '</tr>';
+          '<td class="num">' + fmtW(x.shoulderLeftWidth) + '</td><td class="num">' + fmtW(x.shoulderRightWidth) + '</td><td>' + esc(x.asOf) + '</td></tr>';
       });
       h += '</tbody></table></div>';
+      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -823,6 +1012,11 @@
         if (isNew) list.push(o); else list[list.findIndex(function (r) { return r.id === x.id; })] = o;
         draft('surface', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'ผิวทาง ทล.' + o.highway + ' ' + fmtKm(o.kmStart) + '–' + fmtKm(o.kmEnd) + ' ' + SIDE_TH[o.side] + ' ' + o.lanes + ' ช่อง ' + SURF[o.surface]);
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="surf-del" data-id="' + esc(x.id) + '">ลบช่วงนี้</button>');
+    }
   }
 
   // สถิติสายทางจากข้อมูลผิวทาง: ระยะเทียบ 2 ช่องจราจร = Σ ระยะ × (ช่องซ้าย + ช่องขวา) / 2
@@ -897,45 +1091,64 @@
     const all = items('workcodes').slice().sort(function (a, b) { return String(a.code).localeCompare(String(b.code)); });
     const byCode = {};
     all.forEach(function (x) { byCode[x.code] = x; });
-    const groups = Array.from(new Set(all.map(function (x) { return wcGroupOf(x.code); }))).sort();
     const q = S.wcSearch.trim().toLowerCase();
-    const list = all.filter(function (x) {
-      if (S.wcGroup !== '*' && wcGroupOf(x.code) !== S.wcGroup) return false;
+    const isLeaf = function (x) { return (x.units || []).length > 0; };
+    // หมวดย่อยระดับ 1 (เช่น 21100–21600) = หัวข้อที่อยู่ใต้รหัสราก (รหัสที่ไม่มีรหัสแม่)
+    const subs = all.filter(function (x) { return !isLeaf(x) && x.parent && byCode[x.parent] && !byCode[x.parent].parent; });
+    const under = function (code) { // รหัสลูกหลานทั้งหมดของหัวข้อ
+      const out = [];
+      (function walk(c) { all.forEach(function (k) { if (k.parent === c) { out.push(k); walk(k.code); } }); })(code);
+      return out;
+    };
+    if (S.wcGroup !== '*' && !byCode[S.wcGroup]) { S.wcGroup = '*'; S.wcSub = '*'; }
+    const cur = S.wcGroup === '*' ? null : byCode[S.wcGroup];
+    if (S.wcSub !== '*' && (!cur || !byCode[S.wcSub] || byCode[S.wcSub].parent !== cur.code)) S.wcSub = '*';
+    let pool = all.filter(isLeaf);
+    if (cur) pool = under(S.wcSub !== '*' ? S.wcSub : cur.code).filter(isLeaf);
+    const list = pool.filter(function (x) {
       return !q || (x.code + ' ' + x.name + ' ' + (x.nameEn || '') + ' ' + (x.units || []).join(' ') + ' ' + (x.description || '')).toLowerCase().indexOf(q) >= 0;
     });
+    const total = all.filter(isLeaf).length;
     const changed = changedIds('workcodes', 'code');
     let h = '<div class="panel"><div class="toolbar">' +
-      '<select id="wc-group" style="width:auto"><option value="*">ทุกหมวด</option>' + groups.map(function (g) {
-        const t = byCode[g];
-        return '<option value="' + g + '"' + (S.wcGroup === g ? ' selected' : '') + '>' + g + (t ? ' ' + esc(t.name) : '') + '</option>';
-      }).join('') + '</select>' +
       '<div class="grow"><input type="search" id="wc-search" placeholder="ค้นหารหัส ชื่องาน หรือหน่วย…" value="' + esc(S.wcSearch) + '"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="wc-add">+ เพิ่มรหัสงาน</button>';
-    h += '</div><p class="meta">' + esc(docMeta('workcodes')) + ' · ทั้งหมด ' + all.length + ' รหัส' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    h += '<p class="hint">ตามรายละเอียดรหัสงาน กรมทางหลวง (แก้ไขและเพิ่มเติม ธ.ค. 2565) · 1 รหัสงานมีหน่วยนับได้หลายหน่วย ระบบงานจะให้เลือกจากหน่วยในรายการนี้ (หน่วยแรก = หน่วยหลัก) · แถวตัวหนาที่ไม่มีหน่วย = หัวข้อหมวด</p>';
-    if (!all.length) h += '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div>';
-    else if (!list.length) h += '<div class="empty">ไม่มีรหัสงานที่ตรงกับตัวกรอง</div>';
-    else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัสงาน</th><th>ลักษณะงาน</th><th>หน่วยนับ</th>' +
-        (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
-      list.forEach(function (x) {
-        const head = !(x.units || []).length;
-        const pad = wcDepth(x, byCode) * 16;
-        h += '<tr class="' + (changed.has(x.code) ? 'changed' : '') + '"><td style="white-space:nowrap;padding-left:' + (10 + pad) + 'px">' + (head ? '<b>' + esc(x.code) + '</b>' : esc(x.code)) + '</td>' +
-          '<td class="wrap" style="min-width:280px">' + (head ? '<b>' + esc(x.name) + '</b>' : esc(x.name)) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') +
-            (x.description ? '<details style="margin-top:4px"><summary class="hint" style="cursor:pointer">ลักษณะงาน' + (x.output ? ' · ผลผลิต: ' + esc(x.output) : '') + '</summary><div style="white-space:pre-line;margin-top:4px;font-size:.92em">' + esc(x.description) + '</div></details>' : '') + '</td>' +
-          '<td>' + (head ? '<span class="hint">หัวข้อหมวด</span>' : (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ')) + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="wc-edit" data-id="' + esc(x.code) + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="wc-del" data-id="' + esc(x.code) + '">ลบ</button></td>' : '') + '</tr>';
+    h += '</div><p class="meta">' + esc(docMeta('workcodes')) + ' · ทั้งหมด ' + total + ' รหัสงาน (' + all.length + ' รายการรวมหัวข้อ)' + (list.length !== total ? ' · แสดง ' + list.length : '') + '</p>';
+    h += '<p class="hint">ตามรายละเอียดรหัสงาน กรมทางหลวง (แก้ไขและเพิ่มเติม ธ.ค. 2565) · 1 รหัสงานมีหน่วยนับได้หลายหน่วย ระบบงานจะให้เลือกจากหน่วยในรายการนี้ (หน่วยแรก = หน่วยหลัก)' + (S.owner ? ' · เจ้าของเว็บ: คลิกที่แถวเพื่อแก้ไข / ลบ' : '') + '</p>';
+    if (!all.length) { v.innerHTML = h + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
+    // เมนูซ้าย: ทั้งหมด + หมวดย่อย (เลือกหมวดแล้วขยายหัวข้อระดับถัดไป เช่น 21110, 21120)
+    let side = '<button type="button" class="wc-it' + (S.wcGroup === '*' ? ' on' : '') + '" data-wc-g="*"><span>ทั้งหมด</span><span class="n">' + total + '</span></button>';
+    subs.forEach(function (g) {
+      const n = under(g.code).filter(isLeaf).length;
+      side += '<button type="button" class="wc-it' + (S.wcGroup === g.code ? ' on' : '') + '" data-wc-g="' + esc(g.code) + '"><span><b>' + esc(g.code) + '</b> ' + esc(g.name) + '</span><span class="n">' + n + '</span></button>';
+      if (S.wcGroup === g.code) all.filter(function (k) { return k.parent === g.code && !isLeaf(k); }).forEach(function (k) {
+        side += '<button type="button" class="wc-it sb' + (S.wcSub === k.code ? ' on' : '') + '" data-wc-s="' + esc(k.code) + '">' + esc(k.code) + ' ' + esc(k.name) + '</button>';
       });
-      h += '</tbody></table></div>';
+    });
+    let main = '';
+    if (cur) {
+      const head = S.wcSub !== '*' ? byCode[S.wcSub] : cur;
+      main += '<div class="wc-title"><span>' + esc(head.code) + ' · ' + esc(head.name) + '</span>' +
+        (S.owner ? '<button type="button" class="btn sm" data-act="wc-edit" data-id="' + esc(head.code) + '">แก้ไขหัวข้อ</button>' : '') + '</div>';
     }
-    v.innerHTML = h + '</div>';
+    if (!list.length) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับตัวกรอง</div>';
+    else {
+      main += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัสงาน</th><th>ลักษณะงาน</th><th>หน่วยนับ</th></tr></thead><tbody>';
+      list.forEach(function (x) {
+        const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
+        main += '<tr' + attrs + '><td style="white-space:nowrap">' + esc(x.code) + '</td>' +
+          '<td class="wrap" style="min-width:260px">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') +
+            (x.description ? '<details style="margin-top:4px"><summary class="hint" style="cursor:pointer">ลักษณะงาน' + (x.output ? ' · ผลผลิต: ' + esc(x.output) : '') + '</summary><div style="white-space:pre-line;margin-top:4px;font-size:.92em">' + esc(x.description) + '</div></details>' : '') + '</td>' +
+          '<td>' + (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ') + (S.owner ? '<span class="wc-pen">✎</span>' : '') + '</td></tr>';
+      });
+      main += '</tbody></table></div>';
+    }
+    v.innerHTML = h + '<div class="wc-split"><div class="wc-side">' + side + '</div><div>' + main + '</div></div></div>';
   }
 
   function workCodeForm(x) {
     const isNew = !x;
-    if (!x) x = { code: '', name: '', nameEn: '', units: [], parent: S.wcGroup !== '*' ? S.wcGroup : '' };
+    if (!x) x = { code: '', name: '', nameEn: '', units: [], parent: S.wcSub !== '*' ? S.wcSub : (S.wcGroup !== '*' ? S.wcGroup : '') };
     openModal(isNew ? 'เพิ่มรหัสงาน' : 'แก้ไขรหัสงาน ' + x.code,
       '<div class="form-grid">' +
       field('code', 'รหัสงาน (5 หลัก) *', x.code, 'text', (isNew ? '' : 'readonly ') + 'inputmode="numeric" maxlength="5"') +
@@ -960,6 +1173,11 @@
         if (!isNew && (x.units || []).join(',') !== o.units.join(',')) msg += ' (หน่วย ' + ((x.units || []).join(', ') || '–') + ' → ' + (o.units.join(', ') || '–') + ')';
         draft('workcodes', list, msg);
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="wc-del" data-id="' + esc(x.code) + '">ลบรหัสนี้</button>');
+    }
   }
 
   /* ----- มาตรฐานงานจราจร (master/traffic_std) -----
@@ -1002,7 +1220,7 @@
     { key: 'extras', label: 'ข้อมูลเพิ่มเติม', refCols: true,
       cols: [['topic', 'เรื่อง', 'text', 1], ['value', 'ค่า/ข้อกำหนด', 'textarea', 1]] },
     { key: 'sources', label: 'คู่มือที่อ้างอิง',
-      cols: [['id', 'รหัส', 'text'], ['manualId', 'รหัสในทะเบียนคู่มือ', 'text'], ['title', 'ชื่อคู่มือ', 'text', 1], ['edition', 'ฉบับ', 'text'], ['year', 'ปี (พ.ศ.)', 'num'], ['url', 'ลิงก์ PDF (Google Drive)', 'text', 1], ['file', 'ไฟล์ในเครื่อง', 'text', 1], ['primary', 'แหล่งหลัก', 'bool'], ['note', 'หมายเหตุ', 'text', 1]] }
+      cols: [['id', 'รหัส', 'text'], ['manualId', 'รหัสในทะเบียนคู่มือ (ลิงก์ PDF อยู่ที่ทะเบียน)', 'text'], ['title', 'ชื่อคู่มือ (ใช้เมื่อไม่พบในทะเบียน)', 'text', 1], ['edition', 'ฉบับ', 'text'], ['year', 'ปี (พ.ศ.)', 'num'], ['primary', 'แหล่งหลัก', 'bool'], ['note', 'หมายเหตุ', 'text', 1]] }
   ];
   const TS_META = ['items', 'version', 'updatedAt', 'updatedBy'];
   function tsSection(key) { return TS_SECTIONS.find(function (s) { return s.key === key; }) || TS_SECTIONS[0]; }
@@ -1021,10 +1239,14 @@
     draft('traffic_std', [], msg, d);
   }
   // ลิงก์เปิด PDF ของคู่มือที่หน้านั้น (ต้องใส่ url ในตาราง "คู่มือที่อ้างอิง" ก่อน)
+  // ลิงก์ PDF เก็บที่ทะเบียนคู่มือ (master/manuals) ที่เดียว · sources เก็บแค่ manualId (url เดิมใน sources ใช้เป็นค่าสำรองถ้ายังไม่มีในทะเบียน)
   function tsSrcUrl(doc, src, pdfPage) {
     const s = ((doc && doc.sources) || []).find(function (x) { return x.id === src; });
-    if (!s || !s.url) return '';
-    return s.url + (pdfPage && !/drive\.google\.com/.test(s.url) ? '#page=' + pdfPage : '');
+    if (!s) return '';
+    const reg = s.manualId ? items('manuals').find(function (m) { return m.id === s.manualId; }) : null;
+    const url = (reg && reg.url) || s.url || '';
+    if (!url) return '';
+    return url + (pdfPage && !/drive\.google\.com/.test(url) ? '#page=' + pdfPage : '');
   }
   function tsPageCell(doc, x) {
     if (!x || (x.page == null && x.pdfPage == null && !x.ref)) return '<span class="hint">–</span>';
@@ -1058,10 +1280,13 @@
       return;
     }
     const man = doc.manual || {};
-    h += '<div class="banner info" style="margin-bottom:10px"><b>' + esc(man.title || 'ยังไม่ระบุคู่มือหลัก') + '</b>' + (man.edition ? ' · ' + esc(man.edition) : '') +
-      (man.url ? ' · <a href="' + esc(man.url) + '" target="_blank" rel="noopener">เปิด PDF</a>' : ' · <span class="hint">ยังไม่ใส่ลิงก์ PDF</span>') +
+    const prim = (doc.sources || []).find(function (s) { return s.primary; }) || {};
+    const reg = items('manuals').find(function (m) { return m.id === (man.manualId || prim.manualId); }) || {};
+    const manUrl = reg.url || man.url || prim.url || '';
+    h += '<div class="banner info" style="margin-bottom:10px"><b>' + esc(reg.title || man.title || 'ยังไม่ระบุคู่มือหลัก') + '</b>' + ((reg.edition || man.edition) ? ' · ' + esc(reg.edition || man.edition) : '') +
+      (manUrl ? ' · <a href="' + esc(manUrl) + '" target="_blank" rel="noopener">เปิด PDF</a>' : ' · <span class="hint">ยังไม่ใส่ลิงก์ PDF</span>') +
       (man.note ? '<div class="hint">' + esc(man.note) + '</div>' : '') +
-      (S.owner ? ' <button class="btn sm" type="button" data-act="ts-manual">แก้ไขข้อมูลคู่มือ</button>' : '') + '</div>';
+      '<div class="hint">ชื่อ ฉบับ และลิงก์ PDF ของคู่มือดึงมาจากทะเบียน — แก้ได้ที่แท็บ <a href="#manuals" data-tab="manuals">คู่มือกรมทางหลวง</a></div></div>';
     // ตัวเลขรวมค่าที่ต้องตรวจสอบ
     let nVerify = 0;
     const per = {};
@@ -1091,16 +1316,14 @@
     else {
       const cols = sec.cols;
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr>' + cols.map(function (c) { return '<th' + (c[2] === 'num' ? ' class="num"' : '') + '>' + esc(c[1]) + '</th>'; }).join('') +
-        (sec.refCols ? '<th>อ้างอิง</th><th></th>' : '') + (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+        (sec.refCols ? '<th>อ้างอิง</th><th></th>' : '') + '</tr></thead><tbody>';
       rows.forEach(function (r) {
         const x = r.x, changed = !base[r.i] || sameKey(base[r.i]) !== sameKey(x);
-        h += '<tr class="' + (S.drafts.traffic_std && changed ? 'changed' : '') + '">' + cols.map(function (c) {
+        h += '<tr class="' + [S.drafts.traffic_std && changed ? 'changed' : '', S.owner ? 'clickable' : ''].join(' ') + '"' + (S.owner ? ' data-act="ts-edit" data-id="' + r.i + '" title="คลิกเพื่อแก้ไข"' : '') + '>' + cols.map(function (c) {
           const cls = c[2] === 'num' ? 'num' : (c[3] ? 'wrap' : '');
           return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + tsFmt(x[c[0]], c[2]) + '</td>';
         }).join('') +
-          (sec.refCols ? '<td style="white-space:normal;min-width:120px">' + tsPageCell(doc, x) + '</td><td>' + tsVerifyCell(x) + (x.note ? '<div class="hint" style="white-space:normal;min-width:160px">' + esc(x.note) + '</div>' : '') + '</td>' : '') +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="ts-edit" data-id="' + r.i + '">แก้ไข</button> ' +
-            '<button class="btn sm danger" type="button" data-act="ts-del" data-id="' + r.i + '">ลบ</button></td>' : '') + '</tr>';
+          (sec.refCols ? '<td style="white-space:normal;min-width:120px">' + tsPageCell(doc, x) + '</td><td>' + tsVerifyCell(x) + (x.note ? '<div class="hint" style="white-space:normal;min-width:160px">' + esc(x.note) + '</div>' : '') + '</td>' : '') + '</tr>';
       });
       h += '</tbody></table></div>';
     }
@@ -1113,9 +1336,8 @@
     rows.forEach(function (r) {
       const l = r.x, changed = !base[r.i] || sameKey(base[r.i]) !== sameKey(l);
       h += '<div class="hist-item"' + (S.drafts.traffic_std && changed ? ' style="background:var(--amber-soft)"' : '') + '>' +
-        '<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 300px"><b>' + esc(l.name) + '</b> <span class="pill">' + esc(l.category || '') + '</span> ' +
-        '<span class="pill off">' + esc(l.roadType || '') + '</span> ' + tsVerifyCell(l) + '<div class="hint">รหัส ' + esc(l.id) + ' · ' + tsPageCell(doc, l) + '</div></div>' +
-        (S.owner ? '<div class="row-actions"><button class="btn sm" type="button" data-act="ts-edit" data-id="' + r.i + '">แก้ไข</button> <button class="btn sm danger" type="button" data-act="ts-del" data-id="' + r.i + '">ลบ</button></div>' : '') + '</div>' +
+        '<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1 1 300px' + (S.owner ? ';cursor:pointer' : '') + '"' + (S.owner ? ' data-act="ts-edit" data-id="' + r.i + '" title="คลิกเพื่อแก้ไข"' : '') + '><b>' + esc(l.name) + '</b> <span class="pill">' + esc(l.category || '') + '</span> ' +
+        '<span class="pill off">' + esc(l.roadType || '') + '</span> ' + tsVerifyCell(l) + '<div class="hint">รหัส ' + esc(l.id) + ' · ' + tsPageCell(doc, l) + (S.owner ? ' · คลิกที่ชื่อผังเพื่อแก้ไข' : '') + '</div></div></div>' +
         '<details style="margin-top:6px"' + (rows.length === 1 ? ' open' : '') + '><summary class="hint" style="cursor:pointer">รายการอุปกรณ์ตามลำดับทิศทางรถวิ่ง (' + (l.items || []).length + ')</summary>' +
         '<div class="table-wrap" style="margin-top:6px"><table><thead><tr><th class="num">ลำดับ</th><th>อุปกรณ์/ป้าย</th><th>รหัส</th><th>ระยะ/ตำแหน่ง</th><th>ฝั่ง</th><th>หมายเหตุ</th></tr></thead><tbody>' +
         (l.items || []).map(function (it) {
@@ -1187,25 +1409,13 @@
         if (isNew) d[sec.key].push(o); else d[sec.key][i] = o;
       }, (isNew ? 'เพิ่ม' : 'แก้ไข') + sec.label + ': ' + String(label).slice(0, 60) + (o.verify ? ' (ต้องตรวจสอบ)' : ''));
     });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="ts-del" data-id="' + i + '">ลบแถวนี้</button>');
+    }
     const m = document.querySelector('#modal-root .modal');
     if (m && (sec.layout || cols.length > 8)) m.style.maxWidth = '760px';
-  }
-
-  function tsManualForm() {
-    const doc = tsDoc() || {}, x = doc.manual || {};
-    openModal('ข้อมูลคู่มือหลักของมาตรฐานงานจราจร',
-      '<div class="form-grid">' + field('title', 'ชื่อคู่มือ', x.title, 'text', '', 'full') + field('edition', 'ฉบับ', x.edition) + field('year', 'ปี (พ.ศ.)', x.year, 'number') +
-      field('url', 'ลิงก์ PDF (Google Drive)', x.url, 'text', 'placeholder="https://drive.google.com/…"', 'full') + field('manualId', 'รหัสในทะเบียนคู่มือ', x.manualId) +
-      '<label class="f full">หมายเหตุ<textarea name="note" rows="3">' + esc(x.note) + '</textarea></label></div>' +
-      '<p class="hint">ไฟล์ PDF ไม่เก็บในฐานข้อมูล เก็บแค่ลิงก์ · ลิงก์ของแหล่งอื่นแก้ที่ตาราง "คู่มือที่อ้างอิง"</p>',
-      function (f) {
-        const o = { title: f.title.trim(), edition: f.edition.trim(), year: num(f.year), url: f.url.trim(), manualId: f.manualId.trim(), note: f.note.trim() };
-        tsEdit(function (d) {
-          d.manual = o;
-          // ลิงก์ของแหล่งหลักใน sources ให้ตรงกับคู่มือหลัก
-          (d.sources || []).forEach(function (s) { if (s.primary && o.url) s.url = o.url; });
-        }, 'แก้ไขข้อมูลคู่มือหลัก' + (x.url !== o.url ? ' (ลิงก์ PDF)' : ''));
-      });
   }
 
   /* ----- ทะเบียนคู่มือกรมทางหลวง (master/manuals) ----- */
@@ -1227,13 +1437,12 @@
     h += '<p class="hint">ทะเบียนคู่มือกลาง เก็บชื่อ ฉบับ และลิงก์ PDF (ไม่เก็บไฟล์) · "ใช้ในข้อมูลกลาง" = ชุดข้อมูลที่ถอดมาจากคู่มือเล่มนั้น</p>';
     if (!all.length) h += '<div class="empty">ยังไม่มีทะเบียนคู่มือ' + (S.owner ? ' นำเข้าไฟล์ trafficstd-seed.json ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>ชื่อคู่มือ</th><th>หมวด</th><th>ฉบับ</th><th class="num">หน้า</th><th>ใช้ในข้อมูลกลาง</th><th>PDF</th>' + (S.owner ? '<th></th>' : '') + '</tr></thead><tbody>';
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>ชื่อคู่มือ</th><th>หมวด</th><th>ฉบับ</th><th class="num">หน้า</th><th>ใช้ในข้อมูลกลาง</th><th>PDF</th></tr></thead><tbody>';
       list.forEach(function (x) {
-        h += '<tr class="' + [changed.has(x.id) ? 'changed' : '', x.supersededBy ? 'muted' : ''].join(' ') + '"><td>' + esc(x.id) + '</td><td class="wrap" style="min-width:280px">' + esc(x.title) +
+        h += '<tr class="' + [changed.has(x.id) ? 'changed' : '', x.supersededBy ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ') + '"' + (S.owner ? ' data-act="man-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(x.id) + '</td><td class="wrap" style="min-width:280px">' + esc(x.title) +
           (x.note ? '<div class="hint">' + esc(x.note) + '</div>' : '') + (x.supersededBy ? '<div class="hint">มีฉบับใหม่กว่า: ' + esc(x.supersededBy) + '</div>' : '') + '</td>' +
-          '<td>' + esc(manCatLabel(x.category)) + '</td><td>' + esc(x.edition) + '</td><td class="num">' + fmtNum(x.pages) + '</td><td>' + (x.usedBy ? '<span class="pill">' + esc(x.usedBy) + '</span>' : '') + '</td>' +
-          '<td>' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">เปิด</a>' : '<span class="hint" title="' + esc(x.file || '') + '">ยังไม่มีลิงก์</span>') + '</td>' +
-          (S.owner ? '<td class="row-actions"><button class="btn sm" type="button" data-act="man-edit" data-id="' + esc(x.id) + '">แก้ไข</button> <button class="btn sm danger" type="button" data-act="man-del" data-id="' + esc(x.id) + '">ลบ</button></td>' : '') + '</tr>';
+          '<td>' + esc(manCatLabel(x.category)) + '</td><td>' + esc(x.edition) + '</td><td class="num">' + fmtNum(x.pages) + '</td><td>' + (x.usedBy ? (x.usedBy === 'traffic_std' ? '<a href="#trafficstd" data-tab="trafficstd" class="pill" title="ไปที่แท็บมาตรฐานงานจราจร">' + esc(x.usedBy) + ' →</a>' : '<span class="pill">' + esc(x.usedBy) + '</span>') : '') + '</td>' +
+          '<td>' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">เปิด</a>' : '<span class="hint" title="' + esc(x.file || '') + '">ยังไม่มีลิงก์</span>') + '</td></tr>';
       });
       h += '</tbody></table></div>';
     }
@@ -1259,37 +1468,56 @@
         if (isNew) list.push(o); else list[list.findIndex(function (r) { return r.id === x.id; })] = o;
         draft('manuals', list, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'คู่มือ ' + o.id + ' ' + o.title.slice(0, 50));
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="man-del" data-id="' + esc(x.id) + '">ลบคู่มือนี้</button>');
+    }
   }
 
   /* ----- ราคาประเมินทรัพย์สิน ----- */
   // ราคาของปีงบ fy = ราคาที่บันทึกในปีนั้น หรือถ้าปีนั้นไม่มีการแก้ราคา ใช้ปีงบล่าสุดก่อนหน้าที่มีราคา
   function assetYearUsed(fy) { return fiscalYears().filter(function (y) { return y <= fy && items(assetDocId(y)).length; })[0] || null; }
-  function assetView(fy) { const y = assetYearUsed(fy); return y ? items(assetDocId(y)) : []; }
-  // แก้ราคาได้เฉพาะปีงบปัจจุบัน: แก้หลัง 1 ต.ค. = ปรับราคาของปีงบใหม่ ระบบคัดลอกราคาล่าสุดมาเป็นปีงบใหม่ให้เอง
-  // ราคาของปีงบที่ผ่านมาคงเดิม เคสเก่ายังใช้ราคาเดิม
-  function editAssets(change, msg) {
+  // รายการทั้งหมดของปีงบ fy แบบรวมรายการ: แต่ละรหัสใช้ราคาจากปีงบล่าสุด (≤ fy) ที่เคยบันทึกราคาไว้
+  // → ปีที่ไม่ได้ปรับราคารายการไหน รายการนั้นยังแสดงอยู่ ด้วยราคาของปีก่อน (fy = ปีงบที่ราคานั้นเริ่มใช้)
+  function assetMerged(fy) {
+    const seen = {}, out = [];
+    fiscalYears().filter(function (y) { return y <= fy; }).forEach(function (y) {
+      items(assetDocId(y)).forEach(function (a) { if (!seen[a.key]) { seen[a.key] = 1; out.push({ a: a, fy: y }); } });
+    });
+    return out;
+  }
+  function assetView(fy) { return assetMerged(fy).map(function (x) { return x.a; }); }
+  // แก้ราคาได้เฉพาะปีงบปัจจุบัน: เอกสารปีงบนี้เก็บเฉพาะรายการที่เพิ่ม/แก้ในปีนี้ (รายการที่ไม่แตะ ใช้ราคาปีก่อนต่อไปเอง)
+  // ราคาของปีงบที่ผ่านมาคงเดิม เคสเก่ายังใช้ราคาเดิม · o = null คือลบรายการออกจากเอกสารปีนี้
+  function editAssets(key, o, msg) {
     const fy = currentFiscalYear(), docId = assetDocId(fy);
-    const src = assetYearUsed(fy);
-    const list = clone(assetView(fy));
-    change(list);
+    const list = clone(items(docId));
+    const i = list.findIndex(function (x) { return x.key === key; });
+    if (o === null) { if (i >= 0) list.splice(i, 1); }
+    else if (i < 0) list.push(o); else list[i] = o;
     S.fy = fy;
-    draft(docId, list, (src && src !== fy ? 'เริ่มราคาปีงบ ' + fy + ' จากราคาปีงบ ' + src + ' / ' : '') + msg, { fiscalYear: fy });
+    draft(docId, list, msg, { fiscalYear: fy });
   }
 
   function renderAssets(v) {
     const cur = currentFiscalYear();
     const usedFy = assetYearUsed(S.fy);
     const docId = assetDocId(usedFy || S.fy);
-    const all = usedFy ? items(docId) : [];
+    const merged = assetMerged(S.fy);       // ทุกรายการของปีงบนี้ (รายการที่ไม่ได้ปรับราคาใช้ราคาปีก่อน)
+    const all = merged;
+    const nNew = merged.filter(function (x) { return x.fy === S.fy; }).length;
     const editable = S.owner && S.fy === cur;
     const q = S.assetSearch.trim().toLowerCase();
-    const list = all.filter(function (a) {
+    const list = all.filter(function (x) {
+      const a = x.a;
+      if (S.assetSrc === 'new' && x.fy !== S.fy) return false;
+      if (S.assetSrc === 'old' && x.fy === S.fy) return false;
       if (S.assetCat !== '*' && (a.category || '') !== S.assetCat) return false;
       return !q || (a.name + ' ' + a.key).toLowerCase().indexOf(q) >= 0;
     });
-    // ราคาปีงบใหม่ที่ยังไม่เคยบันทึก เทียบกับปีงบล่าสุดที่บันทึกไว้ (ไฮไลต์เฉพาะรายการที่แก้จริง)
-    const savedBefore = fiscalYears().filter(function (y) { return y < (usedFy || S.fy) && savedAssets(y); })[0];
-    const changed = changedIds(docId, 'key', S.master[docId] || !savedBefore ? null : assetDocId(savedBefore));
+    // ไฮไลต์รายการของปีงบนี้ที่ยังไม่บันทึก (ต่างจากที่บันทึกไว้)
+    const changed = changedIds(assetDocId(S.fy), 'key');
     const years = fiscalYears();
     let h = '<div class="panel"><div class="toolbar">' +
       '<label>ปีงบประมาณ <select id="fy-select" style="width:auto">' + years.map(function (y) {
@@ -1300,22 +1528,28 @@
         return '<option value="' + c.key + '"' + (S.assetCat === c.key ? ' selected' : '') + '>' + esc(c.label) + '</option>';
       }).join('') + '</select>';
     if (editable) h += '<button class="btn primary" type="button" data-act="asset-add">+ เพิ่มรายการ</button>';
-    h += '</div><p class="meta">' + esc(docMeta(docId)) + ' · ทั้งหมด ' + all.length + ' รายการ' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    if (usedFy && usedFy !== S.fy) h += '<div class="banner info">ปีงบ ' + S.fy + ' ยังไม่มีการแก้ราคา ระบบงานใช้ราคาล่าสุดจากปีงบ ' + usedFy +
-      (editable ? ' — แก้ราคารายการใด ระบบจะบันทึกเป็นราคาของปีงบ ' + S.fy + ' ให้เอง (ราคาปีงบ ' + usedFy + ' คงเดิม)' : '') + '</div>';
+    h += '</div><p class="meta">' + esc(docMeta(docId)) + ' · ทั้งหมด ' + all.length + ' รายการ' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') +
+      (editable ? ' · คลิกที่แถวเพื่อแก้ไข' : '') + '</p>';
+    if (all.length) {
+      h += '<div class="hw-tabs">' + [['*', 'ทั้งหมด', all.length], ['new', 'ปรับราคาปีงบ ' + S.fy, nNew], ['old', 'ใช้ราคาเดิมจากปีก่อน', all.length - nNew]].map(function (c) {
+        return '<button type="button" class="hw-tab' + (S.assetSrc === c[0] ? ' on' : '') + '" data-act="asset-src" data-id="' + c[0] + '">' + c[1] + ' <span>' + c[2] + '</span></button>';
+      }).join('') + '</div>';
+    }
+    if (nNew < all.length) h += '<div class="banner info">ปีงบ ' + S.fy + ' ปรับราคาแล้ว ' + nNew + ' รายการ อีก ' + (all.length - nNew) + ' รายการยังไม่ได้ปรับ ระบบใช้ราคาล่าสุดจากปีงบก่อนหน้า (ดูป้ายในคอลัมน์ "ที่มาของราคา")' +
+      (editable ? ' — แก้ราคารายการใด ระบบจะบันทึกเป็นราคาของปีงบ ' + S.fy + ' ให้เอง (ราคาปีงบเดิมคงเดิม)' : '') + '</div>';
     if (S.owner && S.fy < cur) h += '<div class="banner info">ปีงบที่ผ่านมาแล้ว ดูได้อย่างเดียว — การแก้ราคาตอนนี้จะเป็นราคาของปีงบ ' + cur + ' (เลือกปีงบ ' + cur + ' เพื่อแก้)</div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีราคาประเมินในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าที่แท็บ "นำเข้า / ส่งออก" หรือกด "+ เพิ่มรายการ"' : '') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ใช้บ่อย</th>' +
-        (editable ? '<th></th>' : '') + '</tr></thead><tbody>';
-      list.forEach(function (a) {
-        const cls = [changed.has(a.key) ? 'changed' : '', a.hidden ? 'muted' : ''].join(' ');
-        h += '<tr class="' + cls + '"><td>' + esc(a.key) + '</td><td class="wrap" style="min-width:260px">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
-          '<td class="num">' + fmtNum(a.price, 2) + '</td><td>' + esc(catLabel(a.category)) + '</td><td>' + (a.frequent ? '★' : '') + '</td>' +
-          (editable ? '<td class="row-actions"><button class="btn sm" type="button" data-act="asset-edit" data-id="' + esc(a.key) + '">แก้ไข</button></td>' : '') + '</tr>';
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ที่มาของราคา</th><th>ใช้บ่อย</th></tr></thead><tbody>';
+      list.forEach(function (x) {
+        const a = x.a;
+        const cls = [changed.has(a.key) ? 'changed' : '', a.hidden ? 'muted' : '', editable ? 'clickable' : ''].join(' ');
+        h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(a.key) + '</td><td class="wrap" style="min-width:260px">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
+          '<td class="num">' + fmtNum(a.price, 2) + '</td><td>' + esc(catLabel(a.category)) + '</td>' +
+          '<td>' + (x.fy === S.fy ? '<span class="pill ok">ปรับราคาปีงบ ' + x.fy + '</span>' : '<span class="pill off">ใช้ราคาปีงบ ' + x.fy + '</span>') + '</td><td>' + (a.frequent ? '★' : '') + '</td></tr>';
       });
       h += '</tbody></table></div>';
-      h += '<p class="hint" style="margin-top:8px">ราคาแยกตามปีงบประมาณ (เริ่ม 1 ต.ค.) แก้ราคาเมื่อไร ก็เป็นราคาของปีงบในวันที่แก้ ปีงบที่ไม่ได้แก้ใช้ราคาล่าสุดต่อไปเอง ระบบงานใช้ราคาของปีงบตามวันที่เกิดเหตุ ถ้าเลิกใช้รายการใด ให้ติ๊ก "ซ่อน" แทนการลบ เพื่อให้เคสเก่ายังอ้างถึงได้</p>';
+      h += '<p class="hint" style="margin-top:8px">ราคาแยกตามปีงบประมาณ (เริ่ม 1 ต.ค.) แก้ราคาเมื่อไร ก็เป็นราคาของปีงบในวันที่แก้ รายการที่ไม่ได้แก้ใช้ราคาล่าสุดต่อไปเอง ระบบงานใช้ราคาของปีงบตามวันที่เกิดเหตุ ถ้าเลิกใช้รายการใด ให้ติ๊ก "ซ่อน" ในหน้าแก้ไขแทนการลบ เพื่อให้เคสเก่ายังอ้างถึงได้</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -1347,11 +1581,13 @@
         if (!o.name || !o.unit || o.price == null || o.price < 0) return 'กรุณาใส่ชื่อ หน่วย และราคาให้ครบ';
         let msg = (isNew ? 'เพิ่ม ' : 'แก้ไข ') + o.key + ' ' + o.name.slice(0, 40);
         if (!isNew && a.price !== o.price) msg += ' (ราคา ' + fmtNum(a.price, 2) + ' → ' + fmtNum(o.price, 2) + ')';
-        editAssets(function (list) {
-          const i = list.findIndex(function (x) { return x.key === a.key; });
-          if (i < 0) list.push(o); else list[i] = o;
-        }, msg);
+        editAssets(a.key, o, msg);
       });
+    // ปุ่มลบอยู่ในหน้าแก้ไข (ไม่แสดงในตาราง)
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="asset-del" data-id="' + esc(a.key) + '">ลบรายการนี้</button>');
+    }
   }
 
   /* ----- ตรวจความถูกต้อง -----
@@ -1655,48 +1891,72 @@
   function gapFilled(f) { return ['station', 'tambon', 'amphoe', 'moobans'].some(function (k) { return String(f[k] || '').trim(); }); }
   function saveGapFill() { try { localStorage.setItem('cn_master_gapfill', JSON.stringify(S.gapFill)); } catch (_) {} }
 
+  /* หน้าตรวจความถูกต้อง: เมนูซ้ายแยกตามชุดข้อมูล (✓ = ผ่าน) + รายละเอียดด้านขวา */
+  const V_TABS = ['routes', 'zones', 'rightofway', 'surface', 'workcodes', 'assets'];
+  function vTabLabel(k) { const t = TABS.find(function (x) { return x.key === k; }); return t ? t.label : k; }
+  function vIssueTab(i) { return i.cat === 'route-surface' ? 'routes' : ((VCATS.find(function (c) { return c.cat === i.cat; }) || {}).tab || i.docs[0]); }
+
   function renderValidate(v) {
-    const issues = validateAll(items);
+    const all = validateAll(items), issues = all.filter(function (i) { return !i.auto; });
+    const autoN = all.filter(function (i) { return i.auto; }).length;
     const err = issues.filter(function (i) { return i.sev === 'err'; }), warn = issues.filter(function (i) { return i.sev === 'warn'; });
     const gaps = computeGaps(items);
-    let h = '<div class="panel"><div class="toolbar"><div class="grow"><p class="meta" style="margin:0">ตรวจข้อมูลที่แสดงอยู่ในหน้านี้ (รวมฉบับร่างที่ยังไม่บันทึก) · ข้อมูลที่บันทึกแล้ว: ' + esc(docMeta('zones')) + '</p></div></div>';
-    h += '<div class="stats">' + stat('ข้อผิดร้ายแรง (บล็อกการบันทึก)', err.length, 'รายการ') + stat('คำเตือน', warn.length, 'รายการ') + stat('เขตพื้นที่ที่ยังขาด', gaps.length, 'ช่วง') + '</div>';
-    h += '<p class="hint">ระบบตรวจให้เองก่อนกด "บันทึกลงฐานข้อมูลกลาง" ด้วย: ข้อผิดร้ายแรง (เช่น กม. เริ่ม > สิ้นสุด) จะบันทึกไม่ได้จนกว่าจะแก้ ส่วนคำเตือนจะถามยืนยันก่อน ไม่บล็อก</p>';
-    if (!issues.length) h += '<div class="banner info">ไม่พบปัญหาในข้อมูลที่ตรวจ</div>';
-    VCATS.forEach(function (c) {
-      const list = issues.filter(function (i) { return i.cat === c.cat; });
-      if (!list.length) return;
-      const isErr = list.some(function (i) { return i.sev === 'err'; });
-      h += '<details class="vsec"' + (isErr || list.length <= 12 ? ' open' : '') + '><summary>' + vSevPill(list[0]) + esc(c.title) + '<span class="cnt">' + list.length + ' รายการ</span></summary>' +
-        '<div class="table-wrap"><table><tbody>' + list.map(function (i) {
-          const tab = i.docs[0] === 'routes' && i.cat === 'route-surface' ? 'routes' : c.tab;
-          return '<tr><td class="wrap">' + esc(i.text) + '</td><td class="row-actions"><button class="btn sm" type="button" data-act="goto" data-id="' + esc(tab) + '">ไปที่แท็บนี้</button></td></tr>';
-        }).join('') + '</tbody></table></div></details>';
-    });
-    // ตารางเติมข้อมูลเขตพื้นที่ที่ขาด
-    h += '<h3 style="margin-top:22px;font-weight:500">สิ่งที่ต้องไปหาข้อมูลมาเติม (เขตพื้นที่ที่ยังขาด)</h3>';
-    if (!gaps.length) h += '<div class="empty">เขตพื้นที่ครอบคลุมทุกช่วงที่หมวดดูแลแล้ว</div>';
-    else {
-      h += '<p class="hint">กรอก สภ. / ตำบล / อำเภอ / หมู่บ้าน ของแต่ละช่วงที่ไปหาข้อมูลมาได้ (กรอกบางช่วงก่อนได้ ที่ยังไม่กรอกจะไม่ถูกนำเข้า) แก้ กม. จาก–ถึง ให้แคบลงได้ถ้าช่วงนั้นมีหลายตำบล ' +
-        'กด "นำเข้า" แล้วจะได้เป็นฉบับร่างในแท็บเขตพื้นที่ (ยังไม่บันทึกจนกว่าจะกดบันทึก) · สิ่งที่กรอกจำไว้ในเครื่องนี้ ปิดหน้าแล้วไม่หาย</p>';
-      h += '<div class="toolbar"><div class="grow"></div><button class="btn" type="button" data-act="gap-export">ดาวน์โหลดรายการ (CSV)</button>' +
-        (S.owner ? '<button class="btn primary" type="button" data-act="gap-import">นำเข้าแถวที่กรอกแล้วเป็นฉบับร่าง</button>' : '') + '</div>';
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table class="gap-tbl"><thead><tr><th>ทางหลวง</th><th>ฝั่ง</th><th>จาก กม.</th><th>ถึง กม.</th><th class="num">ยาว (กม.)</th>' +
-        '<th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน (คั่นด้วย ,)</th></tr></thead><tbody>';
-      const inp = function (g, f, val, cls, ph) {
-        return '<td><input type="text" class="' + (cls || '') + '" data-gk="' + esc(g.key) + '" data-gf="' + f + '" value="' + esc(val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (S.owner ? '' : ' disabled') + '></td>';
-      };
-      gaps.forEach(function (g) {
-        const f = gapFillOf(g);
-        h += '<tr><td><b>' + esc(g.hw) + '</b></td><td>' + esc(g.side === 'B' ? 'ทั้งสอง' : SIDE_LABEL[g.side]) + '</td>' +
-          inp(g, 'kmStart', f.kmStart != null ? f.kmStart : fmtKm(g.s), 'km') + inp(g, 'kmEnd', f.kmEnd != null ? f.kmEnd : fmtKm(g.e), 'km') +
-          '<td class="num">' + fmtNum((g.e - g.s) / 1000, 3) + '</td>' +
-          inp(g, 'station', f.station || '') + inp(g, 'tambon', f.tambon || '') + inp(g, 'amphoe', f.amphoe || '') +
-          inp(g, 'changwat', f.changwat != null ? f.changwat : 'ระยอง') + inp(g, 'moobans', f.moobans || '') + '</tr>';
-      });
-      h += '</tbody></table></div>';
+    const tabOf = function (k) { return issues.filter(function (i) { return vIssueTab(i) === k; }); };
+    const clean = V_TABS.filter(function (k) { return !tabOf(k).length; }).length;
+    if (!S.vSel || (S.vSel !== 'gap' && V_TABS.indexOf(S.vSel) < 0)) {
+      S.vSel = V_TABS.find(function (k) { return tabOf(k).length; }) || (gaps.length ? 'gap' : V_TABS[0]);
     }
-    v.innerHTML = h + '</div>';
+    const head = err.length ? 'พบข้อผิดร้ายแรง ' + err.length + ' รายการ — ต้องแก้ก่อนจึงบันทึกได้' : (warn.length ? 'ไม่พบข้อผิดร้ายแรง มีคำเตือน ' + warn.length + ' รายการ' : 'ข้อมูลผ่านการตรวจทั้งหมด');
+    let h = '<div class="panel"><div class="v-top"><div class="v-ring" style="--p:' + Math.round(clean / V_TABS.length * 100) + '"><span>' + clean + '/' + V_TABS.length + '</span></div>' +
+      '<div class="v-txt"><h3 style="margin:0">' + head + '</h3>' +
+      '<p class="hint" style="margin:3px 0 0">ผ่านการตรวจ ' + clean + ' จาก ' + V_TABS.length + ' ชุดข้อมูล · ตรวจรวมฉบับร่างที่ยังไม่บันทึก · ข้อมูลที่บันทึกแล้ว: ' + esc(docMeta('zones')) + '</p>' +
+      '<p class="hint" style="margin:3px 0 0">ข้อผิดร้ายแรง (เช่น กม. เริ่ม &gt; สิ้นสุด) จะบันทึกไม่ได้จนกว่าจะแก้ · คำเตือนจะถามยืนยันก่อน ไม่บล็อก' +
+      (autoN ? ' · ค่า กม. ที่ทศนิยมเกินเมตร ระบบปัดให้เองตอนบันทึก' : '') + '</p></div></div>';
+    h += '<div class="v-split"><div class="v-list">';
+    V_TABS.forEach(function (k) {
+      const l = tabOf(k), e = l.some(function (i) { return i.sev === 'err'; });
+      h += '<button type="button" class="v-li' + (S.vSel === k ? ' on' : '') + '" data-act="v-sel" data-id="' + k + '"><span class="v-dot ' + (!l.length ? 'ok' : (e ? 'err' : 'warn')) + '">' + (l.length || '✓') + '</span>' +
+        '<span>' + esc(vTabLabel(k)) + '<span class="v-sub">' + (!l.length ? 'ไม่พบปัญหา' : l.length + ' รายการ' + (e ? ' · มีร้ายแรง' : '')) + '</span></span></button>';
+    });
+    h += '<button type="button" class="v-li' + (S.vSel === 'gap' ? ' on' : '') + '" data-act="v-sel" data-id="gap"><span class="v-dot ' + (gaps.length ? 'warn' : 'ok') + '">' + (gaps.length || '✓') + '</span>' +
+      '<span>เติมเขตพื้นที่ที่ขาด<span class="v-sub">' + (gaps.length ? 'ต้องไปหาข้อมูลมาใส่' : 'ครอบคลุมครบแล้ว') + '</span></span></button></div><div class="v-main">';
+
+    if (S.vSel === 'gap') {
+      if (!gaps.length) h += '<div class="v-ok"><div class="big">✓</div><h3 style="justify-content:center">เขตพื้นที่ครอบคลุมทุกช่วงที่หมวดดูแลแล้ว</h3></div>';
+      else {
+        h += '<p class="hint">กรอก สภ. / ตำบล / อำเภอ / หมู่บ้าน ของแต่ละช่วงที่ไปหาข้อมูลมาได้ (กรอกบางช่วงก่อนได้ ที่ยังไม่กรอกจะไม่ถูกนำเข้า) แก้ กม. จาก–ถึง ให้แคบลงได้ถ้าช่วงนั้นมีหลายตำบล ' +
+          'กด "นำเข้า" แล้วจะได้เป็นฉบับร่างในแท็บเขตพื้นที่ (ยังไม่บันทึกจนกว่าจะกดบันทึก) · สิ่งที่กรอกจำไว้ในเครื่องนี้ ปิดหน้าแล้วไม่หาย</p>';
+        h += '<div class="toolbar"><div class="grow"></div><button class="btn" type="button" data-act="gap-export">ดาวน์โหลดรายการ (CSV)</button>' +
+          (S.owner ? '<button class="btn primary" type="button" data-act="gap-import">นำเข้าแถวที่กรอกแล้วเป็นฉบับร่าง</button>' : '') + '</div>';
+        h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table class="gap-tbl"><thead><tr><th>ทางหลวง</th><th>ฝั่ง</th><th>จาก กม.</th><th>ถึง กม.</th><th class="num">ยาว (กม.)</th>' +
+          '<th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน (คั่นด้วย ,)</th></tr></thead><tbody>';
+        const inp = function (g, f, val, cls, ph) {
+          return '<td><input type="text" class="' + (cls || '') + '" data-gk="' + esc(g.key) + '" data-gf="' + f + '" value="' + esc(val) + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (S.owner ? '' : ' disabled') + '></td>';
+        };
+        gaps.forEach(function (g) {
+          const f = gapFillOf(g);
+          h += '<tr><td><b>' + esc(g.hw) + '</b></td><td>' + esc(g.side === 'B' ? 'ทั้งสอง' : SIDE_LABEL[g.side]) + '</td>' +
+            inp(g, 'kmStart', f.kmStart != null ? f.kmStart : fmtKm(g.s), 'km') + inp(g, 'kmEnd', f.kmEnd != null ? f.kmEnd : fmtKm(g.e), 'km') +
+            '<td class="num">' + fmtNum((g.e - g.s) / 1000, 3) + '</td>' +
+            inp(g, 'station', f.station || '') + inp(g, 'tambon', f.tambon || '') + inp(g, 'amphoe', f.amphoe || '') +
+            inp(g, 'changwat', f.changwat != null ? f.changwat : 'ระยอง') + inp(g, 'moobans', f.moobans || '') + '</tr>';
+        });
+        h += '</tbody></table></div>';
+      }
+    } else {
+      const l = tabOf(S.vSel);
+      if (!l.length) h += '<div class="v-ok"><div class="big">✓</div><h3 style="justify-content:center">' + esc(vTabLabel(S.vSel)) + ' ผ่านการตรวจทั้งหมด</h3><p class="hint">ไม่พบข้อผิดพลาดหรือคำเตือน</p></div>';
+      else {
+        h += '<p class="hint" style="margin-top:0">คลิกที่รายการเพื่อไปแก้ในแท็บ "' + esc(vTabLabel(S.vSel)) + '"</p>';
+        VCATS.forEach(function (c) {
+          const cl = l.filter(function (i) { return i.cat === c.cat; });
+          if (!cl.length) return;
+          h += '<div class="v-sec"><div class="v-sec-hd">' + vSevPill(cl[0]) + '<span class="ti">' + esc(c.title) + '</span><span class="hint">' + cl.length + ' รายการ</span></div>' +
+            cl.map(function (i) { return '<div class="v-row" data-act="goto" data-id="' + esc(vIssueTab(i)) + '"><div class="tx">' + esc(i.text) + '</div><span class="chev">›</span></div>'; }).join('') + '</div>';
+        });
+      }
+    }
+    v.innerHTML = h + '</div></div></div>';
   }
 
   function gapExport() {
@@ -1747,20 +2007,28 @@
 
   /* ----- นำเข้า / ส่งออก ----- */
   function renderIO(v) {
-    let h = '<div class="panel">';
-    h += '<h3 style="margin-top:0;font-weight:500">ส่งออก (สำรองข้อมูล)</h3>' +
-      '<p class="hint">ดาวน์โหลดข้อมูลกลางทั้งหมดเป็นไฟล์ JSON เก็บไว้เป็นสำรอง หรือใช้นำเข้ากลับภายหลัง</p>' +
-      '<button class="btn" type="button" data-act="export">ดาวน์โหลดไฟล์สำรอง (.json)</button>';
+    const ico = function (d) { return '<svg viewBox="0 0 24 24"><path d="' + d + '"/></svg>'; };
+    const DL = 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2';
+    const UP = 'M12 16V4m0 0L8 8m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2';
+    let h = '<div class="io-grid' + (S.owner ? '' : ' solo') + '">';
+    h += '<div class="io-card io-export"><div class="io-ico">' + ico(DL) + '</div>' +
+      '<h3>ส่งออก (สำรองข้อมูล)</h3>' +
+      '<p>ดาวน์โหลดข้อมูลกลางทั้งหมดเป็นไฟล์ JSON เก็บไว้เป็นสำรอง หรือใช้นำเข้ากลับภายหลัง</p>' +
+      '<button class="btn" type="button" data-act="export">ดาวน์โหลดไฟล์สำรอง (.json)</button></div>';
     if (S.owner) {
-      h += '<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">' +
-        '<h3 style="font-weight:500">นำเข้าข้อมูล</h3>' +
-        '<p class="hint">รองรับไฟล์: <b>master-seed.json</b> (สายทาง + ราคาประเมิน จากระบบงานโจรกรรม) · <b>rightofway-seed.json</b> (บัญชีเขตทาง 19.3.67) · <b>surface-seed.json</b> (ลักษณะผิวทาง 19.8.69) · <b>workcodes-seed.json</b> (รายละเอียดรหัสงาน ธ.ค. 2565) · <b>trafficstd-seed.json</b> (มาตรฐานงานจราจร + ทะเบียนคู่มือ) · ไฟล์สำรองของหน้านี้ · ไฟล์เขตพื้นที่ที่ส่งออกจากระบบงาน<br>' +
-        'ข้อมูลที่นำเข้าจะเป็นฉบับร่างก่อน ตรวจดูในแต่ละแท็บแล้วค่อยกดบันทึก</p>' +
-        '<div class="form-grid" style="max-width:640px">' +
+      const types = ['master-seed.json', 'rightofway-seed.json', 'surface-seed.json', 'workcodes-seed.json', 'trafficstd-seed.json', 'ไฟล์สำรองของหน้านี้', 'ไฟล์เขตพื้นที่จากระบบงาน'];
+      h += '<div class="io-card"><div class="io-head"><div class="io-ico">' + ico(UP) + '</div><div><h3>นำเข้าข้อมูล</h3>' +
+        '<p class="hint" style="margin:2px 0 0">ข้อมูลที่นำเข้าจะเป็นฉบับร่างก่อน ตรวจดูในแต่ละแท็บแล้วค่อยกดบันทึก</p></div></div>' +
+        '<div class="io-form">' +
         '<label class="f">ราคาประเมินในไฟล์ ให้เป็นของปีงบ<input type="number" id="imp-fy" value="' + currentFiscalYear() + '" min="2560" max="2700"></label>' +
         '<label class="f">ถ้ารหัสซ้ำกับที่มีอยู่<select id="imp-mode"><option value="skip">ข้าม (เก็บของเดิม)</option><option value="replace">ใช้ข้อมูลจากไฟล์ทับ</option><option value="all">แทนที่ทั้งชุด (ลบรายการที่ไม่มีในไฟล์)</option></select></label>' +
-        '<label class="f full">เลือกไฟล์ JSON<input type="file" id="imp-file" accept=".json,application/json"></label>' +
-        '</div><div id="imp-result" class="meta" style="margin-top:10px"></div>';
+        '</div>' +
+        '<label class="io-drop" id="imp-drop"><input type="file" id="imp-file" accept=".json,application/json">' +
+        '<span class="io-drop-ico">' + ico(UP) + '</span><b>เลือกไฟล์ JSON เพื่อนำเข้า</b>' +
+        '<span class="hint">คลิกที่นี่ หรือลากไฟล์มาวาง</span></label>' +
+        '<div id="imp-result" class="meta" style="margin-top:12px"></div>' +
+        '<p class="hint" style="margin:16px 0 0;font-weight:600">ไฟล์ที่รองรับ</p>' +
+        '<div class="io-types">' + types.map(function (t) { return '<span class="io-chip">' + t + '</span>'; }).join('') + '</div></div>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -1924,19 +2192,73 @@
     if (S.history === null) {
       v.innerHTML = '<div class="panel empty">กำลังโหลดประวัติ…</div>';
       S.history = 'loading';
-      FBL.masterHistory(40).then(function (h) { S.history = h; render(); })
+      FBL.masterHistory(100).then(function (h) { S.history = h; render(); })
         .catch(function (e) { S.history = null; v.innerHTML = '<div class="panel empty">' + esc(e.message) + '</div>'; });
       return;
     }
     if (S.history === 'loading') return;
-    let h = '<div class="panel"><div class="toolbar"><div class="grow"><p class="meta" style="margin:0">การแก้ไขล่าสุด 40 ครั้ง</p></div>' +
-      '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>';
-    if (!S.history.length) h += '<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
-    S.history.forEach(function (x) {
-      h += '<div class="hist-item"><b>' + esc(docTitle(x.docId)) + '</b> · รุ่น ' + x.fromVersion + ' → ' + x.toVersion + ' · <span class="hint">' + esc(fmtDateTime(x.at)) + '</span>' +
-        '<pre>' + esc(x.summary) + '</pre>' +
-        (x.fromVersion ? '<button class="btn sm" type="button" data-act="hist-restore" data-id="' + esc(x.__id) + '">กู้คืนเป็นฉบับก่อนการแก้ไขนี้ (รุ่น ' + x.fromVersion + ')</button>' : '') + '</div>';
+    // ป้ายสีตามชนิดการแก้ไข (ดูจากคำขึ้นต้นของบรรทัดสรุป)
+    function kind(line) {
+      if (/^(เพิ่ม|นำเข้า)/.test(line)) return ['add', 'เพิ่ม'];
+      if (/^ลบ/.test(line)) return ['del', 'ลบ'];
+      if (/^(แก้|เปลี่ยน|ปัดเศษ)/.test(line)) return ['edit', 'แก้ไข'];
+      return ['sys', 'ระบบ'];
+    }
+    function linesOf(x) { return String(x.summary || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean); }
+    function dayLabel(iso) {
+      const d = new Date(iso), n = new Date();
+      const k = function (t) { return t.getFullYear() + '-' + t.getMonth() + '-' + t.getDate(); };
+      if (k(d) === k(n)) return 'วันนี้';
+      if (k(d) === k(new Date(n.getTime() - 86400000))) return 'เมื่อวาน';
+      return d.toLocaleDateString('th-TH', { dateStyle: 'medium' });
+    }
+    const all = S.history, q = S.histSearch.trim().toLowerCase();
+    const docs = [];
+    all.forEach(function (x) { if (docs.indexOf(x.docId) < 0) docs.push(x.docId); });
+    if (S.histDoc !== '*' && docs.indexOf(S.histDoc) < 0) S.histDoc = '*';
+    const items = all.filter(function (x) {
+      if (S.histDoc !== '*' && x.docId !== S.histDoc) return false;
+      return !q || (docTitle(x.docId) + ' ' + x.summary).toLowerCase().indexOf(q) >= 0;
     });
+    const tot = { add: 0, edit: 0, del: 0 }, groups = [];
+    items.forEach(function (x) {
+      linesOf(x).forEach(function (l) { const c = kind(l)[0]; if (tot[c] !== undefined) tot[c]++; });
+      let g = groups.filter(function (a) { return a.doc === x.docId; })[0];
+      if (!g) { g = { doc: x.docId, list: [] }; groups.push(g); }
+      g.list.push(x);
+    });
+
+    let h = '<div class="panel">' +
+      '<div class="stats">' +
+      '<div class="stat"><div class="k">ครั้งที่แก้ไข</div><div class="v">' + items.length + '</div></div>' +
+      '<div class="stat"><div class="k">เอกสารที่ถูกแก้</div><div class="v">' + groups.length + '</div></div>' +
+      '<div class="stat"><div class="k">เพิ่ม</div><div class="v" style="color:var(--green)">+' + tot.add + '</div></div>' +
+      '<div class="stat"><div class="k">แก้ไข</div><div class="v" style="color:#B7791F">' + tot.edit + '</div></div>' +
+      '<div class="stat"><div class="k">ลบ</div><div class="v" style="color:var(--red)">' + tot.del + '</div></div></div>' +
+      '<div class="toolbar"><div class="grow"><input type="search" id="hist-search" placeholder="ค้นหาในประวัติ เช่น ชื่อสายทาง หรือรายการที่แก้" value="' + esc(S.histSearch) + '"></div>' +
+      '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>' +
+      '<div class="h-chips"><button type="button" class="h-chip' + (S.histDoc === '*' ? ' on' : '') + '" data-act="hist-f" data-id="*">ทั้งหมด</button>' +
+      docs.map(function (d) { return '<button type="button" class="h-chip' + (S.histDoc === d ? ' on' : '') + '" data-act="hist-f" data-id="' + esc(d) + '">' + esc(docTitle(d)) + '</button>'; }).join('') + '</div>';
+    if (!all.length) h += '<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
+    else if (!groups.length) h += '<div class="empty">ไม่พบรายการที่ตรงกับตัวกรอง</div>';
+    groups.forEach(function (g, gi) {
+      let sid = S.histSel[g.doc];
+      if (!g.list.some(function (x) { return x.__id === sid; })) sid = g.list[0].__id;
+      const cur = g.list.filter(function (x) { return x.__id === sid; })[0];
+      const open = S.histOpen[g.doc] !== undefined ? S.histOpen[g.doc] : gi === 0 || !!q;
+      h += '<div class="h-grp' + (open ? ' open' : '') + '"><div class="h-gh" data-act="hist-grp" data-id="' + esc(g.doc) + '"><span class="h-car">▶</span><h4>' + esc(docTitle(g.doc)) + '</h4>' +
+        '<div class="h-cnt"><span class="hint">แก้ล่าสุด ' + esc(dayLabel(g.list[0].at)) + '</span><span class="io-chip">' + g.list.length + ' ครั้ง</span></div></div><div class="h-gb"><div class="h-chain">';
+      g.list.slice().reverse().forEach(function (x, i) {
+        if (i) h += '<span class="ln"></span>';
+        h += '<button type="button" class="h-vchip' + (x.__id === sid ? ' on' : '') + '" data-act="hist-ver" data-id="' + esc(x.__id) + '">รุ่น ' + x.toVersion + '</button>';
+      });
+      h += '</div><div class="h-vinfo"><div class="top"><span>รุ่น ' + cur.fromVersion + ' → ' + cur.toVersion + '</span><span>' + esc(fmtDateTime(cur.at)) + '</span></div><ul>' +
+        linesOf(cur).map(function (l) { const k = kind(l); return '<li><span class="h-tag ' + k[0] + '">' + k[1] + '</span>' + esc(l) + '</li>'; }).join('') + '</ul>' +
+        '<div style="margin-top:12px">' + (cur.fromVersion
+          ? '<button class="btn sm" type="button" data-act="hist-restore" data-id="' + esc(cur.__id) + '">กู้คืนเป็นฉบับก่อนการแก้ไขนี้ (รุ่น ' + cur.fromVersion + ')</button>'
+          : '<span class="hint">รุ่นแรก ไม่มีฉบับก่อนหน้าให้กู้คืน</span>') + '</div></div></div></div>';
+    });
+    if (all.length >= 100) h += '<p class="hint" style="margin:10px 0 0">แสดงการแก้ไขล่าสุด 100 ครั้ง</p>';
     v.innerHTML = h + '</div>';
   }
 
@@ -1983,8 +2305,18 @@
 
   /* ---------- ปุ่มต่างๆ ---------- */
   document.addEventListener('click', function (e) {
+    const wg = e.target.closest('[data-wc-g],[data-wc-s]');
+    if (wg) {
+      if (wg.dataset.wcG !== undefined) { S.wcGroup = wg.dataset.wcG; S.wcSub = '*'; }
+      else S.wcSub = S.wcSub === wg.dataset.wcS ? '*' : wg.dataset.wcS;
+      render(); return;
+    }
     const t = e.target.closest('[data-tab],[data-act]');
     if (!t) return;
+    if (t.tagName === 'TR' && e.target.closest('details')) return; // กดเปิด/ปิด "ลักษณะงาน" ในแถว ไม่ต้องเปิดหน้าแก้ไข
+    // กดลิงก์/ช่องกรอกที่อยู่ในแถว (หรือบล็อก) ที่คลิกแล้วแก้ไข ไม่ต้องเปิดหน้าแก้ไข
+    const inner = e.target.closest('a[href],button,input,select,textarea,summary');
+    if (inner && inner !== t && /-edit$/.test(t.dataset.act || '')) return;
     if (t.dataset.tab) {
       S.tab = t.dataset.tab;
       try { localStorage.setItem('cn_master_tab', S.tab); } catch (_) {}
@@ -1999,15 +2331,18 @@
         const r = items('routes').find(function (x) { return x.id === id; });
         if (confirm('ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo + ' ออกจากฐานข้อมูลกลาง?\n\nถ้าโอนสายทางให้หน่วยงานอื่น แนะนำให้กด "แก้ไข" แล้วเปลี่ยนสถานะเป็น "โอนแล้ว" แทน')) {
           draft('routes', items('routes').filter(function (x) { return x.id !== id; }), 'ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo);
+          $('modal-root').innerHTML = '';
         }
         break;
       }
       case 'zone-add': zoneForm(null); break;
+      case 'zone-hw': S.zoneHw = id; render(); break;
       case 'zone-edit': zoneForm(items('zones').find(function (x) { return x.id === id; })); break;
       case 'zone-del': {
         const z = items('zones').find(function (x) { return x.id === id; });
         if (confirm('ลบเขตพื้นที่ ทล.' + z.highway + ' ' + fmtKm(z.kmStart) + '–' + fmtKm(z.kmEnd) + '?')) {
           draft('zones', items('zones').filter(function (x) { return x.id !== id; }), 'ลบเขตพื้นที่ ทล.' + z.highway + ' ' + fmtKm(z.kmStart) + '–' + fmtKm(z.kmEnd));
+          $('modal-root').innerHTML = '';
         }
         break;
       }
@@ -2018,15 +2353,19 @@
         const x = items('surface').find(function (r) { return r.id === id; });
         if (confirm('ลบช่วงผิวทาง ทล.' + x.highway + ' ' + fmtKm(x.kmStart) + '–' + fmtKm(x.kmEnd) + ' (' + (SIDE_TH[x.side] || x.side) + ')?')) {
           draft('surface', items('surface').filter(function (r) { return r.id !== id; }), 'ลบผิวทาง ทล.' + x.highway + ' ' + fmtKm(x.kmStart) + '–' + fmtKm(x.kmEnd) + ' ' + (SIDE_TH[x.side] || x.side));
+          $('modal-root').innerHTML = '';
         }
         break;
       }
+      case 'surf-hw': S.surfHw = id; render(); break;
+      case 'row-hw': S.rowHw = id; render(); break;
       case 'row-add': rowForm(null); break;
       case 'row-edit': rowForm(items('rightofway').find(function (x) { return x.id === id; })); break;
       case 'row-del': {
         const x = items('rightofway').find(function (r) { return r.id === id; });
         if (confirm('ลบช่วงเขตทาง ทล.' + x.highway + ' ลำดับ ' + x.seq + ' (' + fmtKm(x.kmStart) + '–' + fmtKm(x.kmEnd) + ')?')) {
           draft('rightofway', items('rightofway').filter(function (r) { return r.id !== id; }), 'ลบเขตทาง ทล.' + x.highway + ' ลำดับ ' + x.seq);
+          $('modal-root').innerHTML = '';
         }
         break;
       }
@@ -2038,17 +2377,18 @@
         if (kids.length) { alert('รหัส ' + id + ' มีรหัสย่อยอยู่ ' + kids.length + ' รหัส (' + kids.slice(0, 5).map(function (r) { return r.code; }).join(', ') + (kids.length > 5 ? ' …' : '') + ') ลบรหัสย่อยหรือย้ายไปอยู่ใต้รหัสอื่นก่อน'); break; }
         if (confirm('ลบรหัสงาน ' + x.code + ' ' + x.name + ' ออกจากฐานข้อมูลกลาง?\n\nระบบงานที่เคยใช้รหัสนี้จะเลือกหน่วยนับจากฐานข้อมูลกลางไม่ได้')) {
           draft('workcodes', items('workcodes').filter(function (r) { return r.code !== id; }), 'ลบรหัสงาน ' + x.code + ' ' + x.name.slice(0, 40));
+          $('modal-root').innerHTML = '';
         }
         break;
       }
       case 'ts-add': tsRowForm(null); break;
       case 'ts-edit': tsRowForm(Number(id)); break;
-      case 'ts-manual': tsManualForm(); break;
       case 'ts-del': {
         const sec = tsSection(S.tsSec), x = (tsDoc()[sec.key] || [])[Number(id)];
         const label = x && (x.code || x.name || x.topic || x.device || x.item || x.roadLabel || x.label || x.id || (x.speed != null ? x.speed + ' กม./ชม.' : ''));
         if (x && confirm('ลบแถว "' + label + '" ออกจากตาราง ' + sec.label + '?')) {
           tsEdit(function (d) { d[sec.key].splice(Number(id), 1); }, 'ลบ' + sec.label + ': ' + String(label).slice(0, 60));
+          $('modal-root').innerHTML = '';
         }
         break;
       }
@@ -2056,7 +2396,10 @@
       case 'man-edit': manualForm(items('manuals').find(function (x) { return x.id === id; })); break;
       case 'man-del': {
         const x = items('manuals').find(function (r) { return r.id === id; });
-        if (confirm('ลบคู่มือ ' + x.id + ' ' + x.title + ' ออกจากทะเบียน?')) draft('manuals', items('manuals').filter(function (r) { return r.id !== id; }), 'ลบคู่มือ ' + x.id);
+        if (confirm('ลบคู่มือ ' + x.id + ' ' + x.title + ' ออกจากทะเบียน?')) {
+          draft('manuals', items('manuals').filter(function (r) { return r.id !== id; }), 'ลบคู่มือ ' + x.id);
+          $('modal-root').innerHTML = '';
+        }
         break;
       }
       case 'goto':
@@ -2064,11 +2407,36 @@
         try { localStorage.setItem('cn_master_tab', S.tab); } catch (_) {}
         try { history.replaceState(null, '', '#' + S.tab); } catch (_) {}
         render(); window.scrollTo(0, 0); break;
+      case 'v-sel': S.vSel = id; render(); break;
       case 'gap-export': gapExport(); break;
       case 'gap-import': gapImport(); break;
       case 'asset-add': assetForm(null); break;
-      case 'asset-edit': assetForm(assetView(currentFiscalYear()).find(function (x) { return x.key === id; })); break;      case 'export': doExport(); break;
+      case 'asset-edit': assetForm(assetView(currentFiscalYear()).find(function (x) { return x.key === id; })); break;
+      case 'asset-src': S.assetSrc = id; render(); break;
+      case 'asset-del': {
+        const cy = currentFiscalYear();
+        const x = assetView(cy).find(function (r) { return r.key === id; });
+        if (!x) break;
+        const older = fiscalYears().some(function (y) { return y < cy && items(assetDocId(y)).some(function (r) { return r.key === id; }); });
+        if (older) { alert('รายการ ' + id + ' มีราคาอยู่ในปีงบก่อนหน้า ลบไม่ได้ เพราะเคสเก่ายังอ้างถึงอยู่\n\nถ้าเลิกใช้ ให้ติ๊ก "ซ่อน (เลิกใช้)" ในหน้าแก้ไขแทน'); break; }
+        if (confirm('ลบรายการ ' + x.key + ' ' + x.name.slice(0, 50) + ' ออกจากราคาประเมิน?')) {
+          editAssets(id, null, 'ลบ ' + x.key + ' ' + x.name.slice(0, 40));
+          $('modal-root').innerHTML = '';
+        }
+        break;
+      }
+      case 'export': doExport(); break;
       case 'hist-reload': S.history = null; render(); break;
+      case 'hist-f': S.histDoc = id; render(); break;
+      case 'hist-grp': {
+        const box = t.closest('.h-grp'); // สลับจากสถานะที่เห็นอยู่บนหน้าจอ
+        S.histOpen[id] = !(box && box.classList.contains('open')); render(); break;
+      }
+      case 'hist-ver': {
+        const x = (S.history || []).find(function (h) { return h.__id === id; });
+        if (x) { S.histSel[x.docId] = id; render(); }
+        break;
+      }
       case 'hist-restore': {
         const x = S.history.find(function (h) { return h.__id === id; });
         if (!x) break;
@@ -2085,14 +2453,26 @@
   document.addEventListener('change', function (e) {
     if (e.target.id === 'fy-select') { S.fy = Number(e.target.value); render(); }
     else if (e.target.id === 'asset-cat') { S.assetCat = e.target.value; render(); }
-    else if (e.target.id === 'row-hw') { S.rowHw = e.target.value; render(); }
-    else if (e.target.id === 'surf-hw') { S.surfHw = e.target.value; render(); }
-    else if (e.target.id === 'wc-group') { S.wcGroup = e.target.value; render(); }
     else if (e.target.id === 'row-area') { S.rowInArea = e.target.checked; render(); }
     else if (e.target.id === 'ts-sec') { S.tsSec = e.target.value; render(); }
     else if (e.target.id === 'ts-verify') { S.tsVerifyOnly = e.target.checked; render(); }
     else if (e.target.id === 'man-cat') { S.manCat = e.target.value; render(); }
     else if ((e.target.id === 'imp-file' || e.target.id === 'ts-file') && e.target.files[0]) doImport(e.target.files[0]);
+  });
+  // ลากไฟล์มาวางในกรอบนำเข้า
+  document.addEventListener('dragover', function (e) {
+    const d = e.target.closest && e.target.closest('#imp-drop');
+    if (d) { e.preventDefault(); d.classList.add('over'); }
+  });
+  document.addEventListener('dragleave', function (e) {
+    const d = e.target.closest && e.target.closest('#imp-drop');
+    if (d) d.classList.remove('over');
+  });
+  document.addEventListener('drop', function (e) {
+    const d = e.target.closest && e.target.closest('#imp-drop');
+    if (!d) return;
+    e.preventDefault(); d.classList.remove('over');
+    if (e.dataTransfer.files[0]) doImport(e.dataTransfer.files[0]);
   });
   document.addEventListener('input', function (e) {
     if (e.target.dataset && e.target.dataset.gk) {
@@ -2110,6 +2490,11 @@
       const pos = e.target.selectionStart;
       render();
       const el = $('wc-search'); el.focus(); el.setSelectionRange(pos, pos);
+    } else if (e.target.id === 'hist-search') {
+      S.histSearch = e.target.value;
+      const pos = e.target.selectionStart;
+      render();
+      const el = $('hist-search'); el.focus(); el.setSelectionRange(pos, pos);
     } else if (e.target.id === 'man-search') {
       S.manSearch = e.target.value;
       const pos = e.target.selectionStart;

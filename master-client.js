@@ -276,8 +276,10 @@
     const d = ts() || {};
     const src = (row && row.src) || '';
     const s = (d.sources || []).find(function (x) { return x.id === src; }) || (d.sources || []).find(function (x) { return x.primary; }) || {};
-    const man = s.title ? s : (d.manual || {});
-    const url = s.url || (s.primary ? (d.manual || {}).url : '') || '';
+    // ชื่อ/ฉบับ/ลิงก์ PDF ดึงจากทะเบียนคู่มือ (master/manuals) ก่อน · ค่าใน sources/manual ใช้เป็นค่าสำรอง
+    const reg = list('manuals').find(function (x) { return x.id === (s.manualId || (s.primary ? (d.manual || {}).manualId : '')); }) || {};
+    const man = reg.title ? reg : (s.title ? s : (d.manual || {}));
+    const url = reg.url || s.url || (s.primary ? (d.manual || {}).url : '') || '';
     return {
       ref: (row && row.ref) || '', page: row && row.page != null ? row.page : '', pdfPage: (row && row.pdfPage) || null, src: src || s.id || '',
       manual: [man.title, man.edition].filter(Boolean).join(' '), url: url && row && row.pdfPage && !/drive\.google\.com/.test(url) ? url + '#page=' + row.pdfPage : url,
@@ -418,7 +420,14 @@
   /* ---------- ราคาประเมินทรัพย์สิน (แยกปีงบ) ---------- */
   M.loadAssets = function (fy) { return watchDoc('assets_' + fy).then(function () { return list('assets_' + fy); }); };
   // ไม่ระบุปี = ราคาชุดที่ใช้อยู่ (ดู assetsYear)
-  M.assets = function (fy) { return list('assets_' + (fy || M.assetsYear())); };
+  // เอกสารราคาของแต่ละปีงบเก็บเฉพาะรายการที่ปรับราคาในปีนั้น จึงรวมรายการข้ามปี: แต่ละรหัสใช้ราคาจากปีงบล่าสุด (≤ ปีที่ขอ)
+  M.assets = function (fy) {
+    const y = fy || M.fiscalYear(), seen = {}, out = [];
+    M.fiscalYearsLoaded().filter(function (v) { return v <= y; }).reverse().forEach(function (v) {
+      list('assets_' + v).forEach(function (a) { if (!seen[a.key]) { seen[a.key] = 1; out.push(a); } });
+    });
+    return out;
+  };
   M.fiscalYearsLoaded = function () {
     return Object.keys(docs).filter(function (k) { return /^assets_\d{4}$/.test(k) && docs[k]; })
       .map(function (k) { return Number(k.slice(7)); }).sort(function (a, b) { return a - b; });
