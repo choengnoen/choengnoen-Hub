@@ -1987,7 +1987,8 @@
       if (k(d) === k(new Date(n.getTime() - 86400000))) return 'เมื่อวาน';
       return d.toLocaleDateString('th-TH', { dateStyle: 'medium' });
     }
-    const all = S.history, q = S.histSearch.trim().toLowerCase();
+    // ซ่อน "มาตรฐานงานจราจร" ออกจากหน้านี้ (แค่ไม่แสดง · ประวัติจริงในฐานข้อมูลยังอยู่)
+    const all = S.history.filter(function (x) { return x.docId !== 'traffic_std'; }), q = S.histSearch.trim().toLowerCase();
     const docs = [];
     all.forEach(function (x) { if (docs.indexOf(x.docId) < 0) docs.push(x.docId); });
     if (S.histDoc !== '*' && docs.indexOf(S.histDoc) < 0) S.histDoc = '*';
@@ -2003,10 +2004,8 @@
       g.list.push(x);
     });
 
-    // ส่วนบน: แถบเครื่องมือแบบเดียวกับหน้าอื่น (ตัวเลือกซ้าย · ค้นหา/ปุ่มขวา) + บรรทัดสรุปตัวเลขใต้แถบ
+    // ส่วนบน: แถบเครื่องมือแบบเดียวกับหน้าอื่น (ค้นหา/ปุ่มชิดขวา)
     let h = '<div class="panel"><div class="toolbar">' +
-      '<label class="h-sel">เอกสาร <select id="hist-doc" style="width:auto"><option value="*"' + (S.histDoc === '*' ? ' selected' : '') + '>ทั้งหมด (' + docs.length + ')</option>' +
-      docs.map(function (d) { return '<option value="' + esc(d) + '"' + (S.histDoc === d ? ' selected' : '') + '>' + esc(docTitle(d)) + '</option>'; }).join('') + '</select></label>' +
       '<div class="grow"></div>' +
       '<input type="search" id="hist-search" style="width:240px" placeholder="ค้นหาชื่อสายทางหรือรายการที่แก้…" value="' + esc(S.histSearch) + '">' +
       '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>';
