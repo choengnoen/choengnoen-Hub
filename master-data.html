@@ -165,6 +165,14 @@
 
   /* ---------- ตาราง ---------- */
   .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--white); }
+  /* แถบเลื่อนขึ้นลงเริ่มใต้หัวตาราง ไม่ล้ำแถวหัว (--th-h = ความสูงแถวหัวตาราง) */
+  .table-wrap { background: var(--head); }
+  .table-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+  .table-wrap::-webkit-scrollbar-track:vertical { background: var(--white); margin-top: var(--th-h, 52px); }
+  .table-wrap::-webkit-scrollbar-track:horizontal { background: var(--white); }
+  .table-wrap::-webkit-scrollbar-thumb { background: #C3CEDC; border-radius: 6px; border: 2px solid var(--white); }
+  .table-wrap::-webkit-scrollbar-corner { background: var(--white); }
+  tbody td { background: var(--white); }
   table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.9rem; }
   th, td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; white-space: nowrap; }
   /* คอลัมน์ข้อความยาว (ชื่อตอน หมายเหตุ ชื่อรายการ) ให้ตัดบรรทัดได้ */
@@ -804,7 +812,7 @@
         h += '<button type="button" class="hw-tab' + (S.zoneHw === t[0] ? ' on' : '') + '" data-act="zone-hw" data-id="' + esc(t[0]) + '">' + esc(t[1]) + '</button>';
       });
       h += '</div>';
-      h += '<div class="table-wrap"><table class="zone-tbl"><colgroup><col style="width:10%"><col style="width:20%"><col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:11%"><col style="width:10%"><col style="width:11%"></colgroup>' +
+      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="zone-tbl"><colgroup><col style="width:10%"><col style="width:20%"><col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:11%"><col style="width:10%"><col style="width:11%"></colgroup>' +
         '<thead><tr><th>ทางหลวง</th><th>ช่วง กม.</th><th>ฝั่ง</th><th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน</th></tr></thead><tbody>';
       shown.forEach(function (z) {
         h += '<tr class="' + (changed.has(z.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="zone-edit" data-id="' + esc(z.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '>' +
@@ -865,13 +873,16 @@
     });
   }
   // ชื่อตอนของช่วงบัญชีเขตทาง: หาจากสายทาง (ทล. + เลขตอน) ถ้าไม่มีเลขตอนให้หาจากช่วง กม. ที่ทับกัน
-  function rowSection(x) {
+  function rowSection(x) { const r = rowRoute(x); return r ? r.section || '' : ''; }
+  // เลขตอนควบคุม: ใช้ค่าในแถวก่อน ถ้าไม่มีให้ดึงจากสายทางที่ช่วง กม. ตรงกัน
+  function rowCtl(x) { if (x.controlNo) return x.controlNo; const r = rowRoute(x); return r ? r.controlNo || '' : ''; }
+  function rowRoute(x) {
     const rs = items('routes').filter(function (r) { return String(r.highway) === String(x.highway); });
     let r = x.controlNo ? rs.filter(function (q) { return String(q.controlNo) === String(x.controlNo); })[0] : null;
     if (!r) r = rs.filter(function (q) {
       return (q.kmRanges || []).some(function (p) { return x.kmStart <= p[1] && x.kmEnd >= p[0]; });
     })[0];
-    return r ? r.section || '' : '';
+    return r || null;
   }
   function fmtW(v) { return v == null ? '–' : Number(v).toFixed(2); }
 
@@ -909,7 +920,7 @@
         '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th></tr></thead><tbody>';
       list.forEach(function (x) {
         const warn = /^ตรวจสอบ/.test(x.note || '');
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(x.controlNo) + '</span></td><td style="white-space:nowrap">' + esc(rowSection(x)) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(rowCtl(x)) + '</span></td><td style="white-space:nowrap">' + esc(rowSection(x)) + '</td>' +
           '<td style="white-space:nowrap">' + esc(x.kmStart === x.kmEnd ? fmtKm(x.kmStart) : fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td>' +
           '<td class="num">' + fmtW(x.left) + '</td><td class="num">' + fmtW(x.right) + '</td>' +
           '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td></tr>';
@@ -977,11 +988,11 @@
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>' +
+      h += '<div class="table-wrap" style="--th-h:68px;max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>' +
         '<thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th><th>ระยะ (กม.)</th><th>ทิศทาง</th>' +
         '<th>ช่องจราจร</th><th>กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th>ไหล่ซ้าย (ม.)</th><th>ไหล่ขวา (ม.)</th></tr></thead><tbody>';
       list.forEach(function (x) {
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="surf-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(x.controlNo) + '</span></td><td>' + esc(rowSection(x)) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="surf-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(rowCtl(x)) + '</span></td><td>' + esc(rowSection(x)) + '</td>' +
           '<td style="white-space:nowrap">' + esc(fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td><td class="num">' + fmtNum((x.kmEnd - x.kmStart) / 1000, 3) + '</td>' +
           '<td>' + esc(SIDE_TH[x.side] || x.side) + '</td><td class="num">' + esc(x.lanes) + '</td><td class="num">' + fmtW(x.laneWidth) + '</td>' +
           '<td>' + (x.surface === 'conc' ? '<span class="pill">คอนกรีต</span>' : esc(SURF[x.surface || ''])) + '</td>' +
