@@ -679,7 +679,7 @@
   function docMeta(docId) {
     const m = S.master[docId];
     if (!m) return 'ยังไม่มีข้อมูลในฐานข้อมูลกลาง';
-    return 'รุ่นที่ ' + m.version + ' · แก้ไขล่าสุด ' + fmtDateTime(m.updatedAt);
+    return 'รุ่นที่ ' + m.version + ' · แก้ไขล่าสุด ' + (m.updatedAt ? new Date(m.updatedAt).toLocaleDateString('th-TH', { dateStyle: 'medium' }) : '');
   }
 
   function renderSaveBar() {
