@@ -218,8 +218,9 @@
   .wc-pen { opacity: 0; color: var(--ink-light); font-size: 0.85rem; margin-left: 4px; }
   tr.wc-edit-row:hover .wc-pen { opacity: 1; }
   tr.wc-g { cursor: pointer; user-select: none; }
-  tr.wc-g1 td { background: var(--blue-top); color: var(--white); font-family: 'Kanit', sans-serif; font-weight: 500; padding-top: 10px; padding-bottom: 10px; border-bottom: none; white-space: normal; }
-  tr.wc-g2 td { background: #DCE8F8; color: var(--blue-top); font-weight: 600; font-size: 0.86rem; padding-top: 7px; padding-bottom: 7px; border-bottom: 1px solid var(--line); white-space: normal; }
+  tr.wc-g1 td { background: #E4EEFA; color: var(--blue-top); font-family: 'Kanit', sans-serif; font-weight: 500; padding-top: 10px; padding-bottom: 10px; border-bottom: none; border-top: 1px solid #fff; white-space: normal; }
+  tr.wc-g1 td:first-child { border-left: 4px solid var(--blue-top); }
+  tr.wc-g2 td { background: var(--white); color: var(--blue-top); font-weight: 600; font-size: 0.86rem; padding-top: 7px; padding-bottom: 7px; border-bottom: 1px solid var(--line); white-space: normal; }
   tr.wc-g td:first-child, tr.wc-edit-row td:first-child { transition: box-shadow .12s; }
   tr.wc-g:hover td:first-child, tr.wc-edit-row:hover td:first-child { box-shadow: inset 5px 0 0 #f07a1f; }
   tr.wc-g:hover .wc-car { transform: scale(1.3); }
@@ -227,8 +228,9 @@
   .wc-car { display: inline-block; width: 16px; font-size: 0.7rem; transition: transform .15s; }
   tr.wc-g.shut .wc-car { transform: rotate(-90deg); }
   .wc-cnt { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; font-size: 0.74rem; line-height: 19px; font-weight: 400; background: #fff; color: var(--ink-light); }
-  tr.wc-g1 .wc-cnt { background: rgba(255,255,255,0.22); color: var(--white); }
-  tr.wc-g1 .wc-pen { color: var(--white); }
+  tr.wc-g1 .wc-cnt { background: var(--blue-top); color: var(--white); }
+  tr.wc-g2 .wc-cnt { background: #EEF0F3; }
+  tr.wc-g1 .wc-pen { color: var(--blue-top); }
   tr.wc-g:hover .wc-pen { opacity: 1; }
   .wc-tools { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 0.84rem; color: var(--ink-light); }
   .wc-lnk { color: var(--blue-bottom); cursor: pointer; user-select: none; }
@@ -236,8 +238,8 @@
   .wc-cl { white-space: pre-line; color: var(--ink); font-size: 0.88rem; line-height: 1.6; }
   .wc-table td { vertical-align: top; }
   /* กฎลายตาราง/เมาส์ชี้ทั่วไป (tbody tr:hover, :nth-child(even)) ทำให้สีแถวสลับไปมา → ล็อกสีของตารางรหัสงานให้คงที่ */
-  .wc-table tbody tr.wc-g1 td, .wc-table tbody tr.wc-g1:hover td, .wc-table tbody tr.wc-g1:nth-child(even) td { background: var(--blue-top); }
-  .wc-table tbody tr.wc-g2 td, .wc-table tbody tr.wc-g2:hover td, .wc-table tbody tr.wc-g2:nth-child(even) td { background: #DCE8F8; }
+  .wc-table tbody tr.wc-g1 td, .wc-table tbody tr.wc-g1:hover td, .wc-table tbody tr.wc-g1:nth-child(even) td { background: #E4EEFA; }
+  .wc-table tbody tr.wc-g2 td, .wc-table tbody tr.wc-g2:hover td, .wc-table tbody tr.wc-g2:nth-child(even) td { background: var(--white); }
   .wc-table tbody tr:not(.wc-g):not(.changed) td, .wc-table tbody tr:not(.wc-g):not(.changed):hover td, .wc-table tbody tr:not(.wc-g):not(.changed):nth-child(even) td { background: var(--white); }
   .wc-table td.wrap { white-space: normal; }
   .wc-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 600; color: var(--deep); }
