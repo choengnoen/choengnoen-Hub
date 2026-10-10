@@ -1143,7 +1143,7 @@
       <div class="modal-overlay" id="hero-overlay">
         <div class="modal-box modal-wide">
           <div class="modal-head">
-            <div><div class="modal-label">ส่วนหัวเว็บไซต์</div><h3>ตั้งค่ารูปและชื่อเว็บ</h3></div>
+            <div><h3>ตั้งค่า</h3></div>
             <button type="button" class="modal-close" data-close title="ปิด">×</button>
           </div>
           <div class="modal-body">
@@ -1160,7 +1160,6 @@
 
             <div class="modal-sec"><span class="modal-num">3</span> รูปพื้นหลังหัวเว็บ</div>
             <div class="modal-field">
-              <div class="preview-label">ตัวอย่างหัวเว็บ (แสดงตรงกับหัวเว็บจริง)</div>
               <div class="hero-preview" id="hero-preview"></div>
               <div class="hero-ctrl-row">
                 <div class="upload-row">
@@ -1172,7 +1171,6 @@
                   <button type="button" class="btn-pos" data-pos-y="100">ชิดล่าง</button>
                 </div>
               </div>
-              <div class="preview-label" style="margin-top:6px">ลากรูปในแถบด้านบนเพื่อเลื่อนตำแหน่ง หรือกดปุ่มด้านขวา</div>
             </div>
 
             <div class="modal-error" id="hero-error"></div>
@@ -1296,8 +1294,7 @@
 
   // สร้างรายการในเมนูใหม่ทุกครั้งที่เปิด (หมวดที่จัดลำดับได้ขึ้นกับจำนวนการ์ด ณ ตอนนั้น)
   function openOwnerMenu() {
-    let html = '<div class="menu-label">ตั้งค่าหน้านี้</div>' +
-      '<button type="button" class="menu-item" role="menuitem" data-act="hero">' + ICON.hero + 'ตั้งค่าหัวเว็บ</button>';
+    let html = '<button type="button" class="menu-item" role="menuitem" data-act="hero">' + ICON.hero + 'ตั้งค่า</button>';
     ['section', 'personal'].forEach(function (catId) {
       const col = CATS[catId].col;
       if (FBL.loaded(col) && FBL.docs(col).length > 1) {
@@ -1305,8 +1302,7 @@
           '<span>จัดลำดับการ์ด<small>' + escapeAttr(CATS[catId].name) + '</small></span></button>';
       }
     });
-    html += '<div class="menu-label">ไปหน้าอื่น</div>' +
-      '<a class="menu-item" role="menuitem" href="master-data.html">' + ICON.master + 'ฐานข้อมูลกลาง</a>' +
+    html += '<a class="menu-item" role="menuitem" href="master-data.html">' + ICON.master + 'ฐานข้อมูลกลาง</a>' +
       '<div class="menu-sep"></div>' +
       '<button type="button" class="menu-item menu-danger" role="menuitem" data-act="logout">' + ICON.logout + 'ออกจากระบบ</button>';
     ownerMenu.innerHTML = html;
