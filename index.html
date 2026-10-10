@@ -479,8 +479,8 @@
     position: absolute;
     top: -8px;
     left: calc(50% + 20px);
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: none;
     background: var(--white);
@@ -490,8 +490,23 @@
     place-items: center;
     cursor: pointer;
     z-index: 3;
+    /* ซ่อนไว้ก่อน แล้วค่อยปรากฏเมื่อชี้ที่การ์ด (ทั้งการ์ด ไม่ใช่แค่ไอคอน) */
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, color 0.15s ease;
   }
+  .card:hover .app-gear,
+  .card:focus-within .app-gear,
+  .card.open .app-gear,
+  .app-gear:focus-visible { opacity: 1; transform: scale(1); pointer-events: auto; }
   .app-gear:hover { color: var(--blue-bottom); }
+  /* จอสัมผัสไม่มี hover → แสดงตลอดแบบจาง ๆ */
+  @media (hover: none) {
+    .app-gear { opacity: 0.55; transform: scale(1); pointer-events: auto; }
+    .card.open .app-gear { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .app-gear { transition: none; } }
   .app-pop {
     position: absolute;
     top: 100%;
