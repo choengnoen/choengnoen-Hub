@@ -1214,7 +1214,7 @@
   const TS_REF_COLS = [['ref', 'อ้างอิง (ตาราง/รูป/ข้อ)', 'text'], ['page', 'หน้า (ตามเล่ม)', 'text'], ['pdfPage', 'หน้า PDF', 'num'], ['src', 'รหัสคู่มือ', 'text'], ['note', 'หมายเหตุ', 'text', 1], ['verify', 'ต้องตรวจสอบ', 'bool']];
   const SPD = [['speedMin', 'ความเร็วต่ำสุด (กม./ชม.)', 'num'], ['speedMax', 'ความเร็วสูงสุด', 'num']];
   const TS_SECTIONS = [
-    { key: 'signDistances', label: 'ระยะป้ายเตือนล่วงหน้า', refCols: true, hintKey: 'signDistanceMeaning',
+    { key: 'signDistances', label: 'ระยะป้ายเตือนล่วงหน้า', refCols: true,
       cols: [['roadType', 'ประเภทถนน', 'select', ['all', '2lane', 'multilane', 'median', 'motorway']], ['roadLabel', 'ชนิดถนนตามคู่มือ', 'text', 1]].concat(SPD, [['d1', 'ระยะ ก (ม.)', 'num'], ['d2', 'ระยะ ข (ม.)', 'num'], ['d3', 'ระยะ ค (ม.)', 'num']]) },
     { key: 'advanceSigns', label: 'ป้ายล่วงหน้า 1–2 กม.', refCols: true,
       cols: [['roadType', 'ประเภทถนน', 'select', ['2lane', 'multilane', 'median', 'all']], ['distances', 'ระยะจากพื้นที่ก่อสร้าง (ม.) คั่นด้วย ,', 'list'], ['sign', 'ป้าย', 'text']] },
@@ -1300,6 +1300,7 @@
     let h = '<div class="panel">';
     h += '<div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<label class="btn" style="cursor:pointer">นำเข้าตารางจากคู่มือ (trafficstd-seed.json)<input type="file" id="ts-file" accept=".json,application/json" hidden></label>';
+    if (S.owner && doc) h += '<button class="btn primary" type="button" data-act="ts-add">+ เพิ่มแถว</button>';
     h += '</div><p class="meta">' + esc(docMeta('traffic_std')) + '</p>';
     if (!doc) {
       h += '<div class="empty">ยังไม่มีมาตรฐานงานจราจรในฐานข้อมูลกลาง' + (S.owner ? '<br>กด "นำเข้าตารางจากคู่มือ" แล้วเลือกไฟล์ <b>trafficstd-seed.json</b> ตรวจดูแล้วกดบันทึก' : '') + '</div>';
@@ -1329,7 +1330,6 @@
       return '<option value="' + s.key + '"' + (s.key === sec.key ? ' selected' : '') + '>' + esc(s.label) + ' (' + (doc[s.key] || []).length + ')' + (per[s.key] ? ' ⚠' + per[s.key] : '') + '</option>';
     }).join('') + '</select>' +
       '<label class="chk"><input type="checkbox" id="ts-verify"' + (S.tsVerifyOnly ? ' checked' : '') + '> เฉพาะที่ต้องตรวจสอบ</label><div class="grow"></div>';
-    if (S.owner) h += '<button class="btn primary" type="button" data-act="ts-add">+ เพิ่มแถว</button>';
     h += '</div>';
     if (sec.hintKey && doc[sec.hintKey]) h += '<p class="hint">' + esc(doc[sec.hintKey]) + '</p>';
     if (sec.refKey && doc[sec.refKey]) h += '<p class="hint">อ้างอิง: ' + tsPageCell(doc, doc[sec.refKey]) + '</p>';
