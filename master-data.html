@@ -1152,16 +1152,17 @@
       return !q || (x.code + ' ' + x.name + ' ' + (x.nameEn || '') + ' ' + (x.units || []).join(' ') + ' ' + (x.description || '')).toLowerCase().indexOf(q) >= 0;
     };
     const total = all.filter(isLeaf).length;
-    if (S.wcFresh && all.length) { // เข้าหน้านี้ครั้งแรก: กางทุกหัวข้อไว้ให้อ่านได้ทันที
+    if (S.wcFresh && all.length) { // เข้าหน้านี้ครั้งแรก: หุบทุกหัวข้อไว้ก่อน ให้ผู้ใช้กดเลือกดูเอง
       S.wcFresh = false; S.wcShut = {};
+      all.forEach(function (x) { if (!isLeaf(x)) S.wcShut[x.code] = true; });
     }
     const changed = changedIds('workcodes', 'code');
     let h = '<div class="panel"><div class="toolbar">' +
       '<div class="grow"></div>' +
       '<input type="search" id="wc-search" style="width:240px" placeholder="ค้นหารหัส ชื่องาน หรือหน่วย…" value="' + esc(S.wcSearch) + '">';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="wc-add">+ เพิ่มรหัสงาน</button>';
-    h += '</div><p class="meta">' + esc(docMeta('workcodes')) + '</p>';
-    if (!all.length) { v.innerHTML = h + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
+    h += '</div><p class="meta" style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span>' + esc(docMeta('workcodes')) + '</span><span class="hint">@@CNT@@</span></p>';
+    if (!all.length) { v.innerHTML = h.replace('@@CNT@@', '0 รหัส') + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
     // ตารางเดียว: หมวด/หมวดย่อยเป็นแถวหัวข้อ (คลิกพับ-กาง) แล้วตามด้วยรหัสงานที่อยู่ใต้หัวข้อนั้น
     const leafRow = function (x, depth) {
       const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
@@ -1197,8 +1198,8 @@
     subs.forEach(function (g) { subCodes[g.code] = 1; });
     const strays = all.filter(function (k) { return isLeaf(k) && match(k) && !all.some(function (g) { return subCodes[g.code] && (g.code === k.parent || under(g.code).some(function (u) { return u.code === k.code; })); }); });
     strays.forEach(function (k) { rows += leafRow(k, 0); shown++; });
-    let main = '<div class="wc-tools">' +
-      '<span class="hint" style="margin-left:auto">' + (q ? 'พบ ' + shown + ' จาก ' : '') + total + ' รหัส</span></div>';
+    h = h.replace('@@CNT@@', (q ? 'พบ ' + shown + ' จาก ' : '') + total + ' รหัส');
+    let main = '';
     if (!shown) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับคำค้นหา</div>';
     else main += '<div class="table-wrap" style="max-height:75vh;overflow:auto"><table class="wc-table"><thead><tr><th style="width:110px">รหัสงาน</th><th style="width:20%">ชื่องาน</th><th style="width:48%">ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
     v.innerHTML = h + main + '</div>';
