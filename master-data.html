@@ -1702,12 +1702,10 @@
     if (!S.vSel || (S.vSel !== 'gap' && V_TABS.indexOf(S.vSel) < 0)) {
       S.vSel = V_TABS.find(function (k) { return tabOf(k).length; }) || (gaps.length ? 'gap' : V_TABS[0]);
     }
-    const head = err.length ? 'พบข้อผิดร้ายแรง ' + err.length + ' รายการ — ต้องแก้ก่อนจึงบันทึกได้' : (warn.length ? 'ไม่พบข้อผิดร้ายแรง มีคำเตือน ' + warn.length + ' รายการ' : 'ข้อมูลผ่านการตรวจทั้งหมด');
+    const head = err.length ? 'พบข้อผิดร้ายแรง ' + err.length + ' รายการ' : (warn.length ? 'ไม่พบข้อผิดร้ายแรง มีคำเตือน ' + warn.length + ' รายการ' : 'ข้อมูลผ่านการตรวจทั้งหมด');
     let h = '<div class="panel"><div class="v-top"><div class="v-ring" style="--p:' + Math.round(clean / V_TABS.length * 100) + '"><span>' + clean + '/' + V_TABS.length + '</span></div>' +
       '<div class="v-txt"><h3 style="margin:0">' + head + '</h3>' +
-      '<p class="hint" style="margin:3px 0 0">ผ่านการตรวจ ' + clean + ' จาก ' + V_TABS.length + ' ชุดข้อมูล · ตรวจรวมฉบับร่างที่ยังไม่บันทึก · ข้อมูลที่บันทึกแล้ว: ' + esc(docMeta('zones')) + '</p>' +
-      '<p class="hint" style="margin:3px 0 0">ข้อผิดร้ายแรง (เช่น กม. เริ่ม &gt; สิ้นสุด) จะบันทึกไม่ได้จนกว่าจะแก้ · คำเตือนจะถามยืนยันก่อน ไม่บล็อก' +
-      (autoN ? ' · ค่า กม. ที่ทศนิยมเกินเมตร ระบบปัดให้เองตอนบันทึก' : '') + '</p></div></div>';
+      '<p class="hint" style="margin:3px 0 0">ผ่านการตรวจ ' + clean + ' จาก ' + V_TABS.length + ' ชุดข้อมูล · ตรวจรวมฉบับร่างที่ยังไม่บันทึก · ข้อมูลที่บันทึกแล้ว: ' + esc(docMeta('zones')) + '</p></div></div>';
     h += '<div class="v-split"><div class="v-list">';
     V_TABS.forEach(function (k) {
       const l = tabOf(k), e = l.some(function (i) { return i.sev === 'err'; });
@@ -1743,7 +1741,6 @@
       const l = tabOf(S.vSel);
       if (!l.length) h += '<div class="v-ok"><div class="big">✓</div><h3 style="justify-content:center">' + esc(vTabLabel(S.vSel)) + ' ผ่านการตรวจทั้งหมด</h3><p class="hint">ไม่พบข้อผิดพลาดหรือคำเตือน</p></div>';
       else {
-        h += '<p class="hint" style="margin-top:0">คลิกที่รายการเพื่อไปแก้ในแท็บ "' + esc(vTabLabel(S.vSel)) + '"</p>';
         VCATS.forEach(function (c) {
           const cl = l.filter(function (i) { return i.cat === c.cat; });
           if (!cl.length) return;
