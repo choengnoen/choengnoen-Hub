@@ -1201,7 +1201,7 @@
     h = h.replace('@@CNT@@', (q ? 'พบ ' + shown + ' จาก ' : '') + total + ' รหัส');
     let main = '';
     if (!shown) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับคำค้นหา</div>';
-    else main += '<div class="table-wrap" style="max-height:75vh;overflow:auto"><table class="wc-table"><thead><tr><th style="width:110px">รหัสงาน</th><th style="width:20%">ชื่องาน</th><th style="width:48%">ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    else main += '<div class="table-wrap" style="max-height:75vh;overflow:auto"><table class="wc-table"><colgroup><col style="width:110px"><col style="width:20%"><col style="width:48%"><col style="width:84px"><col style="width:130px"></colgroup><tbody>' + rows + '</tbody></table></div>';
     v.innerHTML = h + main + '</div>';
   }
 
