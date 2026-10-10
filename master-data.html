@@ -218,6 +218,18 @@
   tr.wc-edit-row:hover td { background: #F3F8FE; }
   .wc-pen { opacity: 0; color: var(--ink-light); font-size: 0.85rem; margin-left: 4px; }
   tr.wc-edit-row:hover .wc-pen { opacity: 1; }
+  tr.wc-g { cursor: pointer; user-select: none; }
+  tr.wc-g1 td { background: var(--blue-top); color: var(--white); font-family: 'Kanit', sans-serif; font-weight: 500; padding-top: 10px; padding-bottom: 10px; border-bottom: none; white-space: normal; }
+  tr.wc-g2 td { background: #DCE8F8; color: var(--blue-top); font-weight: 600; font-size: 0.86rem; padding-top: 7px; padding-bottom: 7px; border-bottom: 1px solid var(--line); white-space: normal; }
+  tr.wc-g:hover td { filter: brightness(1.08); }
+  .wc-car { display: inline-block; width: 16px; font-size: 0.7rem; transition: transform .15s; }
+  tr.wc-g.shut .wc-car { transform: rotate(-90deg); }
+  .wc-cnt { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; font-size: 0.74rem; line-height: 19px; font-weight: 400; background: #fff; color: var(--ink-light); }
+  tr.wc-g1 .wc-cnt { background: rgba(255,255,255,0.22); color: var(--white); }
+  tr.wc-g1 .wc-pen { color: var(--white); }
+  tr.wc-g:hover .wc-pen { opacity: 1; }
+  .wc-tools { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 0.84rem; color: var(--ink-light); }
+  .wc-lnk { color: var(--blue-bottom); cursor: pointer; user-select: none; }
   .wc-code { white-space: nowrap; font-weight: 600; color: var(--blue-top); font-variant-numeric: tabular-nums; }
   .wc-cl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-light); font-size: 0.84rem; }
   .wc-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 600; color: var(--deep); }
@@ -332,6 +344,10 @@
   .hist-item:hover { border-left-color: var(--blue-bottom); background: #FAFCFF; }
   .hist-item pre { white-space: pre-wrap; margin: 8px 0; font-family: inherit; font-size: 0.88rem; background: var(--zebra); border-radius: 8px; padding: 8px 10px; }
   /* ประวัติ: จัดกลุ่มตามเอกสาร */
+  .h-sel { font-size: 0.9rem; color: var(--ink-light); }
+  .h-sum { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; font-size: 0.86rem; color: var(--ink-light); }
+  .h-sum b { font-family: 'Kanit', sans-serif; font-size: 1.05rem; color: var(--blue-top); font-weight: 600; }
+  .h-sum .h-tag { margin-right: 0; min-width: 0; }
   .h-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
   .h-chip { border: 1px solid var(--line); background: var(--white); border-radius: 999px; padding: 4px 13px; font-size: 0.84rem; cursor: pointer; color: var(--ink-light); }
   .h-chip:hover { border-color: var(--blue-bottom); }
@@ -505,9 +521,8 @@
     rowInArea: true,    // แสดงเฉพาะช่วงที่ทับกับสายทางที่หมวดดูแล
     surfHw: '*',
     wcSearch: '',
-    wcGroup: '*',       // หมวดย่อยที่เลือก (เช่น 21100) · '*' = ทั้งหมด
-    wcSub: '*',         // หัวข้อระดับถัดไปในหมวดย่อย (เช่น 21110)
-    manCat: '*',
+    wcShut: {},         // หัวข้อที่พับอยู่ในตารางรหัสงาน เช่น { '21100': true }
+    wcFresh: true,      // true = เพิ่งเข้าหน้ารหัสงาน → หุบทุกหัวข้อก่อนแสดงครั้งแรก
     manSearch: '',
     gapFill: {},        // key ช่วงเขตพื้นที่ที่ขาด → ข้อมูลที่กรอกไว้ในตาราง "สิ่งที่ต้องไปหาข้อมูลมาเติม" (เก็บในเครื่องกันหาย)
     history: null,
@@ -626,6 +641,7 @@
     const v = $('view');
     if (!FBL.configured) { v.innerHTML = ''; return; }
     if (!S.loaded) { v.innerHTML = '<div class="panel empty">กำลังโหลดข้อมูล…</div>'; return; }
+    if (S.tab !== 'workcodes') S.wcFresh = true; // กลับเข้าหน้ารหัสงานครั้งหน้า ให้หุบทุกหัวข้อก่อน
     if (S.tab === 'routes') renderRoutes(v);
     else if (S.tab === 'zones') renderZones(v);
     else if (S.tab === 'rightofway') renderRow(v);
@@ -1124,15 +1140,14 @@
       (function walk(c) { all.forEach(function (k) { if (k.parent === c) { out.push(k); walk(k.code); } }); })(code);
       return out;
     };
-    if (S.wcGroup !== '*' && !byCode[S.wcGroup]) { S.wcGroup = '*'; S.wcSub = '*'; }
-    const cur = S.wcGroup === '*' ? null : byCode[S.wcGroup];
-    if (S.wcSub !== '*' && (!cur || !byCode[S.wcSub] || byCode[S.wcSub].parent !== cur.code)) S.wcSub = '*';
-    let pool = all.filter(isLeaf);
-    if (cur) pool = under(S.wcSub !== '*' ? S.wcSub : cur.code).filter(isLeaf);
-    const list = pool.filter(function (x) {
+    const match = function (x) {
       return !q || (x.code + ' ' + x.name + ' ' + (x.nameEn || '') + ' ' + (x.units || []).join(' ') + ' ' + (x.description || '')).toLowerCase().indexOf(q) >= 0;
-    });
+    };
     const total = all.filter(isLeaf).length;
+    if (S.wcFresh && all.length) { // เข้าหน้านี้ครั้งแรก: หุบทุกหัวข้อไว้ก่อน
+      S.wcFresh = false; S.wcShut = {};
+      all.forEach(function (x) { if (!isLeaf(x)) S.wcShut[x.code] = true; });
+    }
     const changed = changedIds('workcodes', 'code');
     let h = '<div class="panel"><div class="toolbar">' +
       '<div class="grow"></div>' +
@@ -1140,40 +1155,51 @@
     if (S.owner) h += '<button class="btn primary" type="button" data-act="wc-add">+ เพิ่มรหัสงาน</button>';
     h += '</div><p class="meta">' + esc(docMeta('workcodes')) + '</p>';
     if (!all.length) { v.innerHTML = h + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
-    // เมนูซ้าย: ทั้งหมด + หมวดย่อย (เลือกหมวดแล้วขยายหัวข้อระดับถัดไป เช่น 21110, 21120)
-    let side = '<button type="button" class="wc-it' + (S.wcGroup === '*' ? ' on' : '') + '" data-wc-g="*"><span>ทั้งหมด</span><span class="n">' + total + '</span></button>';
-    subs.forEach(function (g) {
-      const n = under(g.code).filter(isLeaf).length;
-      side += '<button type="button" class="wc-it' + (S.wcGroup === g.code ? ' on' : '') + '" data-wc-g="' + esc(g.code) + '"><span><b>' + esc(g.code) + '</b> ' + esc(g.name) + '</span><span class="n">' + n + '</span></button>';
-      if (S.wcGroup === g.code) all.filter(function (k) { return k.parent === g.code && !isLeaf(k); }).forEach(function (k) {
-        side += '<button type="button" class="wc-it sb' + (S.wcSub === k.code ? ' on' : '') + '" data-wc-s="' + esc(k.code) + '">' + esc(k.code) + ' ' + esc(k.name) + '</button>';
+    // ตารางเดียว: หมวด/หมวดย่อยเป็นแถวหัวข้อ (คลิกพับ-กาง) แล้วตามด้วยรหัสงานที่อยู่ใต้หัวข้อนั้น
+    const leafRow = function (x, depth) {
+      const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
+      return '<tr' + attrs + '><td class="wc-code" style="padding-left:' + (12 + depth * 20) + 'px">' + esc(x.code) + '</td>' +
+        '<td class="wrap">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') + '</td>' +
+        '<td class="wrap">' + (x.description ? '<div class="wc-cl" title="' + esc(x.description) + '">' + esc(x.description.replace(/\s*\n\s*/g, ' ')) + '</div>' : '<span class="hint">—</span>') + '</td>' +
+        '<td>' + (x.output ? esc(x.output) : '<span class="hint">—</span>') + '</td>' +
+        '<td>' + (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ') + (S.owner ? '<span class="wc-pen">✎</span>' : '') + '</td></tr>';
+    };
+    const walk = function (node, depth) { // คืน {html, n} · n = จำนวนรหัสงานที่ตรงเงื่อนไขค้นหาใต้หัวข้อนี้
+      let html = '', n = 0;
+      all.filter(function (k) { return k.parent === node.code; }).forEach(function (k) {
+        if (isLeaf(k)) { if (match(k)) { html += leafRow(k, depth); n++; } return; }
+        const sub = walk(k, depth + 1);
+        if (q && !sub.n) return;
+        const shut = !q && S.wcShut[k.code];
+        html += '<tr class="wc-g wc-g' + (depth === 1 ? '1' : '2') + (shut ? ' shut' : '') + '" data-wc-t="' + esc(k.code) + '"><td colspan="5" style="padding-left:' + (12 + (depth - 1) * 20) + 'px"><span class="wc-car">▼</span>' +
+          esc(k.code) + ' ' + esc(k.name) + '<span class="wc-cnt">' + sub.n + '</span>' + (S.owner ? '<span class="wc-pen" data-act="wc-edit" data-id="' + esc(k.code) + '" title="แก้ไขหัวข้อ">✎</span>' : '') + '</td></tr>' + (shut ? '' : sub.html);
+        n += sub.n;
       });
+      return { html: html, n: n };
+    };
+    let rows = '', shown = 0;
+    subs.forEach(function (g) { // หัวข้อระดับ 1 (เช่น 21100) = แถวหัวข้อหลัก
+      const sub = walk(g, 2);
+      if (q && !sub.n) return;
+      const shut = !q && S.wcShut[g.code];
+      rows += '<tr class="wc-g wc-g1' + (shut ? ' shut' : '') + '" data-wc-t="' + esc(g.code) + '"><td colspan="5"><span class="wc-car">▼</span>' + esc(g.code) + ' ' + esc(g.name) +
+        '<span class="wc-cnt">' + sub.n + '</span>' + (S.owner ? '<span class="wc-pen" data-act="wc-edit" data-id="' + esc(g.code) + '" title="แก้ไขหัวข้อ">✎</span>' : '') + '</td></tr>' + (shut ? '' : sub.html);
+      shown += sub.n;
     });
-    let main = '';
-    if (cur) {
-      const head = S.wcSub !== '*' ? byCode[S.wcSub] : cur;
-      main += '<div class="wc-title"><span>' + esc(head.code) + ' · ' + esc(head.name) + '</span>' +
-        (S.owner ? '<button type="button" class="btn sm" data-act="wc-edit" data-id="' + esc(head.code) + '" title="แก้ไขหัวข้อ" aria-label="แก้ไขหัวข้อ" style="padding:2px 9px">✎</button>' : '') + '</div>';
-    }
-    if (!list.length) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับตัวกรอง</div>';
-    else {
-      main += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th style="width:96px">รหัสงาน</th><th style="width:24%">ชื่องาน</th><th>ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>';
-      list.forEach(function (x) {
-        const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
-        main += '<tr' + attrs + '><td class="wc-code">' + esc(x.code) + '</td>' +
-          '<td class="wrap">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') + '</td>' +
-          '<td class="wrap">' + (x.description ? '<div class="wc-cl" title="' + esc(x.description) + '">' + esc(x.description.replace(/\s*\n\s*/g, ' ')) + '</div>' : '<span class="hint">—</span>') + '</td>' +
-          '<td>' + (x.output ? esc(x.output) : '<span class="hint">—</span>') + '</td>' +
-          '<td>' + (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ') + (S.owner ? '<span class="wc-pen">✎</span>' : '') + '</td></tr>';
-      });
-      main += '</tbody></table></div>';
-    }
-    v.innerHTML = h + '<div class="wc-split"><div class="wc-side">' + side + '</div><div>' + main + '</div></div></div>';
+    const subCodes = {};
+    subs.forEach(function (g) { subCodes[g.code] = 1; });
+    const strays = all.filter(function (k) { return isLeaf(k) && match(k) && !all.some(function (g) { return subCodes[g.code] && (g.code === k.parent || under(g.code).some(function (u) { return u.code === k.code; })); }); });
+    strays.forEach(function (k) { rows += leafRow(k, 0); shown++; });
+    let main = '<div class="wc-tools"><span class="wc-lnk" data-wc-all="1">ขยายทั้งหมด</span> · <span class="wc-lnk" data-wc-all="0">ยุบทั้งหมด</span>' +
+      '<span class="hint" style="margin-left:auto">' + (q ? 'พบ ' + shown + ' จาก ' : '') + total + ' รหัส</span></div>';
+    if (!shown) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับคำค้นหา</div>';
+    else main += '<div class="table-wrap" style="max-height:68vh;overflow:auto"><table><thead><tr><th style="width:110px">รหัสงาน</th><th style="width:24%">ชื่องาน</th><th>ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    v.innerHTML = h + main + '</div>';
   }
 
   function workCodeForm(x) {
     const isNew = !x;
-    if (!x) x = { code: '', name: '', nameEn: '', units: [], parent: S.wcSub !== '*' ? S.wcSub : (S.wcGroup !== '*' ? S.wcGroup : '') };
+    if (!x) x = { code: '', name: '', nameEn: '', units: [], parent: '' };
     openModal(isNew ? 'เพิ่มรหัสงาน' : 'แก้ไขรหัสงาน ' + x.code,
       '<div class="form-grid">' +
       field('code', 'รหัสงาน (5 หลัก) *', x.code, 'text', (isNew ? '' : 'readonly ') + 'inputmode="numeric" maxlength="5"') +
@@ -1212,13 +1238,12 @@
     const all = items('manuals').slice().sort(function (a, b) { return String(a.category).localeCompare(String(b.category)) || String(a.id).localeCompare(String(b.id), 'th', { numeric: true }); });
     const q = S.manSearch.trim().toLowerCase();
     const list = all.filter(function (x) {
-      if (S.manCat !== '*' && x.category !== S.manCat) return false;
       return !q || (x.id + ' ' + x.title + ' ' + (x.edition || '') + ' ' + (x.note || '')).toLowerCase().indexOf(q) >= 0;
     });
     const changed = changedIds('manuals', 'id');
-    let h = '<div class="panel"><div class="toolbar"><select id="man-cat" style="width:auto"><option value="*">ทุกหมวด</option>' + MAN_CATS.map(function (c) {
-      return '<option value="' + c.key + '"' + (S.manCat === c.key ? ' selected' : '') + '>' + esc(c.label) + '</option>';
-    }).join('') + '</select><div class="grow"><input type="search" id="man-search" placeholder="ค้นหาชื่อคู่มือ…" value="' + esc(S.manSearch) + '"></div>';
+    let h = '<div class="panel"><div class="toolbar">' +
+      '<div class="grow"></div>' +
+      '<input type="search" id="man-search" style="width:240px" placeholder="ค้นหาชื่อคู่มือ…" value="' + esc(S.manSearch) + '">';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="man-add">+ เพิ่มคู่มือ</button>';
     h += '</div><p class="meta">' + esc(docMeta('manuals')) + '</p>';
     if (!all.length) h += '<div class="empty">ยังไม่มีทะเบียนคู่มือ' + (S.owner ? ' นำเข้าไฟล์สำรองที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div>';
@@ -1236,7 +1261,7 @@
   }
   function manualForm(x) {
     const isNew = !x;
-    x = x || { category: S.manCat !== '*' ? S.manCat : 'safety' };
+    x = x || { category: 'safety' };
     openModal(isNew ? 'เพิ่มคู่มือ' : 'แก้ไขคู่มือ ' + x.id,
       '<div class="form-grid">' + field('id', 'รหัส *', x.id, 'text', isNew ? 'placeholder="เช่น safety-12"' : 'readonly') +
       '<label class="f">หมวด<select name="category">' + MAN_CATS.map(function (c) { return '<option value="' + c.key + '"' + (c.key === x.category ? ' selected' : '') + '>' + esc(c.label) + '</option>'; }).join('') + '</select></label>' +
@@ -1982,35 +2007,20 @@
       g.list.push(x);
     });
 
-    let h = '<div class="panel">' +
-      '<div class="stats">' +
-      '<div class="stat"><div class="k">ครั้งที่แก้ไข</div><div class="v">' + items.length + '</div></div>' +
-      '<div class="stat"><div class="k">เอกสารที่ถูกแก้</div><div class="v">' + groups.length + '</div></div>' +
-      '<div class="stat"><div class="k">เพิ่ม</div><div class="v" style="color:var(--green)">+' + tot.add + '</div></div>' +
-      '<div class="stat"><div class="k">แก้ไข</div><div class="v" style="color:#B7791F">' + tot.edit + '</div></div>' +
-      '<div class="stat"><div class="k">ลบ</div><div class="v" style="color:var(--red)">' + tot.del + '</div></div></div>' +
-      '<div class="toolbar"><div class="grow"><input type="search" id="hist-search" placeholder="ค้นหาในประวัติ เช่น ชื่อสายทาง หรือรายการที่แก้" value="' + esc(S.histSearch) + '"></div>' +
+    // ส่วนบน: แถบเครื่องมือแบบเดียวกับหน้าอื่น (ตัวเลือกซ้าย · ค้นหา/ปุ่มขวา) + บรรทัดสรุปตัวเลขใต้แถบ
+    let h = '<div class="panel"><div class="toolbar">' +
+      '<label class="h-sel">เอกสาร <select id="hist-doc" style="width:auto"><option value="*"' + (S.histDoc === '*' ? ' selected' : '') + '>ทั้งหมด (' + docs.length + ')</option>' +
+      docs.map(function (d) { return '<option value="' + esc(d) + '"' + (S.histDoc === d ? ' selected' : '') + '>' + esc(docTitle(d)) + '</option>'; }).join('') + '</select></label>' +
+      '<div class="grow"></div>' +
+      '<input type="search" id="hist-search" style="width:240px" placeholder="ค้นหาชื่อสายทางหรือรายการที่แก้…" value="' + esc(S.histSearch) + '">' +
       '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>' +
-      '<div class="h-chips"><button type="button" class="h-chip' + (S.histDoc === '*' ? ' on' : '') + '" data-act="hist-f" data-id="*">ทั้งหมด</button>' +
-      docs.map(function (d) { return '<button type="button" class="h-chip' + (S.histDoc === d ? ' on' : '') + '" data-act="hist-f" data-id="' + esc(d) + '">' + esc(docTitle(d)) + '</button>'; }).join('') + '</div>';
+      '<div class="h-sum"><span><b>' + items.length + '</b> ครั้งที่แก้ไข</span><span><b>' + groups.length + '</b> เอกสาร</span>' +
+      '<span class="h-tag add">เพิ่ม +' + tot.add + '</span><span class="h-tag edit">แก้ไข ' + tot.edit + '</span><span class="h-tag del">ลบ ' + tot.del + '</span></div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
     else if (!groups.length) h += '<div class="empty">ไม่พบรายการที่ตรงกับตัวกรอง</div>';
-    groups.forEach(function (g, gi) {
-      let sid = S.histSel[g.doc];
-      if (!g.list.some(function (x) { return x.__id === sid; })) sid = g.list[0].__id;
-      const cur = g.list.filter(function (x) { return x.__id === sid; })[0];
-      const open = S.histOpen[g.doc] !== undefined ? S.histOpen[g.doc] : gi === 0 || !!q;
-      h += '<div class="h-grp' + (open ? ' open' : '') + '"><div class="h-gh" data-act="hist-grp" data-id="' + esc(g.doc) + '"><span class="h-car">▶</span><h4>' + esc(docTitle(g.doc)) + '</h4>' +
-        '<div class="h-cnt"><span class="hint">แก้ล่าสุด ' + esc(dayLabel(g.list[0].at)) + '</span><span class="io-chip">' + g.list.length + ' ครั้ง</span></div></div><div class="h-gb"><div class="h-chain">';
-      g.list.slice().reverse().forEach(function (x, i) {
-        if (i) h += '<span class="ln"></span>';
-        h += '<button type="button" class="h-vchip' + (x.__id === sid ? ' on' : '') + '" data-act="hist-ver" data-id="' + esc(x.__id) + '">รุ่น ' + x.toVersion + '</button>';
-      });
-      h += '</div><div class="h-vinfo"><div class="top"><span>รุ่น ' + cur.fromVersion + ' → ' + cur.toVersion + '</span><span>' + esc(fmtDateTime(cur.at)) + '</span></div><ul>' +
-        linesOf(cur).map(function (l) { const k = kind(l); return '<li><span class="h-tag ' + k[0] + '">' + k[1] + '</span>' + esc(l) + '</li>'; }).join('') + '</ul>' +
-        '<div style="margin-top:12px">' + (cur.fromVersion
-          ? '<button class="btn sm" type="button" data-act="hist-restore" data-id="' + esc(cur.__id) + '">กู้คืนเป็นฉบับก่อนการแก้ไขนี้ (รุ่น ' + cur.fromVersion + ')</button>'
-          : '<span class="hint">รุ่นแรก ไม่มีฉบับก่อนหน้าให้กู้คืน</span>') + '</div></div></div></div>';
+    groups.forEach(function (g) { // แสดงแค่หัวรายการของแต่ละเอกสาร (ไม่มีส่วนขยายรุ่น/รายละเอียด)
+      h += '<div class="h-grp"><div class="h-gh" style="cursor:default"><h4>' + esc(docTitle(g.doc)) + '</h4>' +
+        '<div class="h-cnt"><span class="hint">แก้ล่าสุด ' + esc(dayLabel(g.list[0].at)) + '</span><span class="io-chip">' + g.list.length + ' ครั้ง</span></div></div></div>';
     });
     if (all.length >= 100) h += '<p class="hint" style="margin:10px 0 0">แสดงการแก้ไขล่าสุด 100 ครั้ง</p>';
     v.innerHTML = h + '</div>';
@@ -2059,10 +2069,16 @@
 
   /* ---------- ปุ่มต่างๆ ---------- */
   document.addEventListener('click', function (e) {
-    const wg = e.target.closest('[data-wc-g],[data-wc-s]');
-    if (wg) {
-      if (wg.dataset.wcG !== undefined) { S.wcGroup = wg.dataset.wcG; S.wcSub = '*'; }
-      else S.wcSub = S.wcSub === wg.dataset.wcS ? '*' : wg.dataset.wcS;
+    const wa = e.target.closest('[data-wc-all]');
+    if (wa) { // ขยาย/ยุบหัวข้อทั้งหมดในตารางรหัสงาน
+      S.wcShut = {};
+      if (wa.dataset.wcAll === '0') items('workcodes').forEach(function (x) { if (!(x.units || []).length) S.wcShut[x.code] = true; });
+      render(); return;
+    }
+    const wg = e.target.closest('[data-wc-t]');
+    if (wg && !e.target.closest('[data-act]')) { // คลิกแถวหัวข้อ = พับ/กาง
+      const c = wg.dataset.wcT;
+      if (S.wcShut[c]) delete S.wcShut[c]; else S.wcShut[c] = true;
       render(); return;
     }
     const t = e.target.closest('[data-tab],[data-act]');
@@ -2193,9 +2209,9 @@
     }
   });
   document.addEventListener('change', function (e) {
-    if (e.target.id === 'fy-select') { S.fy = Number(e.target.value); render(); }
+    if (e.target.id === 'hist-doc') { S.histDoc = e.target.value; render(); }
+    else if (e.target.id === 'fy-select') { S.fy = Number(e.target.value); render(); }
     else if (e.target.id === 'row-area') { S.rowInArea = e.target.checked; render(); }
-    else if (e.target.id === 'man-cat') { S.manCat = e.target.value; render(); }
     else if ((e.target.id === 'imp-file') && e.target.files[0]) doImport(e.target.files[0]);
   });
   // ลากไฟล์มาวางในกรอบนำเข้า
