@@ -215,13 +215,13 @@
   .wc-it.sb { font-size: 0.78rem; line-height: 1.3; padding: 4px 10px 4px 22px; border-radius: 8px; color: var(--ink-light); }
   .wc-it.sb.on { background: #DCE8F8; color: var(--blue-top); font-weight: 600; }
   tr.wc-edit-row { cursor: pointer; }
-  tr.wc-edit-row:hover td { background: #F3F8FE; }
   .wc-pen { opacity: 0; color: var(--ink-light); font-size: 0.85rem; margin-left: 4px; }
   tr.wc-edit-row:hover .wc-pen { opacity: 1; }
   tr.wc-g { cursor: pointer; user-select: none; }
   tr.wc-g1 td { background: var(--blue-top); color: var(--white); font-family: 'Kanit', sans-serif; font-weight: 500; padding-top: 10px; padding-bottom: 10px; border-bottom: none; white-space: normal; }
   tr.wc-g2 td { background: #DCE8F8; color: var(--blue-top); font-weight: 600; font-size: 0.86rem; padding-top: 7px; padding-bottom: 7px; border-bottom: 1px solid var(--line); white-space: normal; }
-  tr.wc-g:hover td { filter: brightness(1.08); }
+  tr.wc-g:hover .wc-car { transform: scale(1.3); }
+  tr.wc-g.shut:hover .wc-car { transform: rotate(-90deg) scale(1.3); }
   .wc-car { display: inline-block; width: 16px; font-size: 0.7rem; transition: transform .15s; }
   tr.wc-g.shut .wc-car { transform: rotate(-90deg); }
   .wc-cnt { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; font-size: 0.74rem; line-height: 19px; font-weight: 400; background: #fff; color: var(--ink-light); }
@@ -231,7 +231,9 @@
   .wc-tools { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 0.84rem; color: var(--ink-light); }
   .wc-lnk { color: var(--blue-bottom); cursor: pointer; user-select: none; }
   .wc-code { white-space: nowrap; font-weight: 600; color: var(--blue-top); font-variant-numeric: tabular-nums; }
-  .wc-cl { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-light); font-size: 0.84rem; }
+  .wc-cl { white-space: pre-line; color: var(--ink); font-size: 0.88rem; line-height: 1.6; }
+  .wc-table td { vertical-align: top; }
+  .wc-table td.wrap { white-space: normal; }
   .wc-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 600; color: var(--deep); }
   @media (max-width: 760px) { .wc-split { grid-template-columns: 1fr; } .wc-side { border: none; padding: 0; max-height: 34vh; } }
   /* แท็บเลือกสายทาง (หน้าเขตพื้นที่) */
@@ -1144,9 +1146,8 @@
       return !q || (x.code + ' ' + x.name + ' ' + (x.nameEn || '') + ' ' + (x.units || []).join(' ') + ' ' + (x.description || '')).toLowerCase().indexOf(q) >= 0;
     };
     const total = all.filter(isLeaf).length;
-    if (S.wcFresh && all.length) { // เข้าหน้านี้ครั้งแรก: หุบทุกหัวข้อไว้ก่อน
+    if (S.wcFresh && all.length) { // เข้าหน้านี้ครั้งแรก: กางทุกหัวข้อไว้ให้อ่านได้ทันที
       S.wcFresh = false; S.wcShut = {};
-      all.forEach(function (x) { if (!isLeaf(x)) S.wcShut[x.code] = true; });
     }
     const changed = changedIds('workcodes', 'code');
     let h = '<div class="panel"><div class="toolbar">' +
@@ -1160,7 +1161,7 @@
       const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
       return '<tr' + attrs + '><td class="wc-code" style="padding-left:' + (12 + depth * 20) + 'px">' + esc(x.code) + '</td>' +
         '<td class="wrap">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') + '</td>' +
-        '<td class="wrap">' + (x.description ? '<div class="wc-cl" title="' + esc(x.description) + '">' + esc(x.description.replace(/\s*\n\s*/g, ' ')) + '</div>' : '<span class="hint">—</span>') + '</td>' +
+        '<td class="wrap">' + (x.description ? '<div class="wc-cl">' + esc(x.description) + '</div>' : '<span class="hint">—</span>') + '</td>' +
         '<td>' + (x.output ? esc(x.output) : '<span class="hint">—</span>') + '</td>' +
         '<td>' + (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ') + (S.owner ? '<span class="wc-pen">✎</span>' : '') + '</td></tr>';
     };
@@ -1190,10 +1191,10 @@
     subs.forEach(function (g) { subCodes[g.code] = 1; });
     const strays = all.filter(function (k) { return isLeaf(k) && match(k) && !all.some(function (g) { return subCodes[g.code] && (g.code === k.parent || under(g.code).some(function (u) { return u.code === k.code; })); }); });
     strays.forEach(function (k) { rows += leafRow(k, 0); shown++; });
-    let main = '<div class="wc-tools"><span class="wc-lnk" data-wc-all="1">ขยายทั้งหมด</span> · <span class="wc-lnk" data-wc-all="0">ยุบทั้งหมด</span>' +
+    let main = '<div class="wc-tools">' +
       '<span class="hint" style="margin-left:auto">' + (q ? 'พบ ' + shown + ' จาก ' : '') + total + ' รหัส</span></div>';
     if (!shown) main += '<div class="empty">ไม่มีรหัสงานที่ตรงกับคำค้นหา</div>';
-    else main += '<div class="table-wrap" style="max-height:68vh;overflow:auto"><table><thead><tr><th style="width:110px">รหัสงาน</th><th style="width:24%">ชื่องาน</th><th>ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    else main += '<div class="table-wrap" style="max-height:75vh;overflow:auto"><table class="wc-table"><thead><tr><th style="width:110px">รหัสงาน</th><th style="width:20%">ชื่องาน</th><th style="width:48%">ลักษณะงาน</th><th style="width:84px">ผลผลิต</th><th style="width:130px">หน่วยนับ</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
     v.innerHTML = h + main + '</div>';
   }
 
@@ -2072,12 +2073,6 @@
 
   /* ---------- ปุ่มต่างๆ ---------- */
   document.addEventListener('click', function (e) {
-    const wa = e.target.closest('[data-wc-all]');
-    if (wa) { // ขยาย/ยุบหัวข้อทั้งหมดในตารางรหัสงาน
-      S.wcShut = {};
-      if (wa.dataset.wcAll === '0') items('workcodes').forEach(function (x) { if (!(x.units || []).length) S.wcShut[x.code] = true; });
-      render(); return;
-    }
     const wg = e.target.closest('[data-wc-t]');
     if (wg && !e.target.closest('[data-act]')) { // คลิกแถวหัวข้อ = พับ/กาง
       const c = wg.dataset.wcT;
