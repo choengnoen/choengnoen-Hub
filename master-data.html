@@ -1812,9 +1812,7 @@
       '<p>ดาวน์โหลดข้อมูลกลางทั้งหมดเป็นไฟล์ JSON เก็บไว้เป็นสำรอง หรือใช้นำเข้ากลับภายหลัง</p>' +
       '<button class="btn" type="button" data-act="export">ดาวน์โหลดไฟล์สำรอง (.json)</button></div>';
     if (S.owner) {
-      const types = ['master-seed.json', 'rightofway-seed.json', 'surface-seed.json', 'workcodes-seed.json', 'ไฟล์สำรองของหน้านี้', 'ไฟล์เขตพื้นที่จากระบบงาน'];
-      h += '<div class="io-card"><div class="io-head"><div class="io-ico">' + ico(UP) + '</div><div><h3>นำเข้าข้อมูล</h3>' +
-        '<p class="hint" style="margin:2px 0 0">ข้อมูลที่นำเข้าจะเป็นฉบับร่างก่อน ตรวจดูในแต่ละแท็บแล้วค่อยกดบันทึก</p></div></div>' +
+      h += '<div class="io-card"><div class="io-head"><div class="io-ico">' + ico(UP) + '</div><div><h3>นำเข้าข้อมูล</h3></div></div>' +
         '<div class="io-form">' +
         '<label class="f">ราคาประเมินในไฟล์ ให้เป็นของปีงบ<input type="number" id="imp-fy" value="' + currentFiscalYear() + '" min="2560" max="2700"></label>' +
         '<label class="f">ถ้ารหัสซ้ำกับที่มีอยู่<select id="imp-mode"><option value="skip">ข้าม (เก็บของเดิม)</option><option value="replace">ใช้ข้อมูลจากไฟล์ทับ</option><option value="all">แทนที่ทั้งชุด (ลบรายการที่ไม่มีในไฟล์)</option></select></label>' +
@@ -1822,9 +1820,7 @@
         '<label class="io-drop" id="imp-drop"><input type="file" id="imp-file" accept=".json,application/json">' +
         '<span class="io-drop-ico">' + ico(UP) + '</span><b>เลือกไฟล์ JSON เพื่อนำเข้า</b>' +
         '<span class="hint">คลิกที่นี่ หรือลากไฟล์มาวาง</span></label>' +
-        '<div id="imp-result" class="meta" style="margin-top:12px"></div>' +
-        '<p class="hint" style="margin:16px 0 0;font-weight:600">ไฟล์ที่รองรับ</p>' +
-        '<div class="io-types">' + types.map(function (t) { return '<span class="io-chip">' + t + '</span>'; }).join('') + '</div></div>';
+        '<div id="imp-result" class="meta" style="margin-top:12px"></div></div>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -2013,14 +2009,25 @@
       docs.map(function (d) { return '<option value="' + esc(d) + '"' + (S.histDoc === d ? ' selected' : '') + '>' + esc(docTitle(d)) + '</option>'; }).join('') + '</select></label>' +
       '<div class="grow"></div>' +
       '<input type="search" id="hist-search" style="width:240px" placeholder="ค้นหาชื่อสายทางหรือรายการที่แก้…" value="' + esc(S.histSearch) + '">' +
-      '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>' +
-      '<div class="h-sum"><span><b>' + items.length + '</b> ครั้งที่แก้ไข</span><span><b>' + groups.length + '</b> เอกสาร</span>' +
-      '<span class="h-tag add">เพิ่ม +' + tot.add + '</span><span class="h-tag edit">แก้ไข ' + tot.edit + '</span><span class="h-tag del">ลบ ' + tot.del + '</span></div>';
+      '<button class="btn" type="button" data-act="hist-reload">โหลดใหม่</button></div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีประวัติการแก้ไข</div>';
     else if (!groups.length) h += '<div class="empty">ไม่พบรายการที่ตรงกับตัวกรอง</div>';
-    groups.forEach(function (g) { // แสดงแค่หัวรายการของแต่ละเอกสาร (ไม่มีส่วนขยายรุ่น/รายละเอียด)
-      h += '<div class="h-grp"><div class="h-gh" style="cursor:default"><h4>' + esc(docTitle(g.doc)) + '</h4>' +
-        '<div class="h-cnt"><span class="hint">แก้ล่าสุด ' + esc(dayLabel(g.list[0].at)) + '</span><span class="io-chip">' + g.list.length + ' ครั้ง</span></div></div></div>';
+    groups.forEach(function (g) {
+      let sid = S.histSel[g.doc];
+      if (!g.list.some(function (x) { return x.__id === sid; })) sid = g.list[0].__id;
+      const cur = g.list.filter(function (x) { return x.__id === sid; })[0];
+      const open = S.histOpen[g.doc] !== undefined ? S.histOpen[g.doc] : !!q; // เริ่มต้นหุบทุกรายการ (ค้นหาอยู่ = กางให้)
+      h += '<div class="h-grp' + (open ? ' open' : '') + '"><div class="h-gh" data-act="hist-grp" data-id="' + esc(g.doc) + '"><span class="h-car">▶</span><h4>' + esc(docTitle(g.doc)) + '</h4>' +
+        '<div class="h-cnt"><span class="hint">แก้ล่าสุด ' + esc(dayLabel(g.list[0].at)) + '</span><span class="io-chip">' + g.list.length + ' ครั้ง</span></div></div><div class="h-gb"><div class="h-chain">';
+      g.list.slice().reverse().forEach(function (x, i) {
+        if (i) h += '<span class="ln"></span>';
+        h += '<button type="button" class="h-vchip' + (x.__id === sid ? ' on' : '') + '" data-act="hist-ver" data-id="' + esc(x.__id) + '">รุ่น ' + x.toVersion + '</button>';
+      });
+      h += '</div><div class="h-vinfo"><div class="top"><span>รุ่น ' + cur.fromVersion + ' → ' + cur.toVersion + '</span><span>' + esc(fmtDateTime(cur.at)) + '</span></div><ul>' +
+        linesOf(cur).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>' +
+        '<div style="margin-top:12px">' + (cur.fromVersion
+          ? '<button class="btn sm" type="button" data-act="hist-restore" data-id="' + esc(cur.__id) + '">กู้คืนเป็นฉบับก่อนการแก้ไขนี้ (รุ่น ' + cur.fromVersion + ')</button>'
+          : '<span class="hint">รุ่นแรก ไม่มีฉบับก่อนหน้าให้กู้คืน</span>') + '</div></div></div></div>';
     });
     if (all.length >= 100) h += '<p class="hint" style="margin:10px 0 0">แสดงการแก้ไขล่าสุด 100 ครั้ง</p>';
     v.innerHTML = h + '</div>';
