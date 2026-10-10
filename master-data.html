@@ -204,6 +204,7 @@
   .pill.warn { background: #FDE8E6; color: var(--red); font-weight: 600; }
   .row-actions { white-space: nowrap; text-align: right; }
   /* รหัสงาน: เมนูหมวดย่อยด้านซ้าย + ตารางด้านขวา · เจ้าของคลิกแถวเพื่อแก้ไข */
+  table.mid th, table.mid td { vertical-align: middle; }
   .wc-split { display: grid; grid-template-columns: 250px 1fr; gap: 16px; align-items: start; }
   .wc-side { border-right: 1px solid var(--line-soft); padding-right: 10px; max-height: 70vh; overflow: auto; }
   .wc-it { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; font: inherit; text-align: left; border: none; background: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.86rem; line-height: 1.35; }
@@ -1551,11 +1552,11 @@
       }).join('') + '</select></label></div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีราคาประเมินในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าที่แท็บ "นำเข้า / ส่งออก" หรือกด "+ เพิ่มรายการ"' : '') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ใช้บ่อย</th></tr></thead><tbody>';
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table class="mid"><thead><tr><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ใช้บ่อย</th></tr></thead><tbody>';
       list.forEach(function (x) {
         const a = x.a;
         const cls = [changed.has(a.key) ? 'changed' : '', a.hidden ? 'muted' : '', editable ? 'clickable' : ''].join(' ');
-        h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(a.key) + '</td><td class="wrap">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
+        h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td class="wrap">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
           '<td class="num">' + fmtNum(a.price, 2) + '</td><td>' + esc(catLabel(a.category)) + '</td>' +
           '<td>' + (a.frequent ? '★' : '') + '</td></tr>';
       });
