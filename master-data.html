@@ -714,7 +714,6 @@
           '</tr>';
       });
       h += '</tbody></table></div>';
-      h += '<p class="hint" style="margin-top:8px">ถ้าโอนสายทางให้หมวดอื่น แนะนำให้เปลี่ยนสถานะเป็น "โอนแล้ว" แทนการลบ เพื่อไม่ให้เคสเก่าที่อ้างถึงสายทางนี้เสีย</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -742,7 +741,7 @@
         '<option value="transferred"' + (r.status === 'transferred' ? ' selected' : '') + '>โอนให้หน่วยงานอื่นแล้ว</option></select></label>' +
       field('transferredDate', 'วันที่โอน', r.transferredDate, 'date') +
       field('transferNote', 'หมายเหตุการโอน', r.transferNote, 'text', '', 'full') +
-      '</div><p class="hint">ช่วง กม. พิมพ์ได้ทั้งแบบ 223+650 หรือเป็นกิโลเมตร 223.65</p>',
+      '</div>',
       function (f) {
         const o = {
           highway: f.highway.trim(), controlNo: f.controlNo.trim(), section: f.section.trim(),
@@ -789,7 +788,7 @@
       [['*', 'ทั้งหมด', all.length]].concat(hws.map(function (k) {
         return [k, 'ทล.' + k, all.filter(function (z) { return String(z.highway) === k; }).length];
       })).forEach(function (t) {
-        h += '<button type="button" class="hw-tab' + (S.zoneHw === t[0] ? ' on' : '') + '" data-act="zone-hw" data-id="' + esc(t[0]) + '">' + esc(t[1]) + ' <span>' + t[2] + '</span></button>';
+        h += '<button type="button" class="hw-tab' + (S.zoneHw === t[0] ? ' on' : '') + '" data-act="zone-hw" data-id="' + esc(t[0]) + '">' + esc(t[1]) + '</button>';
       });
       h += '</div>';
       h += '<div class="table-wrap"><table class="zone-tbl"><colgroup><col style="width:8%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:10%"><col style="width:15%"></colgroup>' +
@@ -801,7 +800,6 @@
           '<td>' + esc(z.tambon) + '</td><td>' + esc(z.amphoe) + '</td><td>' + esc(z.changwat) + '</td><td class="wrap">' + esc((z.moobans || []).join(', ')) + '</td></tr>';
       });
       h += '</tbody></table></div>';
-      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -878,12 +876,11 @@
       return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo)) || (a.seq - b.seq);
     });
     const changed = changedIds('rightofway', 'id');
-    let h = '<div class="panel"><div class="toolbar">' +
-      '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>' +
-      '<div class="grow"></div>';
+    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
-    h += '</div><p class="meta">' + esc(docMeta('rightofway')) + ' · ทั้งหมด ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    h += '<p class="hint">ความกว้างวัดจากศูนย์กลางทางไปแต่ละฝั่ง (เมตร) ใช้ในงานระวังชี้แนวเขตที่ดิน งานขออนุญาตในเขตทาง และงานรุกล้ำเขตทาง</p>';
+    h += '</div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">' +
+      '<p class="meta" style="margin:0">' + esc(docMeta('rightofway')) + ' · ทั้งหมด ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>' +
+      '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label></div>';
     if (all.length) h += hwTabsHtml(all, hws, S.rowHw, 'row-hw');
     if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
@@ -897,7 +894,6 @@
           '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td></tr>';
       });
       h += '</tbody></table></div>';
-      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -957,7 +953,6 @@
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="surf-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('surface')) + ' · ทั้งหมด ' + all.length + ' แถว' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    h += '<p class="hint">จำนวนช่องจราจรนับต่อทิศทาง (แต่ละช่วงมีแถวซ้ายทางและขวาทาง) ใช้คำนวณระยะเทียบ 2 ช่องจราจร / ลาดยาง / คอนกรีต ของสายทางได้ที่แท็บ "สายทาง"</p>';
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
@@ -971,7 +966,6 @@
           '<td class="num">' + fmtW(x.shoulderLeftWidth) + '</td><td class="num">' + fmtW(x.shoulderRightWidth) + '</td><td>' + esc(x.asOf) + '</td></tr>';
       });
       h += '</tbody></table></div>';
-      if (S.owner) h += '<p class="hint">คลิกที่แถวเพื่อแก้ไข · ปุ่มลบอยู่ในหน้าต่างแก้ไข</p>';
     }
     v.innerHTML = h + '</div>';
   }
@@ -1114,7 +1108,6 @@
       '<div class="grow"><input type="search" id="wc-search" placeholder="ค้นหารหัส ชื่องาน หรือหน่วย…" value="' + esc(S.wcSearch) + '"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="wc-add">+ เพิ่มรหัสงาน</button>';
     h += '</div><p class="meta">' + esc(docMeta('workcodes')) + ' · ทั้งหมด ' + total + ' รหัสงาน (' + all.length + ' รายการรวมหัวข้อ)' + (list.length !== total ? ' · แสดง ' + list.length : '') + '</p>';
-    h += '<p class="hint">ตามรายละเอียดรหัสงาน กรมทางหลวง (แก้ไขและเพิ่มเติม ธ.ค. 2565) · 1 รหัสงานมีหน่วยนับได้หลายหน่วย ระบบงานจะให้เลือกจากหน่วยในรายการนี้ (หน่วยแรก = หน่วยหลัก)' + (S.owner ? ' · เจ้าของเว็บ: คลิกที่แถวเพื่อแก้ไข / ลบ' : '') + '</p>';
     if (!all.length) { v.innerHTML = h + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
     // เมนูซ้าย: ทั้งหมด + หมวดย่อย (เลือกหมวดแล้วขยายหัวข้อระดับถัดไป เช่น 21110, 21120)
     let side = '<button type="button" class="wc-it' + (S.wcGroup === '*' ? ' on' : '') + '" data-wc-g="*"><span>ทั้งหมด</span><span class="n">' + total + '</span></button>';
@@ -1434,7 +1427,6 @@
     }).join('') + '</select><div class="grow"><input type="search" id="man-search" placeholder="ค้นหาชื่อคู่มือ…" value="' + esc(S.manSearch) + '"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="man-add">+ เพิ่มคู่มือ</button>';
     h += '</div><p class="meta">' + esc(docMeta('manuals')) + ' · ทั้งหมด ' + all.length + ' เล่ม' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    h += '<p class="hint">ทะเบียนคู่มือกลาง เก็บชื่อ ฉบับ และลิงก์ PDF (ไม่เก็บไฟล์) · "ใช้ในข้อมูลกลาง" = ชุดข้อมูลที่ถอดมาจากคู่มือเล่มนั้น</p>';
     if (!all.length) h += '<div class="empty">ยังไม่มีทะเบียนคู่มือ' + (S.owner ? ' นำเข้าไฟล์ trafficstd-seed.json ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>ชื่อคู่มือ</th><th>หมวด</th><th>ฉบับ</th><th class="num">หน้า</th><th>ใช้ในข้อมูลกลาง</th><th>PDF</th></tr></thead><tbody>';
@@ -1535,9 +1527,6 @@
         return '<button type="button" class="hw-tab' + (S.assetSrc === c[0] ? ' on' : '') + '" data-act="asset-src" data-id="' + c[0] + '">' + c[1] + ' <span>' + c[2] + '</span></button>';
       }).join('') + '</div>';
     }
-    if (nNew < all.length) h += '<div class="banner info">ปีงบ ' + S.fy + ' ปรับราคาแล้ว ' + nNew + ' รายการ อีก ' + (all.length - nNew) + ' รายการยังไม่ได้ปรับ ระบบใช้ราคาล่าสุดจากปีงบก่อนหน้า (ดูป้ายในคอลัมน์ "ที่มาของราคา")' +
-      (editable ? ' — แก้ราคารายการใด ระบบจะบันทึกเป็นราคาของปีงบ ' + S.fy + ' ให้เอง (ราคาปีงบเดิมคงเดิม)' : '') + '</div>';
-    if (S.owner && S.fy < cur) h += '<div class="banner info">ปีงบที่ผ่านมาแล้ว ดูได้อย่างเดียว — การแก้ราคาตอนนี้จะเป็นราคาของปีงบ ' + cur + ' (เลือกปีงบ ' + cur + ' เพื่อแก้)</div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีราคาประเมินในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าที่แท็บ "นำเข้า / ส่งออก" หรือกด "+ เพิ่มรายการ"' : '') + '</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ที่มาของราคา</th><th>ใช้บ่อย</th></tr></thead><tbody>';
