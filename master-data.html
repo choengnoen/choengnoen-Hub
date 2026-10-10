@@ -235,6 +235,10 @@
   .wc-code { white-space: nowrap; font-weight: 600; color: var(--blue-top); font-variant-numeric: tabular-nums; }
   .wc-cl { white-space: pre-line; color: var(--ink); font-size: 0.88rem; line-height: 1.6; }
   .wc-table td { vertical-align: top; }
+  /* กฎลายตาราง/เมาส์ชี้ทั่วไป (tbody tr:hover, :nth-child(even)) ทำให้สีแถวสลับไปมา → ล็อกสีของตารางรหัสงานให้คงที่ */
+  .wc-table tbody tr.wc-g1 td, .wc-table tbody tr.wc-g1:hover td, .wc-table tbody tr.wc-g1:nth-child(even) td { background: var(--blue-top); }
+  .wc-table tbody tr.wc-g2 td, .wc-table tbody tr.wc-g2:hover td, .wc-table tbody tr.wc-g2:nth-child(even) td { background: #DCE8F8; }
+  .wc-table tbody tr:not(.wc-g):not(.changed) td, .wc-table tbody tr:not(.wc-g):not(.changed):hover td, .wc-table tbody tr:not(.wc-g):not(.changed):nth-child(even) td { background: var(--white); }
   .wc-table td.wrap { white-space: normal; }
   .wc-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 600; color: var(--deep); }
   @media (max-width: 760px) { .wc-split { grid-template-columns: 1fr; } .wc-side { border: none; padding: 0; max-height: 34vh; } }
