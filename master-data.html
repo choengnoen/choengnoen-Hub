@@ -226,7 +226,7 @@
   table.compact { font-size: 0.84rem; }
   table.compact th, table.compact td { padding: 8px 8px; }
   table.compact .km { display: block; white-space: nowrap; }
-  table.compact .ctl { color: var(--ink-light); font-size: 0.8rem; }
+  table .ctl { color: var(--ink-light); font-size: 0.8rem; }
   table.compact tr.clickable { cursor: pointer; }
   .btn.danger-link { margin-right: auto; color: var(--red); }
   .empty { padding: 36px 20px; text-align: center; color: var(--ink-light); }
@@ -898,18 +898,18 @@
       return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo)) || (a.seq - b.seq);
     });
     const changed = changedIds('rightofway', 'id');
-    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>' +
-      '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>';
+    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + ' · ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
     if (all.length) h += hwTabsHtml(all, hws, S.rowHw, 'row-hw');
+    h += '<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label></div>';
     if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>ทางหลวง</th><th>ตอน</th><th>ช่วง กม.</th>' +
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table style="table-layout:fixed"><colgroup><col style="width:12%"><col style="width:18%"><col style="width:19%"><col style="width:10%"><col style="width:10%"><col style="width:16%"><col style="width:15%"></colgroup><thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
         '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th></tr></thead><tbody>';
       list.forEach(function (x) {
         const warn = /^ตรวจสอบ/.test(x.note || '');
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td class="wrap">' + esc(((x.controlNo ? x.controlNo + ' ' : '') + rowSection(x)).trim()) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(x.controlNo) + '</span></td><td style="white-space:nowrap">' + esc(rowSection(x)) + '</td>' +
           '<td style="white-space:nowrap">' + esc(x.kmStart === x.kmEnd ? fmtKm(x.kmStart) : fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td>' +
           '<td class="num">' + fmtW(x.left) + '</td><td class="num">' + fmtW(x.right) + '</td>' +
           '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td></tr>';
@@ -977,15 +977,15 @@
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:8%"><col style="width:7%"><col style="width:17%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:9%"><col style="width:11%"><col style="width:8%"><col style="width:8%"><col style="width:8%"></colgroup>' +
-        '<thead><tr><th>ทางหลวง</th><th>ตอน</th><th>ช่วง กม.</th><th>ระยะ (กม.)</th><th>ทิศทาง</th>' +
-        '<th>ช่องจราจร</th><th>กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th>ไหล่ซ้าย (ม.)</th><th>ไหล่ขวา (ม.)</th><th>ข้อมูล ณ</th></tr></thead><tbody>';
+      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>' +
+        '<thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th><th>ระยะ (กม.)</th><th>ทิศทาง</th>' +
+        '<th>ช่องจราจร</th><th>กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th>ไหล่ซ้าย (ม.)</th><th>ไหล่ขวา (ม.)</th></tr></thead><tbody>';
       list.forEach(function (x) {
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="surf-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td>' + esc(x.controlNo) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="surf-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b> <span class="ctl">' + esc(x.controlNo) + '</span></td><td>' + esc(rowSection(x)) + '</td>' +
           '<td style="white-space:nowrap">' + esc(fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td><td class="num">' + fmtNum((x.kmEnd - x.kmStart) / 1000, 3) + '</td>' +
           '<td>' + esc(SIDE_TH[x.side] || x.side) + '</td><td class="num">' + esc(x.lanes) + '</td><td class="num">' + fmtW(x.laneWidth) + '</td>' +
           '<td>' + (x.surface === 'conc' ? '<span class="pill">คอนกรีต</span>' : esc(SURF[x.surface || ''])) + '</td>' +
-          '<td class="num">' + fmtW(x.shoulderLeftWidth) + '</td><td class="num">' + fmtW(x.shoulderRightWidth) + '</td><td>' + esc(x.asOf) + '</td></tr>';
+          '<td class="num">' + fmtW(x.shoulderLeftWidth) + '</td><td class="num">' + fmtW(x.shoulderRightWidth) + '</td></tr>';
       });
       h += '</tbody></table></div>';
     }
