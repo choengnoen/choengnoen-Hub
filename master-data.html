@@ -168,7 +168,8 @@
   table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.9rem; }
   th, td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; white-space: nowrap; }
   /* คอลัมน์ข้อความยาว (ชื่อตอน หมายเหตุ ชื่อรายการ) ให้ตัดบรรทัดได้ */
-  td.wrap { white-space: normal; min-width: 180px; }
+  td.wrap { white-space: normal; min-width: 0; }
+  .panel > .table-wrap { overflow-x: hidden; }
   th { background: var(--head); color: var(--deep); font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 0.86rem; white-space: nowrap;
     position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--line); }
   th .hint { font-weight: 400; }
@@ -700,10 +701,10 @@
     });
     const changed = changedIds('routes', 'id');
     let h = '<div class="panel">';
-    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('routes')) + ' · ' + list.length + ' สายทาง</p></div>';
+    h += '<div class="toolbar"><div class="grow"></div>';
     if (S.owner && items('surface').length) h += '<button class="btn" type="button" data-act="route-calc" title="คำนวณระยะเทียบ 2 ช่องจราจร / ลาดยาง / คอนกรีต จากแท็บผิวทาง">คำนวณจากข้อมูลผิวทาง</button>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="route-add">+ เพิ่มสายทาง</button>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('routes')) + ' · ' + list.length + ' สายทาง</p>';
     if (!list.length) h += '<div class="empty">ยังไม่มีสายทาง นำเข้าข้อมูลตั้งต้นได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
       // ตัวเลขรวมเฉพาะสายทางที่ยังดูแลอยู่
@@ -791,9 +792,9 @@
     const all = list;
     const shown = S.zoneHw === '*' ? all : all.filter(function (z) { return String(z.highway) === S.zoneHw; });
     let h = '<div class="panel">';
-    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('zones')) + ' · ' + all.length + ' ช่วง</p></div>';
+    h += '<div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="zone-add"' + (routes.length ? '' : ' disabled title="เพิ่มสายทางก่อน"') + '>+ เพิ่มเขตพื้นที่</button>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('zones')) + ' · ' + all.length + ' ช่วง</p>';
     if (!list.length) h += '<div class="empty">ยังไม่มีเขตพื้นที่ (ระบบงานโจรกรรมและขออนุญาตมีข้อมูลชุดนี้อยู่ จะดึงมารวมตอนเชื่อมต่อระบบ)</div>';
     else {
       h += '<div class="hw-tabs">';
@@ -897,18 +898,18 @@
       return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo)) || (a.seq - b.seq);
     });
     const changed = changedIds('rightofway', 'id');
-    let h = '<div class="panel"><div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('rightofway')) + ' · ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p></div>' +
+    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>' +
       '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('rightofway')) + ' · ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
     if (all.length) h += hwTabsHtml(all, hws, S.rowHw, 'row-hw');
     if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>ทางหลวง</th><th>ตอน</th><th class="num">ลำดับ</th><th>ช่วง กม.</th>' +
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>ทางหลวง</th><th>ตอน</th><th>ช่วง กม.</th>' +
         '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th></tr></thead><tbody>';
       list.forEach(function (x) {
         const warn = /^ตรวจสอบ/.test(x.note || '');
-        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td class="wrap">' + esc(((x.controlNo ? x.controlNo + ' ' : '') + rowSection(x)).trim()) + '</td><td class="num">' + esc(x.seq) + '</td>' +
+        h += '<tr class="' + (changed.has(x.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="row-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td><b>' + esc(x.highway) + '</b></td><td class="wrap">' + esc(((x.controlNo ? x.controlNo + ' ' : '') + rowSection(x)).trim()) + '</td>' +
           '<td style="white-space:nowrap">' + esc(x.kmStart === x.kmEnd ? fmtKm(x.kmStart) : fmtKm(x.kmStart) + ' – ' + fmtKm(x.kmEnd)) + '</td>' +
           '<td class="num">' + fmtW(x.left) + '</td><td class="num">' + fmtW(x.right) + '</td>' +
           '<td class="wrap">' + esc(x.basis) + '</td><td class="wrap"' + (warn ? ' style="color:var(--red)"' : '') + '>' + (warn ? '⚠ ' : '') + esc(x.note) + '</td></tr>';
@@ -970,9 +971,9 @@
       .sort(function (a, b) { return Number(a.highway) - Number(b.highway) || a.kmStart - b.kmStart || String(a.side).localeCompare(String(b.side)); });
     const changed = changedIds('surface', 'id');
     if (S.surfHw !== '*' && hws.indexOf(S.surfHw) < 0) S.surfHw = '*';
-    let h = '<div class="panel"><div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('surface')) + ' · ' + all.length + ' แถว' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p></div>';
+    let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="surf-add">+ เพิ่มช่วง</button>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('surface')) + ' · ' + all.length + ' แถว' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
@@ -1126,10 +1127,10 @@
     const total = all.filter(isLeaf).length;
     const changed = changedIds('workcodes', 'code');
     let h = '<div class="panel"><div class="toolbar">' +
-      '<div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('workcodes')) + ' · ' + total + ' รหัสงาน (' + all.length + ' รายการรวมหัวข้อ)' + (list.length !== total ? ' · แสดง ' + list.length : '') + '</p></div>' +
+      '<div class="grow"></div>' +
       '<input type="search" id="wc-search" style="width:240px" placeholder="ค้นหารหัส ชื่องาน หรือหน่วย…" value="' + esc(S.wcSearch) + '">';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="wc-add">+ เพิ่มรหัสงาน</button>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('workcodes')) + ' · ' + total + ' รหัสงาน (' + all.length + ' รายการรวมหัวข้อ)' + (list.length !== total ? ' · แสดง ' + list.length : '') + '</p>';
     if (!all.length) { v.innerHTML = h + '<div class="empty">ยังไม่มีรหัสงานในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าไฟล์ workcodes-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"' : '') + '</div></div>'; return; }
     // เมนูซ้าย: ทั้งหมด + หมวดย่อย (เลือกหมวดแล้วขยายหัวข้อระดับถัดไป เช่น 21110, 21120)
     let side = '<button type="button" class="wc-it' + (S.wcGroup === '*' ? ' on' : '') + '" data-wc-g="*"><span>ทั้งหมด</span><span class="n">' + total + '</span></button>';
@@ -1152,7 +1153,7 @@
       list.forEach(function (x) {
         const attrs = S.owner ? ' class="wc-edit-row' + (changed.has(x.code) ? ' changed' : '') + '" data-act="wc-edit" data-id="' + esc(x.code) + '" title="คลิกเพื่อแก้ไข"' : (changed.has(x.code) ? ' class="changed"' : '');
         main += '<tr' + attrs + '><td style="white-space:nowrap">' + esc(x.code) + '</td>' +
-          '<td class="wrap" style="min-width:260px">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') +
+          '<td class="wrap">' + esc(x.name) + (x.nameEn ? '<div class="hint">' + esc(x.nameEn) + '</div>' : '') +
             (x.description ? '<details style="margin-top:4px"><summary class="hint" style="cursor:pointer">ลักษณะงาน' + (x.output ? ' · ผลผลิต: ' + esc(x.output) : '') + '</summary><div style="white-space:pre-line;margin-top:4px;font-size:.92em">' + esc(x.description) + '</div></details>' : '') + '</td>' +
           '<td>' + (x.units || []).map(function (u, i) { return '<span class="pill"' + (i ? ' style="opacity:.75"' : '') + '>' + esc(u) + '</span>'; }).join(' ') + (S.owner ? '<span class="wc-pen">✎</span>' : '') + '</td></tr>';
       });
@@ -1286,9 +1287,9 @@
     const doc = tsDoc();
     const sec = tsSection(S.tsSec);
     let h = '<div class="panel">';
-    h += '<div class="toolbar"><div class="grow"><p class="meta" style="margin:0">' + esc(docMeta('traffic_std')) + '</p></div>';
+    h += '<div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<label class="btn" style="cursor:pointer">นำเข้าตารางจากคู่มือ (trafficstd-seed.json)<input type="file" id="ts-file" accept=".json,application/json" hidden></label>';
-    h += '</div>';
+    h += '</div><p class="meta">' + esc(docMeta('traffic_std')) + '</p>';
     if (!doc) {
       h += '<div class="empty">ยังไม่มีมาตรฐานงานจราจรในฐานข้อมูลกลาง' + (S.owner ? '<br>กด "นำเข้าตารางจากคู่มือ" แล้วเลือกไฟล์ <b>trafficstd-seed.json</b> ตรวจดูแล้วกดบันทึก' : '') + '</div>';
       v.innerHTML = h + '</div>';
@@ -1453,7 +1454,7 @@
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table><thead><tr><th>รหัส</th><th>ชื่อคู่มือ</th><th>หมวด</th><th>ฉบับ</th><th class="num">หน้า</th><th>ใช้ในข้อมูลกลาง</th><th>PDF</th></tr></thead><tbody>';
       list.forEach(function (x) {
-        h += '<tr class="' + [changed.has(x.id) ? 'changed' : '', x.supersededBy ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ') + '"' + (S.owner ? ' data-act="man-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(x.id) + '</td><td class="wrap" style="min-width:280px">' + esc(x.title) +
+        h += '<tr class="' + [changed.has(x.id) ? 'changed' : '', x.supersededBy ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ') + '"' + (S.owner ? ' data-act="man-edit" data-id="' + esc(x.id) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(x.id) + '</td><td class="wrap">' + esc(x.title) +
           (x.note ? '<div class="hint">' + esc(x.note) + '</div>' : '') + (x.supersededBy ? '<div class="hint">มีฉบับใหม่กว่า: ' + esc(x.supersededBy) + '</div>' : '') + '</td>' +
           '<td>' + esc(manCatLabel(x.category)) + '</td><td>' + esc(x.edition) + '</td><td class="num">' + fmtNum(x.pages) + '</td><td>' + (x.usedBy ? (x.usedBy === 'traffic_std' ? '<a href="#trafficstd" data-tab="trafficstd" class="pill" title="ไปที่แท็บมาตรฐานงานจราจร">' + esc(x.usedBy) + ' →</a>' : '<span class="pill">' + esc(x.usedBy) + '</span>') : '') + '</td>' +
           '<td>' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">เปิด</a>' : '<span class="hint" title="' + esc(x.file || '') + '">ยังไม่มีลิงก์</span>') + '</td></tr>';
@@ -1555,7 +1556,7 @@
       list.forEach(function (x) {
         const a = x.a;
         const cls = [changed.has(a.key) ? 'changed' : '', a.hidden ? 'muted' : '', editable ? 'clickable' : ''].join(' ');
-        h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(a.key) + '</td><td class="wrap" style="min-width:260px">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
+        h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td>' + esc(a.key) + '</td><td class="wrap">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
           '<td class="num">' + fmtNum(a.price, 2) + '</td><td>' + esc(catLabel(a.category)) + '</td>' +
           '<td>' + (x.fy === S.fy ? '<span class="pill ok">ปรับราคาปีงบ ' + x.fy + '</span>' : '<span class="pill off">ใช้ราคาปีงบ ' + x.fy + '</span>') + '</td><td>' + (a.frequent ? '★' : '') + '</td></tr>';
       });
