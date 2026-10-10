@@ -209,6 +209,8 @@
   .preview-label { font-size: 0.8rem; color: var(--ink-light); margin: 0 0 4px; }
   .pos-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.85rem; color: var(--ink-light); }
   .pos-row[hidden] { display: none; }
+  .hero-ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .hero-ctrl-row .pos-row { margin: 0 0 0 auto; }
   .btn-pos {
     padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line);
     background: var(--white); color: var(--ink); cursor: pointer;
@@ -1160,14 +1162,17 @@
             <div class="modal-field">
               <div class="preview-label">ตัวอย่างหัวเว็บ (แสดงตรงกับหัวเว็บจริง)</div>
               <div class="hero-preview" id="hero-preview"></div>
-              <div class="pos-row" id="pos-row">
-                <span>ลากรูปในแถบด้านบน หรือกด:</span>
-                <button type="button" class="btn-pos" data-pos-y="0">ชิดบน</button>
-                <button type="button" class="btn-pos" data-pos-y="50">กลาง</button>
-                <button type="button" class="btn-pos" data-pos-y="100">ชิดล่าง</button>
+              <div class="hero-ctrl-row">
+                <div class="upload-row">
+                  <label class="btn-upload">🖼️ เลือกรูปพื้นหลัง<input type="file" id="hero-file" accept="image/*"></label>
+                </div>
+                <div class="pos-row" id="pos-row">
+                  <button type="button" class="btn-pos" data-pos-y="0">ชิดบน</button>
+                  <button type="button" class="btn-pos" data-pos-y="50">กลาง</button>
+                  <button type="button" class="btn-pos" data-pos-y="100">ชิดล่าง</button>
+                </div>
               </div>
-              <div class="upload-row">
-                <label class="btn-upload">🖼️ เลือกรูปพื้นหลัง<input type="file" id="hero-file" accept="image/*"></label>              </div>
+              <div class="preview-label" style="margin-top:6px">ลากรูปในแถบด้านบนเพื่อเลื่อนตำแหน่ง หรือกดปุ่มด้านขวา</div>
             </div>
 
             <div class="modal-error" id="hero-error"></div>
