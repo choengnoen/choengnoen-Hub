@@ -9,6 +9,7 @@
      - sites_public  : การ์ดระบบที่ทีมงานเห็นได้เลยโดยไม่ต้องล็อกอิน (อ่านได้ทุกคน, เขียนได้เฉพาะเจ้าของ)
      - sites_private : การ์ดงานส่วนตัว (อ่าน/เขียนได้เฉพาะเจ้าของที่ล็อกอินแล้วเท่านั้น)
      - settings/hero : { image, imagePos, logo, title, subtitle, updatedAt } รูปพื้นหลัง/รูปโปรไฟล์/ชื่อเว็บ (อ่านได้ทุกคน, เขียนได้เฉพาะเจ้าของ)
+     - status_summary/current : { accident, boundary, complaints: { total, over }, updatedAt } ตัวเลขงานค้างบนแถบสถานะ (อ่านได้เฉพาะเจ้าของ, เขียนโดย Apps Script เท่านั้น)
      - config/bootstrap : { uid, at } ระบุว่าใครคือเจ้าของเว็บ ตั้งได้ครั้งเดียว (ดู firestore.rules)
 
    หมายเหตุ: ค่า firebaseConfig ด้านล่างเป็นค่าสาธารณะโดยออกแบบ (ไม่ใช่รหัสลับ)
@@ -328,6 +329,15 @@
     return db.collection('settings').doc('hero').onSnapshot(function (d) {
       cb(d.exists ? d.data() : {});
     }, function (err) { console.warn('watch hero failed', err && err.code); });
+  };
+
+  /* ---------- แถบสถานะงานค้าง (status_summary/current) — เจ้าของอ่านได้อย่างเดียว ----------
+     เขียนโดย Apps Script (updateHubStatus ในระบบแจ้งเตือน LINE) ด้วย service account — หน้าเว็บไม่มีสิทธิ์เขียน
+     cb(ข้อมูล) เมื่อมีเอกสาร / cb(null) เมื่อยังไม่มีเอกสาร / onFail(err) เมื่ออ่านไม่ได้ */
+  FBL.watchStatus = function (cb, onFail) {
+    return db.collection('status_summary').doc('current').onSnapshot(function (d) {
+      cb(d.exists ? d.data() : null);
+    }, function (err) { console.warn('watch status failed', err && err.code); if (onFail) onFail(err); });
   };
 
   FBL.saveHero = async function (fields) {

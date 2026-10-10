@@ -61,12 +61,14 @@
     --hero-bg-pos: 50% 50%;
     background:
       var(--hero-bg-image) var(--hero-bg-pos) / cover no-repeat,
-      linear-gradient(180deg, #5B9BD5 0%, #8DBCE6 55%, #C7E0F4 100%);
+      linear-gradient(180deg, #6FB1E6 0%, #A9D3F0 65%, #CFE6F7 100%);
     color: #0A2A4F;
-    padding: 40px 20px;
+    padding: 20px 20px 26px;
   }
+  /* ผู้จัดการเข้าระบบแล้ว: เว้นที่ท้ายหัวเว็บให้แถบสถานะซ้อนทับขอบล่าง */
+  body.owner-in header.hero { padding-bottom: 70px; }
   .hero-inner {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -74,8 +76,8 @@
     flex-wrap: wrap;
   }
   .hero-logo {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
     flex-shrink: 0;
     /* เงาสีขาวรอบวงกลม (drop-shadow ตามรูปทรงจริงของรูป ไม่ใช่กรอบสี่เหลี่ยม) */
@@ -91,7 +93,7 @@
     margin: 0;
     font-family: 'Kanit', sans-serif;
     font-weight: 800;
-    font-size: 2rem;
+    font-size: 1.6rem;
     line-height: 1.15;
     letter-spacing: -0.5px;
     color: #0A2A4F;
@@ -105,7 +107,7 @@
     font-family: 'Kanit', sans-serif;
     font-weight: 400;
     color: #0B0B0B;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     line-height: 1.3;
     letter-spacing: 0.4px;
     text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.9);
@@ -248,9 +250,67 @@
   .btn-link:hover { color: var(--orange); }
 
   main {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 24px 20px 60px;
+    padding: 18px 20px 48px;
+  }
+
+  /* ---------- แถบสถานะ (ผู้จัดการเท่านั้น): กระจกฝ้า วงแหวนรอบตัวเลข ---------- */
+  .status-strip {
+    max-width: 1200px;
+    margin: -50px auto 0;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .status-strip[hidden] { display: none; }
+  .st-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 24px -12px rgba(10,42,79,0.45);
+    color: #14203A;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .st-card:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -12px rgba(10,42,79,0.5); }
+  .st-ring { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+  .st-ring svg { display: block; transform: rotate(-90deg); }
+  .st-ring b {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 1.25rem; line-height: 1;
+  }
+  .st-text { min-width: 0; }
+  .st-name { font-family: 'Kanit', sans-serif; font-weight: 500; font-size: 0.95rem; line-height: 1.3; }
+  .st-sub { font-size: 0.78rem; color: #46506A; line-height: 1.3; }
+  .st-od { font-size: 0.78rem; font-weight: 600; color: #B3261E; line-height: 1.3; }
+  .st-note { max-width: 1200px; margin: 6px auto 0; padding: 0 22px; font-size: 0.74rem; color: var(--ink-light); text-align: right; }
+  .st-note[hidden] { display: none; }
+  .st-accident { --st-color: #1F2A44; --st-track: rgba(31,42,68,0.14); --st-num: #1F2A44; }
+  .st-boundary { --st-color: #2F86DB; --st-track: rgba(47,134,219,0.16); --st-num: #1F6FBD; }
+  .st-complaint { --st-color: #D93A47; --st-track: rgba(217,58,71,0.16); --st-num: #C42F3C; }
+  .st-ring b { color: var(--st-num); }
+  .st-ring .trk { stroke: var(--st-track); }
+  .st-ring .arc { stroke: var(--st-color); }
+  @media (max-width: 640px) {
+    .status-strip { gap: 8px; margin-top: -44px; padding: 0 12px; }
+    .st-card { flex-direction: column; gap: 4px; padding: 10px 4px 8px; text-align: center; border-radius: 16px; }
+    .st-ring { width: 44px; height: 44px; }
+    .st-ring svg { width: 44px; height: 44px; }
+    .st-ring b { font-size: 1.05rem; }
+    .st-name { font-size: 0.8rem; }
+    .st-sub, .st-od { display: none; }
+    body.owner-in header.hero { padding-bottom: 62px; }
   }
 
   .config-banner {
@@ -269,51 +329,68 @@
     border-radius: 4px;
   }
 
+  /* แท็บ: แคปซูลต่อเนื่อง (เห็นเฉพาะผู้จัดการ) */
   .tabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
+    display: inline-flex;
+    max-width: 100%;
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: 14px;
+    border-radius: 999px;
+    background: #E4E8F0;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab {
     font-family: 'Sarabun', sans-serif;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 9px 18px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 6px 15px;
     border-radius: 999px;
-    border: 1.5px solid #E3D6C4;
-    background: var(--white);
-    color: var(--ink);
+    border: 1px solid transparent;
+    background: transparent;
+    color: #4A5368;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease;
   }
+  .tab:hover { color: var(--navy); }
   .tab.active {
-    background: var(--navy);
-    border-color: var(--navy);
-    color: var(--white);
+    background: var(--white);
+    border-color: #D4D9E4;
+    color: var(--navy);
+    font-weight: 600;
   }
 
-  .category-block { margin-bottom: 36px; }
+  /* แต่ละหมวด = การ์ดขาวมีกรอบ (คนทั่วไปเห็นกรอบเดียวไม่มีหัวชื่อหมวด) */
+  .category-block {
+    margin-bottom: 14px;
+    padding: 16px 18px 20px;
+    background: var(--white);
+    border: 1px solid #DFE3EC;
+    border-radius: 18px;
+  }
   .category-block:last-child { margin-bottom: 0; }
   .category-title {
     display: flex;
     align-items: center;
     gap: 10px;
     margin: 0 0 14px;
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   .category-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+    width: 4px;
+    height: 18px;
+    border-radius: 3px;
   }
   .dot-section { background: var(--navy); }
   .dot-personal { background: var(--orange); }
 
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 34px 12px;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: 24px 8px;
     padding: 6px 0;
   }
 
@@ -330,13 +407,35 @@
   }
   .card.accent-personal { --card-accent: var(--orange); }
   .card.open { z-index: 40; }
+  /* ระบบหลัก (งานบริหารหมวด): พื้นเทาอ่อนรอบการ์ด ไม่ดันเลย์เอาต์ */
+  .card.is-main { background: var(--sand); box-shadow: 0 0 0 6px var(--sand); border-radius: 14px; }
+  /* ตัวเลขแดงมุมไอคอน (ผู้จัดการ): จำนวนงานค้างของระบบนั้น */
+  .app-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;   /* มุมซ้ายบน — มุมขวาบนเป็นปุ่มเฟืองของผู้จัดการ */
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #E0454F;
+    color: #fff;
+    font-family: 'Sarabun', sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    line-height: 16px;
+    text-align: center;
+    border: 2px solid #fff;
+    pointer-events: none;
+  }
   .app-icon {
-    width: 92px;
-    height: 92px;
-    border-radius: 26px;
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
     display: grid;
     place-items: center;
-    font-size: 2.8rem;
+    font-size: 2.3rem;
     line-height: 1;
     text-decoration: none;
     background: linear-gradient(145deg, color-mix(in srgb, var(--card-accent) 75%, #fff), var(--card-accent));
@@ -348,12 +447,12 @@
   .app-name {
     font-family: 'Kanit', sans-serif;
     font-weight: 500;
-    font-size: 0.98rem;
+    font-size: 0.9rem;
     line-height: 1.3;
     margin-top: 2px;
   }
   .app-desc {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--ink-light);
     line-height: 1.4;
     margin-top: -4px;
@@ -362,7 +461,7 @@
   .app-gear {
     position: absolute;
     top: -8px;
-    left: calc(50% + 26px);
+    left: calc(50% + 20px);
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -599,14 +698,14 @@
     cursor: pointer;
     font-family: 'Kanit', sans-serif;
     font-weight: 500;
-    font-size: 0.98rem;
+    font-size: 0.9rem;
     padding: 0 4px;
     transition: color 0.15s ease;
   }
   .add-sq {
-    width: 92px;
-    height: 92px;
-    border-radius: 26px;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
     border: 2px dashed #B9C3D2;
     display: grid;
     place-items: center;
@@ -858,11 +957,19 @@
   }
 
   @media (max-width: 480px) {
-    .hero-text h1 { font-size: 1.5rem; }
-    .hero-text .eng-name { font-size: 0.9rem; }
-    .card-grid { grid-template-columns: repeat(2, 1fr); }
-    .app-icon { width: 80px; height: 80px; font-size: 2.4rem; border-radius: 23px; }
-    .app-gear { left: calc(50% + 14px); }
+    .hero-text h1 { font-size: 1.15rem; }
+    .hero-text .eng-name { font-size: 0.8rem; }
+    .hero-logo { width: 46px; height: 46px; }
+    header.hero { padding: 14px 14px 18px; }
+    .hero-inner { flex-wrap: nowrap; gap: 10px; }
+    .hero-text { min-width: 0; }
+    main { padding: 14px 12px 40px; }
+    .category-block { padding: 12px 8px 14px; border-radius: 16px; }
+    .card-grid { grid-template-columns: repeat(3, 1fr); gap: 20px 4px; }
+    .app-icon { width: 64px; height: 64px; font-size: 2rem; border-radius: 19px; }
+    .add-sq { width: 64px; height: 64px; border-radius: 19px; }
+    .app-name { font-size: 0.82rem; }
+    .app-gear { left: calc(50% + 12px); }
     .arrange-hint { display: none; }
   }
 </style>
@@ -891,6 +998,10 @@
         </div>
       </div>
     </header>
+
+    <!-- แถบสถานะ: เห็นเฉพาะผู้จัดการที่เข้าระบบแล้ว (ตัวเลขภายใน) — ข้อมูลมาจาก Apps Script (ฟังก์ชัน updateHubStatus) เขียนไว้ที่ status_summary/current -->
+    <section class="status-strip" id="status-strip" aria-label="สถานะงานค้าง" hidden></section>
+    <div class="st-note" id="status-note" hidden></div>
 
     <main>
       <div id="config-banner" class="config-banner" style="display:none;">
@@ -1218,8 +1329,10 @@
       // วาดหน้าทันที (การ์ดงานหมวดที่โหลดไว้แล้วแสดงได้เลย) แล้วค่อยวาดซ้ำเมื่องานส่วนตัวโหลดเสร็จ
       FBL.watch('sites_private', function () { renderCategories(); }).then(renderAll);
       renderAll();
+      startStatusWatch();
     } else {
       FBL.stop && FBL.stop('sites_private');
+      stopStatusWatch();
       renderAll();
     }
   }
@@ -1444,6 +1557,72 @@
     });
   }
 
+  /* ---------- แถบสถานะงานค้าง (ผู้จัดการเท่านั้น) ----------
+     ตัวเลขอ่านจากเอกสาร status_summary/current ที่ Apps Script (updateHubStatus) อัปเดตทุกชั่วโมง
+     วงแหวน = สัดส่วนที่เลยกำหนดต่อจำนวนค้างทั้งหมด · undefined = กำลังโหลด · null = ยังไม่มีเอกสาร */
+  const statusEl = document.getElementById('status-strip');
+  const statusNoteEl = document.getElementById('status-note');
+  let statusData; // undefined | null | object
+  let statusUnsub = null;
+  const RING_C = 2 * Math.PI * 19;
+  const STATUS_DEFS = [
+    { key: 'accident',   cls: 'st-accident',  name: 'งานอุบัติเหตุ', sub: 'รอส่งแขวง',   od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-accident/' },
+    { key: 'boundary',   cls: 'st-boundary',  name: 'ชี้แนวเขต',     sub: 'รอชี้แนวเขต', od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-landboundary/' },
+    { key: 'complaints', cls: 'st-complaint', name: 'คำร้องทุกข์',   sub: 'รอดำเนินการ', od: 'ค้างเกิน {days} วัน {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-admin/choengnoen1-saraban.html' }
+  ];
+  function statusNum(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.floor(v) : null; }
+  function renderStatus() {
+    document.body.classList.toggle('owner-in', !!isOwner);
+    if (!isOwner) { statusEl.hidden = true; statusNoteEl.hidden = true; statusEl.innerHTML = ''; return; }
+    statusEl.hidden = false;
+    statusEl.innerHTML = STATUS_DEFS.map(function (def) {
+      const v = statusData && statusData[def.key];
+      const total = v ? statusNum(v.total) : null;
+      const over = v ? (statusNum(v.over) || 0) : 0;
+      let num, sub = def.sub, odText = '', arc = '';
+      if (statusData === undefined) { num = '…'; sub = 'กำลังโหลด'; }
+      else if (total === null) { num = '–'; sub = statusData === null ? 'รอเชื่อมข้อมูล' : 'ยังไม่มีข้อมูล'; }
+      else {
+        num = String(total);
+        if (total === 0) sub = 'ไม่มีรายการค้าง';
+        if (over > 0 && total > 0) {
+          odText = def.od.replace('{days}', String(statusNum(v.days) || 7)).replace('{n}', String(over));
+          const dash = Math.min(1, over / total) * RING_C;
+          arc = '<circle class="arc" cx="24" cy="24" r="19" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + RING_C.toFixed(1) + '"></circle>';
+        }
+      }
+      const inner =
+        '<div class="st-ring"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><circle class="trk" cx="24" cy="24" r="19" fill="none" stroke-width="5"></circle>' + arc + '</svg><b>' + num + '</b></div>' +
+        '<div class="st-text"><div class="st-name">' + def.name + '</div><div class="st-sub">' + sub + '</div>' + (odText ? '<div class="st-od">' + odText + '</div>' : '') + '</div>';
+      return '<a class="st-card ' + def.cls + '" href="' + def.url + '" target="_blank" rel="noopener" title="เปิดระบบ' + def.name + '">' + inner + '</a>';
+    }).join('');
+    // ข้อมูลเก่าเกิน 12 ชั่วโมง (เช่น ตัวตั้งเวลาหยุดทำงาน) → บอกเวลาที่อัปเดตล่าสุด
+    const ms = statusData && Number(statusData.updatedMs);
+    if (ms && Date.now() - ms > 12 * 3600 * 1000) {
+      statusNoteEl.textContent = 'ตัวเลขอัปเดตล่าสุด ' + new Date(ms).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+      statusNoteEl.hidden = false;
+    } else statusNoteEl.hidden = true;
+  }
+  function startStatusWatch() {
+    stopStatusWatch();
+    statusData = undefined;
+    renderStatus();
+    statusUnsub = FBL.watchStatus(function (d) { statusData = d; renderStatus(); renderCategories(); }, function () { statusData = null; renderStatus(); });
+  }
+  function stopStatusWatch() {
+    if (statusUnsub) { try { statusUnsub(); } catch (e) { /* ข้าม */ } statusUnsub = null; }
+    statusData = undefined;
+    renderStatus();
+  }
+  // ตัวเลขแดงมุมไอคอน: จับคู่ระบบจากที่อยู่เว็บของการ์ด
+  function badgeFor(site) {
+    if (!isOwner || !statusData) return 0;
+    const u = String(site.url || '');
+    const key = /choengnoen-accident/.test(u) ? 'accident' : /choengnoen-landboundary/.test(u) ? 'boundary' : '';
+    const v = key && statusData[key];
+    return v ? (statusNum(v.total) || 0) : 0;
+  }
+
   /* ---------- Render tabs ---------- */
   function renderTabs() {
     tabsEl.innerHTML = '';
@@ -1552,11 +1731,12 @@
         if (isArranging) grid.classList.add('arranging');
         filtered.forEach(function (site) {
           const card = document.createElement('div');
-          card.className = 'card ' + cat.cardClass;
+          card.className = 'card ' + cat.cardClass + (/choengnoen-admin/.test(String(site.url || '')) ? ' is-main' : '');
           if (isHexColor(site.accentColor)) card.style.setProperty('--card-accent', site.accentColor);
+          const badgeN = badgeFor(site);
           // การ์ด = ไอคอนแอป: กดไอคอนเพื่อเปิดระบบ / เจ้าของระบบมีปุ่มเฟืองที่มุมไอคอน กดแล้วมีป๊อปอัปเครื่องมือ
           card.innerHTML =
-            '<a class="app-icon" href="' + escapeAttr(site.url) + '" target="_blank" rel="noopener" title="เปิดระบบ"><span>' + (site.icon || '🔗') + '</span></a>' +
+            '<a class="app-icon" href="' + escapeAttr(site.url) + '" target="_blank" rel="noopener" title="เปิดระบบ"><span>' + (site.icon || '🔗') + '</span>' + (badgeN > 0 ? '<i class="app-badge">' + (badgeN > 99 ? '99+' : badgeN) + '</i>' : '') + '</a>' +
             (isOwner ? '<button class="app-gear" type="button" title="เครื่องมือ" aria-haspopup="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>' : '') +
             '<div class="app-name">' + escapeAttr(site.name) + '</div>' +
             (site.desc ? '<div class="app-desc">' + escapeAttr(site.desc) + '</div>' : '') +
