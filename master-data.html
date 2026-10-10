@@ -168,13 +168,14 @@
   /* แถบเลื่อนขึ้นลงเริ่มใต้หัวตาราง ไม่ล้ำแถวหัว (--th-h = ความสูงแถวหัวตาราง) */
   .table-wrap { background: var(--head); }
   .table-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
-  .table-wrap::-webkit-scrollbar-track:vertical { background: var(--white); margin-top: var(--th-h, 52px); }
+  .table-wrap::-webkit-scrollbar-track:vertical { background: var(--white); margin-top: var(--th-h, 41px); }
   .table-wrap::-webkit-scrollbar-track:horizontal { background: var(--white); }
   .table-wrap::-webkit-scrollbar-thumb { background: #C3CEDC; border-radius: 6px; border: 2px solid var(--white); }
   .table-wrap::-webkit-scrollbar-corner { background: var(--white); }
   tbody td { background: var(--white); }
   table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.9rem; }
   th, td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; white-space: nowrap; }
+  td { vertical-align: top; }
   /* คอลัมน์ข้อความยาว (ชื่อตอน หมายเหตุ ชื่อรายการ) ให้ตัดบรรทัดได้ */
   td.wrap { white-space: normal; min-width: 0; }
   .panel > .table-wrap { overflow-x: hidden; }
@@ -887,13 +888,14 @@
   function fmtW(v) { return v == null ? '–' : Number(v).toFixed(2); }
 
   // แท็บเลือกสายทาง (ใช้กับบัญชีเขตทาง / ผิวทาง) — act = ชื่อ data-act ที่เก็บค่าตัวกรอง
-  function hwTabsHtml(all, hws, cur, act) {
+  function hwTabsHtml(all, hws, cur, act, right) {
     let h = '<div class="hw-tabs">';
     [['*', 'ทั้งหมด', all.length]].concat(hws.map(function (k) {
       return [k, 'ทล.' + k, all.filter(function (z) { return String(z.highway) === k; }).length];
     })).forEach(function (t) {
       h += '<button type="button" class="hw-tab' + (cur === t[0] ? ' on' : '') + '" data-act="' + act + '" data-id="' + esc(t[0]) + '">' + esc(t[1]) + '</button>';
     });
+    if (right) h += '<span style="margin-left:auto;display:inline-flex;align-items:center">' + right + '</span>';
     return h + '</div>';
   }
 
@@ -912,8 +914,7 @@
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + ' · ' + all.length + ' ช่วง' + (list.length !== all.length ? ' (แสดง ' + list.length + ')' : '') + '</p>';
-    if (all.length) h += hwTabsHtml(all, hws, S.rowHw, 'row-hw');
-    h += '<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label></div>';
+    h += hwTabsHtml(all, hws, S.rowHw, 'row-hw', '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>');
     if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table style="table-layout:fixed"><colgroup><col style="width:12%"><col style="width:18%"><col style="width:19%"><col style="width:10%"><col style="width:10%"><col style="width:16%"><col style="width:15%"></colgroup><thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
@@ -988,7 +989,7 @@
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
     else {
-      h += '<div class="table-wrap" style="--th-h:68px;max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>' +
+      h += '<div class="table-wrap" style="--th-h:53px;max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="surf-tbl"><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>' +
         '<thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th><th>ระยะ (กม.)</th><th>ทิศทาง</th>' +
         '<th>ช่องจราจร</th><th>กว้าง/ช่อง (ม.)</th><th>ผิวทาง</th><th>ไหล่ซ้าย (ม.)</th><th>ไหล่ขวา (ม.)</th></tr></thead><tbody>';
       list.forEach(function (x) {
