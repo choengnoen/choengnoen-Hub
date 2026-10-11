@@ -1346,12 +1346,15 @@
       }).join('') + '</select></label></div>';
     if (!all.length) h += '<div class="empty">ยังไม่มีราคาประเมินในฐานข้อมูลกลาง' + (S.owner ? ' นำเข้าที่แท็บ "นำเข้า / ส่งออก" หรือกด "+ เพิ่มรายการ"' : '') + '</div>';
     else {
-      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table class="mid"><thead><tr><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>หมวด</th><th>ใช้บ่อย</th></tr></thead><tbody>';
-      list.forEach(function (x) {
+      h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table class="mid"><thead><tr><th>รายการ</th><th>หน่วย</th><th class="num">ราคา (บาท)</th><th>ใช้บ่อย</th></tr></thead><tbody>';
+      // รายการที่ติดดาว (ใช้บ่อย) อยู่บนสุด ที่เหลือคงลำดับเดิม
+      list.map(function (x, i) { return { x: x, i: i }; }).sort(function (p, q2) {
+        return (q2.x.a.frequent ? 1 : 0) - (p.x.a.frequent ? 1 : 0) || p.i - q2.i;
+      }).map(function (p) { return p.x; }).forEach(function (x) {
         const a = x.a;
         const cls = [changed.has(a.key) ? 'changed' : '', a.hidden ? 'muted' : '', editable ? 'clickable' : ''].join(' ');
         h += '<tr class="' + cls + '"' + (editable ? ' data-act="asset-edit" data-id="' + esc(a.key) + '" title="คลิกเพื่อแก้ไข"' : '') + '><td class="wrap">' + esc(a.name) + (a.hidden ? ' <span class="pill off">ซ่อน</span>' : '') + '</td><td>' + esc(a.unit) + '</td>' +
-          '<td class="num">' + fmtNum(a.price, 2) + '</td><td>' + esc(catLabel(a.category)) + '</td>' +
+          '<td class="num">' + fmtNum(a.price, 2) + '</td>' +
           '<td>' + (a.frequent ? '★' : '') + '</td></tr>';
       });
       h += '</tbody></table></div>';
