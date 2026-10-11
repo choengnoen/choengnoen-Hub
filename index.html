@@ -265,7 +265,7 @@
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
   }
   .status-strip[hidden] { display: none; }
@@ -301,6 +301,7 @@
   .st-accident { --st-color: #1F2A44; --st-track: rgba(31,42,68,0.14); --st-num: #1F2A44; }
   .st-theft { --st-color: #E8891C; --st-track: rgba(232,137,28,0.18); --st-num: #B86A0A; }
   .st-boundary { --st-color: #2F86DB; --st-track: rgba(47,134,219,0.16); --st-num: #1F6FBD; }
+  .st-permit { --st-color: #7A4FC9; --st-track: rgba(122,79,201,0.16); --st-num: #6338B0; }
   .st-complaint { --st-color: #D93A47; --st-track: rgba(217,58,71,0.16); --st-num: #C42F3C; }
   .st-ring b { color: var(--st-num); }
   .st-ring .trk { stroke: var(--st-track); }
@@ -1601,7 +1602,8 @@
   const STATUS_DEFS = [
     { key: 'accident',   cls: 'st-accident',  name: 'งานอุบัติเหตุ', sub: 'รอส่งแขวง',   od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-accident/' },
     { key: 'theft',      cls: 'st-theft',     name: 'งานโจรกรรม',    sub: 'รอส่งแขวง',   od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-theft/' },
-    { key: 'boundary',   cls: 'st-boundary',  name: 'ชี้แนวเขต',     sub: 'รอชี้แนวเขต', od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-landboundary/' },
+    { key: 'boundary',   cls: 'st-boundary',  name: 'งานชี้แนวเขต',   sub: 'รอส่งแขวง',   od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-landboundary/' },
+    { key: 'permit',     cls: 'st-permit',    name: 'งานขออนุญาต',   sub: 'รอส่งแขวง',   od: 'เลยกำหนด {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-permit/' },
     { key: 'complaints', cls: 'st-complaint', name: 'คำร้องทุกข์',   sub: 'รอดำเนินการ', od: 'ค้างเกิน {days} วัน {n} เรื่อง', url: 'https://choengnoen.github.io/choengnoen-admin/choengnoen1-saraban.html' }
   ];
   function statusNum(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.floor(v) : null; }
@@ -1652,7 +1654,7 @@
   function badgeFor(site) {
     if (!isOwner || !statusData) return null;
     const u = String(site.url || '');
-    const key = /choengnoen-accident/.test(u) ? 'accident' : /choengnoen-theft/.test(u) ? 'theft' : /choengnoen-landboundary/.test(u) ? 'boundary' : '';
+    const key = /choengnoen-accident/.test(u) ? 'accident' : /choengnoen-theft/.test(u) ? 'theft' : /choengnoen-landboundary/.test(u) ? 'boundary' : /choengnoen-permit/.test(u) ? 'permit' : '';
     const v = key && statusData[key];
     return v ? { n: statusNum(v.total) || 0, over: statusNum(v.over) || 0 } : null;
   }
