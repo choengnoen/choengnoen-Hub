@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-layer.js"></script>
+<script src="icon-library.js"></script>
 <style>
   :root {
     --navy: #16233F;
@@ -239,6 +240,26 @@
     width: auto; border-radius: 15px; padding: 0 12px;
     background: var(--paper-2); color: var(--ink); font-family: inherit; font-size: 0.8rem;
   }
+  /* ตัวเลือกไอคอน (หน้าเพิ่ม/แก้ไขระบบ) */
+  .icon-pick { display: flex; align-items: center; gap: 12px; }
+  .icon-pick-cur {
+    width: 60px; height: 60px; border-radius: 16px; border: 2px solid var(--line);
+    background: var(--paper-2); cursor: pointer; padding: 0; font-size: 2rem; line-height: 1;
+    display: grid; place-items: center; transition: border-color 0.12s ease;
+  }
+  .icon-pick-cur:hover { border-color: var(--ink); }
+  .icon-pick-hint { font-size: 0.8rem; color: var(--ink-light); }
+  .icon-panel { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--white); }
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; max-height: 260px; overflow-y: auto; margin-top: 8px; }
+  .icon-opt {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
+    border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; font-family: inherit;
+  }
+  .icon-opt img { width: 40px; height: 40px; object-fit: contain; }
+  .icon-opt span { font-size: 0.68rem; line-height: 1.2; color: var(--ink-light); text-align: center; }
+  .icon-opt:hover { background: var(--paper-2); }
+  .icon-opt.selected { border-color: var(--ink); background: var(--paper-2); }
+  .icon-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-light); padding: 14px 0; font-size: 0.85rem; }
   .swatch-custom { background: var(--white); overflow: hidden; }
   .swatch-custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .logo-preview { width: 60px; height: 60px; object-fit: contain; flex-shrink: 0; }
@@ -461,6 +482,8 @@
     transition: transform 0.18s ease;
   }
   .app-icon span { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
+  /* ไอคอนรูปภาพจากห้องสมุดกลาง (icon-library.js) — ขนาดอิงตามฟอนต์ของกรอบ จึงย่อตามจอเล็กเอง */
+  .app-icon-img { width: 1.3em; height: 1.3em; display: block; object-fit: contain; user-select: none; -webkit-user-drag: none; }
   .card:hover .app-icon { transform: translateY(-6px) scale(1.05); }
   .app-name {
     font-family: 'Kanit', sans-serif;
@@ -1475,7 +1498,18 @@
             <div class="modal-sec"><span class="modal-num">1</span> ข้อมูลระบบ</div>
             <div class="modal-field"><label>ชื่อระบบ <span class="req">*</span></label><input type="text" id="site-name" value="${site ? escapeAttr(site.name) : ''}"></div>
             <div class="modal-field"><label>คำอธิบายสั้นๆ</label><input type="text" id="site-desc" value="${site ? escapeAttr(site.desc || '') : ''}"></div>
-            <div class="modal-field"><label>ไอคอน (emoji)</label><input type="text" id="site-icon" value="${site ? escapeAttr(site.icon || '') : '🔗'}" maxlength="4"></div>
+            <div class="modal-field">
+              <label>ไอคอน</label>
+              <div class="icon-pick">
+                <button type="button" class="icon-pick-cur" id="site-icon-btn" title="เลือกไอคอน"></button>
+                <div class="icon-pick-hint">กดที่รูปเพื่อเลือกไอคอนจากห้องสมุดกลาง</div>
+              </div>
+              <input type="hidden" id="site-icon" value="${site ? escapeAttr(site.icon || 'link') : 'link'}">
+              <div class="icon-panel" id="site-icon-panel" hidden>
+                <input type="text" id="site-icon-q" placeholder="ค้นหาไอคอน เช่น รถ เอกสาร กราฟ">
+                <div class="icon-grid" id="site-icon-grid"></div>
+              </div>
+            </div>
 
             <div class="modal-sec"><span class="modal-num">2</span> ลิงก์</div>
             <div class="modal-field"><label>ลิงก์เปิดระบบ <span class="req">*</span></label><input type="text" id="site-url" value="${site ? escapeAttr(site.url || '') : ''}" placeholder="https://..."></div>
@@ -1531,6 +1565,35 @@
     });
     customColorEl.addEventListener('input', function () { accentColor = customColorEl.value.toUpperCase(); showSwatch(); });
     showSwatch();
+    // เลือกไอคอนจากห้องสมุดกลาง — ฐานข้อมูลเก็บแค่ id (เช่น trophy); ค่าเก่าที่เป็นอิโมจิยังแสดงได้
+    const iconInput = document.getElementById('site-icon');
+    const iconBtn = document.getElementById('site-icon-btn');
+    const iconPanel = document.getElementById('site-icon-panel');
+    const iconGrid = document.getElementById('site-icon-grid');
+    const iconQ = document.getElementById('site-icon-q');
+    function showIcon() { iconBtn.innerHTML = IconLib.html(iconInput.value, '🔗'); }
+    function renderIconGrid() {
+      const q = iconQ.value.trim().toLowerCase();
+      const cur = IconLib.find(iconInput.value);
+      const items = IconLib.list.filter(function (it) { return !q || (it.n + ' ' + it.k + ' ' + it.id).toLowerCase().indexOf(q) >= 0; });
+      iconGrid.innerHTML = items.length ? items.map(function (it) {
+        return '<button type="button" class="icon-opt' + (cur && cur.id === it.id ? ' selected' : '') + '" data-id="' + it.id + '" title="' + it.n + '">' +
+          '<img loading="lazy" src="' + IconLib.src(it) + '" alt="' + it.n + '" draggable="false"><span>' + it.n + '</span></button>';
+      }).join('') : '<div class="icon-empty">ไม่พบไอคอนที่ค้นหา</div>';
+    }
+    iconBtn.addEventListener('click', function () {
+      iconPanel.hidden = !iconPanel.hidden;
+      if (!iconPanel.hidden) { renderIconGrid(); iconQ.focus(); }
+    });
+    iconQ.addEventListener('input', renderIconGrid);
+    iconGrid.addEventListener('click', function (e) {
+      const b = e.target.closest('[data-id]');
+      if (!b) return;
+      iconInput.value = b.dataset.id;
+      showIcon();
+      iconPanel.hidden = true;
+    });
+    showIcon();
     document.getElementById('site-cancel').addEventListener('click', closeModal);
     document.getElementById('site-overlay').addEventListener('click', function (e) { if (e.target.id === 'site-overlay') closeModal(); });
     if (isEdit) {
@@ -1770,7 +1833,7 @@
           if (isHexColor(site.accentColor)) card.style.setProperty('--card-accent', site.accentColor);
           // การ์ด = ไอคอนแอป: กดไอคอนเพื่อเปิดระบบ / เจ้าของระบบมีปุ่มเฟืองที่มุมไอคอน กดแล้วมีป๊อปอัปเครื่องมือ
           card.innerHTML =
-            '<a class="app-icon" href="' + escapeAttr(site.url) + '" target="_blank" rel="noopener" title="เปิดระบบ"><span>' + (site.icon || '🔗') + '</span></a>' +
+            '<a class="app-icon" href="' + escapeAttr(site.url) + '" target="_blank" rel="noopener" title="เปิดระบบ"><span>' + IconLib.html(site.icon, '🔗') + '</span></a>' +
             (isOwner ? '<button class="app-gear" type="button" title="เครื่องมือ" aria-haspopup="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>' : '') +
             '<div class="app-name">' + escapeAttr(site.name) + '</div>' +
             (site.desc ? '<div class="app-desc">' + escapeAttr(site.desc) + '</div>' : '') +
