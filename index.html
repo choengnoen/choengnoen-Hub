@@ -1031,6 +1031,7 @@
     .arrange-hint { display: none; }
   }
 </style>
+<script src="emoji-img.js" defer></script>
 </head>
 <body>
 
@@ -1583,7 +1584,11 @@
     }
     iconBtn.addEventListener('click', function () {
       iconPanel.hidden = !iconPanel.hidden;
-      if (!iconPanel.hidden) { renderIconGrid(); iconQ.focus(); }
+      if (!iconPanel.hidden) {
+        renderIconGrid();
+        // เครื่องสัมผัส (แท็บเล็ต) ไม่โฟกัสช่องค้นหาเอง กันแป้นพิมพ์เด้งขึ้นมาบังตาราง
+        if (!window.matchMedia('(pointer: coarse)').matches) iconQ.focus({ preventScroll: true });
+      }
     });
     iconQ.addEventListener('input', renderIconGrid);
     iconGrid.addEventListener('click', function (e) {
