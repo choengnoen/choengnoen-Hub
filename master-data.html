@@ -531,6 +531,7 @@
     rowHw: '*',
     zoneHw: '*',        // กรองเขตพื้นที่ตามหมายเลขสายทาง
     rowInArea: true,    // แสดงเฉพาะช่วงที่ทับกับสายทางที่หมวดดูแล
+    rowKm: '',          // ข้อความ กม. ที่ค้นหาในบัญชีเขตทาง (กดปุ่มค้นหา/Enter ถึงจะใช้)
     surfHw: '*',
     wcSearch: '',
     wcShut: {},         // หัวข้อที่พับอยู่ในตารางรหัสงาน เช่น { '21100': true }
@@ -928,18 +929,28 @@
     const hws = Array.from(new Set(all.map(function (x) { return String(x.highway); }))).sort(function (a, b) { return Number(a) - Number(b); });
     if (S.rowHw !== '*' && hws.indexOf(S.rowHw) < 0) S.rowHw = '*';
     const areaFilter = S.rowInArea && items('routes').length > 0; // ยังไม่มีสายทาง = กรองไม่ได้ แสดงทั้งหมด
+    // ค้นหาตาม กม.: แสดงช่วงที่ กม. ที่ค้นอยู่ระหว่างต้นช่วง–ปลายช่วง (รวมกึ่งกลางช่วง)
+    const kmQ = parseKm(S.rowKm);
+    const kmBad = S.rowKm.trim() !== '' && (kmQ == null || isNaN(kmQ));
+    const kmOn = S.rowKm.trim() !== '' && !kmBad;
     const list = all.filter(function (x) {
       if (S.rowHw !== '*' && String(x.highway) !== S.rowHw) return false;
+      if (kmOn && !(x.kmStart <= kmQ && kmQ <= x.kmEnd)) return false;
       return !areaFilter || rowInArea(x);
     }).sort(function (a, b) {
       return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo)) || (a.seq - b.seq);
     });
     const changed = changedIds('rightofway', 'id');
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
+    h += '<form id="row-km-form" style="display:inline-flex;gap:6px;align-items:center;margin-right:8px">' +
+      '<input id="row-km" type="text" inputmode="text" autocomplete="off" placeholder="ค้นหา กม. เช่น 190+000" value="' + esc(S.rowKm) + '" style="width:190px;padding:8px 10px;border:1px solid var(--line,#cbd5e1);border-radius:10px;font:inherit">' +
+      '<button class="btn" type="submit">🔍 ค้นหา</button>' +
+      (S.rowKm ? '<button class="btn" type="button" data-act="row-km-clear">ล้าง</button>' : '') + '</form>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + '</p>';
     h += hwTabsHtml(all, hws, S.rowHw, 'row-hw', '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>');
-    if (!list.length) h += '<div class="empty">' + (all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
+    if (kmBad) h += '<div class="empty">รูปแบบ กม. ไม่ถูกต้อง พิมพ์เช่น 190+000 หรือ 190.5</div>';
+    else if (!list.length) h += '<div class="empty">' + (kmOn ? 'ไม่พบช่วงที่ครอบคลุม กม. ' + esc(fmtKm(kmQ)) + ' (ลองเลือก "ทั้งหมด" หรือเอาติ๊ก "เฉพาะช่วงที่หมวดดูแล" ออก)' : all.length ? 'ไม่มีช่วงที่ตรงกับตัวกรอง' : 'ยังไม่มีบัญชีเขตทาง นำเข้าไฟล์ rightofway-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"') + '</div>';
     else {
       h += '<div class="table-wrap" style="max-height:65vh;overflow:auto"><table style="table-layout:fixed"><colgroup><col style="width:12%"><col style="width:18%"><col style="width:19%"><col style="width:10%"><col style="width:10%"><col style="width:16%"><col style="width:15%"></colgroup><thead><tr><th title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
         '<th class="num">ซ้ายทาง (ม.)</th><th class="num">ขวาทาง (ม.)</th><th>หลักฐานกรรมสิทธิ์</th><th>หมายเหตุ</th></tr></thead><tbody>';
@@ -2140,6 +2151,7 @@
       }
       case 'surf-hw': S.surfHw = id; render(); break;
       case 'row-hw': S.rowHw = id; render(); break;
+      case 'row-km-clear': S.rowKm = ''; render(); break;
       case 'row-add': rowForm(null); break;
       case 'row-edit': rowForm(items('rightofway').find(function (x) { return x.id === id; })); break;
       case 'row-del': {
@@ -2218,6 +2230,12 @@
         break;
       }
     }
+  });
+  document.addEventListener('submit', function (e) {
+    if (e.target.id !== 'row-km-form') return;
+    e.preventDefault();
+    S.rowKm = $('row-km').value.trim();
+    render();
   });
   document.addEventListener('change', function (e) {
     if (e.target.id === 'hist-doc') { S.histDoc = e.target.value; render(); }
