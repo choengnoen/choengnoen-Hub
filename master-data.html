@@ -938,15 +938,20 @@
       if (kmOn && !(x.kmStart <= kmQ && kmQ <= x.kmEnd)) return false;
       return !areaFilter || rowInArea(x);
     }).sort(function (a, b) {
-      return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo)) || (a.seq - b.seq);
+      return Number(a.highway) - Number(b.highway) || (a.kmStart - b.kmStart) || (a.seq - b.seq) || ((a.part || 0) - (b.part || 0));
     });
     const changed = changedIds('rightofway', 'id');
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
-    h += '<form id="row-km-form" style="display:inline-flex;gap:6px;align-items:center;margin-right:8px">' +
-      '<input id="row-km" type="text" inputmode="text" autocomplete="off" placeholder="ค้นหา กม. เช่น 190+000" value="' + esc(S.rowKm) + '" style="width:190px;padding:8px 10px;border:1px solid var(--line,#cbd5e1);border-radius:10px;font:inherit">' +
-      '<button class="btn" type="submit">🔍 ค้นหา</button>' +
-      (S.rowKm ? '<button class="btn" type="button" data-act="row-km-clear">ล้าง</button>' : '') + '</form>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
+    h += '</div><div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:8px 0 4px">';
+    if (S.owner) {
+      const need = rowLinkAnalyze(items('routes'), all).filter(function (a) { return a.status === 'split' || a.status === 'link' || a.status === 'amb'; }).length;
+      h += '<button class="btn" type="button" data-act="row-link" title="ตรวจเลขตอน/ชื่อตอนเทียบกับหน้าสายทาง และแตกแถวที่คาบเกี่ยวหลายตอน">🔗 จับคู่ตอนจากสายทาง' + (need ? ' (' + need + ')' : '') + '</button>';
+    }
+    h += '<form id="row-km-form" style="display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:40px;border:1px solid var(--line,#d6d9de);border-radius:12px;background:#f5f5f3">' +
+      '<span aria-hidden="true">🔍</span>' +
+      '<input id="row-km" type="text" autocomplete="off" placeholder="ค้นหา กม. เช่น 190+000" value="' + esc(S.rowKm) + '" style="width:170px;border:0;outline:0;background:transparent;font:inherit">' +
+      (S.rowKm ? '<button type="button" data-act="row-km-clear" title="ล้าง" style="border:0;background:none;cursor:pointer;font-size:16px;color:#64748b">✕</button>' : '') + '</form>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + '</p>';
     h += hwTabsHtml(all, hws, S.rowHw, 'row-hw', '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>');
     if (kmBad) h += '<div class="empty">รูปแบบ กม. ไม่ถูกต้อง พิมพ์เช่น 190+000 หรือ 190.5</div>';
@@ -966,6 +971,62 @@
     v.innerHTML = h + '</div>';
   }
 
+  function rowIdOf(o) {
+    return o.highway + '-' + (o.controlNo || '0000') + '-' + String(o.seq).padStart(3, '0') + (o.part ? '-p' + o.part : '');
+  }
+
+  // เครื่องมือจับคู่ตอน: ดูผลเทียบกับหน้าสายทางก่อน เลือกแถวที่ต้องการ แล้วกดยืนยันเป็นฉบับร่าง
+  function rowLinkTool() {
+    const plan = rowLinkAnalyze(items('routes'), items('rightofway'));
+    const cnt = { ok: 0, none: 0, link: 0, split: 0, amb: 0 };
+    plan.forEach(function (a) { cnt[a.status]++; });
+    const todo = plan.filter(function (a) { return a.status === 'link' || a.status === 'split'; });
+    const amb = plan.filter(function (a) { return a.status === 'amb'; });
+    const pieceTxt = function (p) {
+      return fmtKm(p.kmStart) + ' – ' + fmtKm(p.kmEnd) + (p.route ? ' → ตอน ' + esc(p.route.controlNo || '?') + ' ' + esc(p.route.section || '') : ' <span class="hint">(นอกสายทางที่หมวดดูแล)</span>');
+    };
+    let body = '<p class="hint">เทียบบัญชีเขตทางกับหน้าสายทาง: ตรงอยู่แล้ว <b>' + cnt.ok + '</b> · นอกเขตที่หมวดดูแล <b>' + cnt.none + '</b> · ' +
+      'ต้องเติม/แก้ตอน <b>' + cnt.link + '</b> · ต้องแตกแถว <b>' + cnt.split + '</b>' + (cnt.amb ? ' · <span style="color:var(--red)">ทับหลายสายทาง (ข้าม) ' + cnt.amb + '</span>' : '') + '</p>';
+    if (todo.length) {
+      body += '<div class="table-wrap" style="max-height:52vh;overflow:auto"><table><thead><tr><th></th><th>ทล./ลำดับ</th><th>ช่วงเดิม</th><th>ผลที่จะได้</th></tr></thead><tbody>';
+      todo.forEach(function (a, i) {
+        body += '<tr><td><input type="checkbox" name="p' + i + '" checked></td><td style="white-space:nowrap"><b>' + esc(a.x.highway) + '</b> / ' + esc(a.x.seq) + (a.status === 'split' ? ' <span class="pill warn">แตก ' + a.pieces.length + ' แถว</span>' : '') + '</td>' +
+          '<td style="white-space:nowrap">' + esc(fmtKm(a.x.kmStart) + ' – ' + fmtKm(a.x.kmEnd)) + '</td><td class="wrap">' + a.pieces.map(pieceTxt).join('<br>') + '</td></tr>';
+      });
+      body += '</tbody></table></div><p class="hint">แถวที่แตกจะคงความกว้างซ้าย/ขวา หลักฐานและหมายเหตุเดิมไว้ทุกแถว ติ๊กออกได้ถ้าไม่ต้องการแก้แถวนั้น · ผลเป็นฉบับร่าง ยังไม่บันทึกจนกว่าจะกดบันทึก</p>';
+    } else body += '<div class="v-ok"><div class="big">✓</div><h3 style="justify-content:center">เลขตอนและชื่อตอนตรงกับหน้าสายทางครบแล้ว</h3></div>';
+    if (amb.length) body += '<p class="hint" style="color:var(--red)">ช่วงที่ทับหลายสายทาง (แก้เองที่หน้าสายทาง/บัญชีเขตทาง): ' + amb.slice(0, 5).map(function (a) { return 'ทล.' + esc(a.x.highway) + ' ลำดับ ' + esc(a.x.seq); }).join(', ') + (amb.length > 5 ? ' …' : '') + '</p>';
+    openModal('จับคู่ตอนจากหน้าสายทาง', body, function (f) {
+      const sel = {};
+      todo.forEach(function (a, i) { if (f['p' + i]) sel[a.x.id] = a; });
+      const n = Object.keys(sel).length;
+      if (!n) return todo.length ? 'ยังไม่ได้เลือกแถวใด' : 'ไม่มีรายการที่ต้องปรับ';
+      const out = [];
+      let splitN = 0;
+      items('rightofway').forEach(function (x) {
+        const a = sel[x.id];
+        if (!a) { out.push(x); return; }
+        if (a.pieces.length === 1) {
+          const r = a.pieces[0].route;
+          out.push(Object.assign({}, x, { controlNo: r.controlNo || '', section: r.section || '' }));
+          return;
+        }
+        splitN++;
+        a.pieces.forEach(function (p, k) {
+          const o = Object.assign({}, x, { kmStart: p.kmStart, kmEnd: p.kmEnd, part: k + 1,
+            controlNo: p.route ? p.route.controlNo || '' : (x.controlNo || ''), section: p.route ? p.route.section || '' : '' });
+          o.id = rowIdOf(o);
+          out.push(o);
+        });
+      });
+      const seen = {};
+      for (let i = 0; i < out.length; i++) { if (seen[out[i].id]) return 'รหัสอ้างอิงซ้ำ (' + out[i].id + ') ยังไม่ได้ปรับ'; seen[out[i].id] = true; }
+      draft('rightofway', out, 'จับคู่ตอนจากสายทาง: แตกแถว ' + splitN + ' แถว, เติมเลขตอน/ชื่อตอน ' + (n - splitN) + ' แถว');
+      toast('จับคู่ตอนแล้ว ตรวจดูแล้วกดบันทึก');
+    }, todo.length ? 'ยืนยัน ' + todo.length + ' รายการ' : 'ปิด');
+    const m = $('modal-root').querySelector('.modal'); if (m) m.style.maxWidth = '860px';
+  }
+
   function rowForm(x) {
     const isNew = !x;
     if (!x) {
@@ -973,12 +1034,12 @@
       const same = items('rightofway').filter(function (r) { return String(r.highway) === hw; });
       x = { highway: hw, controlNo: same.length ? same[same.length - 1].controlNo : '', seq: same.length + 1, basis: same.length ? same[same.length - 1].basis : '' };
     }
-    openModal(isNew ? 'เพิ่มช่วงเขตทาง' : 'แก้ไขช่วงเขตทาง ทล.' + x.highway + ' ลำดับ ' + x.seq,
+    openModal(isNew ? 'เพิ่มช่วงเขตทาง' : 'แก้ไขช่วงเขตทาง ทล.' + x.highway + ' ลำดับ ' + x.seq + (x.part ? '/' + x.part : ''),
       '<div class="form-grid">' +
       field('highway', 'หมายเลขทางหลวง *', x.highway, 'text', isNew ? '' : 'readonly') +
       field('controlNo', 'ตอนควบคุม', x.controlNo, 'text', isNew ? '' : 'readonly') +
       field('seq', 'ลำดับที่ในบัญชี *', x.seq, 'number', 'min="1"' + (isNew ? '' : ' readonly')) +
-      field('section', 'ชื่อตอน', x.section) +
+      field('section', 'ชื่อตอน (ดึงจากหน้าสายทาง)', isNew ? '' : rowSection(x), 'text', 'readonly placeholder="ระบบใส่ให้ตามช่วง กม."') +
       field('kmStart', 'จาก กม. *', fmtKm(x.kmStart), 'text', 'placeholder="เช่น 222+076.50"') +
       field('kmEnd', 'ถึง กม. *', fmtKm(x.kmEnd), 'text') +
       field('left', 'ซ้ายทาง กว้าง (ม.)', x.left, 'number', 'step="0.01" min="0"') +
@@ -988,13 +1049,15 @@
       '</div><p class="hint">ความกว้างวัดจากศูนย์กลางทาง เว้นว่างได้ถ้าในบัญชีไม่ได้ระบุ</p>',
       function (f) {
         const o = {
-          highway: f.highway.trim(), controlNo: f.controlNo.trim(), seq: Number(f.seq), section: f.section.trim(),
+          highway: f.highway.trim(), controlNo: f.controlNo.trim(), seq: Number(f.seq), section: '',
           kmStart: parseKm(f.kmStart), kmEnd: parseKm(f.kmEnd), left: num(f.left), right: num(f.right),
           basis: f.basis.trim(), note: f.note.trim(), source: x.source || 'แก้ไขในฐานข้อมูลกลาง'
         };
+        if (x.part) o.part = x.part;
+        o.section = rowSection(o); // ชื่อตอนดึงจากหน้าสายทางตามเลขตอน/ช่วง กม.
         if (!o.highway || !(o.seq >= 1)) return 'กรุณาใส่หมายเลขทางหลวงและลำดับที่';
         if (o.kmStart == null || o.kmEnd == null || isNaN(o.kmStart) || isNaN(o.kmEnd) || o.kmStart > o.kmEnd) return 'ช่วง กม. ไม่ถูกต้อง';
-        o.id = o.highway + '-' + (o.controlNo || '0000') + '-' + String(o.seq).padStart(3, '0');
+        o.id = rowIdOf(o);
         const list = items('rightofway').slice();
         if (isNew && list.some(function (r) { return r.id === o.id; })) return 'มีลำดับที่ ' + o.seq + ' ของทางหลวงสายนี้อยู่แล้ว';
         if (isNew) list.push(o); else list[list.findIndex(function (r) { return r.id === x.id; })] = o;
@@ -1428,6 +1491,7 @@
     { cat: 'zone-overlap', title: 'เขตพื้นที่ทับกัน', tab: 'zones' },
     { cat: 'row-empty', title: 'บัญชีเขตทาง: ไม่มีข้อมูลความกว้าง', tab: 'rightofway' },
     { cat: 'row-side', title: 'บัญชีเขตทาง: ขาดความกว้างฝั่งใดฝั่งหนึ่ง', tab: 'rightofway' },
+    { cat: 'row-link', title: 'บัญชีเขตทาง: ตอนไม่ตรงกับหน้าสายทาง / คาบเกี่ยวหลายตอน (กดปุ่ม "จับคู่ตอนจากสายทาง" ที่หน้าบัญชีเขตทางเพื่อแก้)', tab: 'rightofway' },
     { cat: 'surf-overlap', title: 'ผิวทาง: ช่วงทับกัน', tab: 'surface' },
     { cat: 'route-surface', title: 'ระยะของสายทางไม่ตรงกับข้อมูลผิวทาง', tab: 'routes' },
     { cat: 'asset-dup', title: 'ราคาประเมิน: ชื่อรายการซ้ำ', tab: 'assets' },
@@ -1523,6 +1587,45 @@
     return fmtKm(z.kmStart) + '–' + fmtKm(z.kmEnd) + (z.side ? ' ' + z.side : ' ไม่ระบุฝั่ง') + (where ? ' [' + where + ']' : '');
   }
 
+  // เทียบบัญชีเขตทางกับสายทาง: แต่ละช่วงอยู่ในตอนไหน / คาบเกี่ยวขอบเขตตอนไหม (ต้องแตกแถว) / เลขตอน-ชื่อตอนที่เก็บไว้ตรงหรือไม่
+  // status: ok | none (นอกเขตที่หมวดดูแล) | link (ต้องเติม/แก้เลขตอน-ชื่อตอน) | split (ต้องแตกแถว) | amb (ทับหลายสายทาง ข้าม)
+  function rowLinkAnalyze(routes, rows) {
+    const rng = {};
+    routes.forEach(function (r) {
+      (r.kmRanges || []).forEach(function (p) {
+        if (validKm(p[0], p[1]) && p[0] < p[1]) (rng[String(r.highway).trim()] = rng[String(r.highway).trim()] || []).push({ s: p[0], e: p[1], r: r });
+      });
+    });
+    const out = [];
+    rows.forEach(function (x) {
+      if (!validKm(x.kmStart, x.kmEnd) || x.kmStart > x.kmEnd) return;
+      const rs = rng[String(x.highway).trim()] || [];
+      let cuts = [];
+      rs.forEach(function (q) { [q.s, q.e].forEach(function (b) { if (b > x.kmStart + KM_TOL && b < x.kmEnd - KM_TOL) cuts.push(b); }); });
+      cuts.sort(function (a, b) { return a - b; });
+      cuts = cuts.filter(function (b, i) { return !i || b - cuts[i - 1] > KM_TOL; });
+      const pts = [x.kmStart].concat(cuts, [x.kmEnd]);
+      const pieces = [];
+      let amb = false;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const mid = (pts[i] + pts[i + 1]) / 2;
+        const hit = rs.filter(function (q) { return q.s <= mid && mid <= q.e; });
+        if (hit.length > 1) amb = true;
+        pieces.push({ kmStart: pts[i], kmEnd: pts[i + 1], route: hit[0] ? hit[0].r : null });
+      }
+      let status;
+      if (amb) status = 'amb';
+      else if (pieces.length > 1) status = 'split';
+      else if (!pieces[0].route) status = 'none';
+      else {
+        const r = pieces[0].route;
+        status = (String(x.controlNo || '') !== String(r.controlNo || '') || String(x.section || '') !== String(r.section || '')) ? 'link' : 'ok';
+      }
+      out.push({ x: x, pieces: pieces, status: status });
+    });
+    return out;
+  }
+
   function validateAll(get) {
     const out = [];
     const add = function (sev, cat, docs, text, extra) { out.push(Object.assign({ sev: sev, cat: cat, docs: docs, text: text, sig: cat + '|' + text }, extra || {})); };
@@ -1557,6 +1660,13 @@
       }
       if (x.left == null && x.right == null) add('warn', 'row-empty', ['rightofway'], nm + ' ไม่มีข้อมูลความกว้างทั้งซ้ายและขวา');
       else if (x.left == null || x.right == null) add('warn', 'row-side', ['rightofway'], nm + ' ไม่มีความกว้างฝั่ง' + (x.left == null ? 'ซ้าย' : 'ขวา'));
+    });
+    // เทียบกับหน้าสายทาง (สรุปเป็นข้อเดียวต่อชนิด ไม่ไล่ทีละแถว)
+    const rl = rowLinkAnalyze(routes, rows);
+    const rlName = function (a) { return 'ทล.' + a.x.highway + ' ลำดับ ' + a.x.seq + ' (' + kmTxt(a.x.kmStart) + ' – ' + kmTxt(a.x.kmEnd) + ')'; };
+    [['split', '%n ช่วงคาบเกี่ยวขอบเขตสายทาง/หลายตอน ควรแตกแถว'], ['link', '%n ช่วงอยู่ในสายทางที่หมวดดูแล แต่เลขตอน/ชื่อตอนที่เก็บไว้ยังไม่ตรงกับหน้าสายทาง'], ['amb', '%n ช่วงทับกับสายทางมากกว่า 1 ตอน ระบบเดาตอนให้ไม่ได้']].forEach(function (k) {
+      const l = rl.filter(function (a) { return a.status === k[0]; });
+      if (l.length) add('warn', 'row-link', ['rightofway', 'routes'], k[1].replace('%n', l.length) + ' (เช่น ' + l.slice(0, 3).map(rlName).join(', ') + ')');
     });
 
     // --- ผิวทาง ---
@@ -2151,6 +2261,7 @@
       }
       case 'surf-hw': S.surfHw = id; render(); break;
       case 'row-hw': S.rowHw = id; render(); break;
+      case 'row-link': rowLinkTool(); break;
       case 'row-km-clear': S.rowKm = ''; render(); break;
       case 'row-add': rowForm(null); break;
       case 'row-edit': rowForm(items('rightofway').find(function (x) { return x.id === id; })); break;
@@ -2236,6 +2347,19 @@
     e.preventDefault();
     S.rowKm = $('row-km').value.trim();
     render();
+  });
+  // พิมพ์แล้วค้นหาทันที (หน่วง 0.3 วินาที) แล้วคืนเคอร์เซอร์ไว้ที่ช่องเดิม
+  let rowKmTimer = null;
+  document.addEventListener('input', function (e) {
+    if (e.target.id !== 'row-km') return;
+    const val = e.target.value;
+    clearTimeout(rowKmTimer);
+    rowKmTimer = setTimeout(function () {
+      S.rowKm = val.trim();
+      render();
+      const el = $('row-km');
+      if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    }, 300);
   });
   document.addEventListener('change', function (e) {
     if (e.target.id === 'hist-doc') { S.histDoc = e.target.value; render(); }
