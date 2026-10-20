@@ -256,6 +256,13 @@
   table.zone-tbl th, table.zone-tbl td { text-align: center; }
   table.zone-tbl td.km { overflow: visible; text-overflow: clip; white-space: nowrap; }
   table.zone-tbl td.wrap { white-space: normal; min-width: 0; }
+  /* ไฮไลท์ หมู่บ้าน · ตำบล · อำเภอ แบบไล่เฉดน้ำเงิน (ล็อกสีกันกฎลายตาราง/เมาส์ชี้ทับ) */
+  table.zone-tbl tbody td.g1, table.zone-tbl tbody tr:hover td.g1, table.zone-tbl tbody tr:nth-child(even) td.g1 { background: #EEF4FB; }
+  table.zone-tbl tbody td.g2, table.zone-tbl tbody tr:hover td.g2, table.zone-tbl tbody tr:nth-child(even) td.g2 { background: #DCEAF8; }
+  table.zone-tbl tbody td.g3, table.zone-tbl tbody tr:hover td.g3, table.zone-tbl tbody tr:nth-child(even) td.g3 { background: #C6DBF2; }
+  table.zone-tbl thead th.g1 { background: #DCEAF8; }
+  table.zone-tbl thead th.g2 { background: #C6DBF2; }
+  table.zone-tbl thead th.g3 { background: #AECBEC; }
   /* ตารางสายทางแบบกระชับ: แถวเดียว ไม่ต้องเลื่อนซ้าย-ขวา คลิกแถวเพื่อแก้ไข */
   table.compact { font-size: 0.84rem; }
   table.compact th, table.compact td { padding: 8px 8px; }
@@ -838,13 +845,14 @@
         h += '<button type="button" class="hw-tab' + (S.zoneHw === t[0] ? ' on' : '') + '" data-act="zone-hw" data-id="' + esc(t[0]) + '">' + esc(t[1]) + '</button>';
       });
       h += '</div>';
-      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="zone-tbl"><colgroup><col style="width:10%"><col style="width:20%"><col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:11%"><col style="width:10%"><col style="width:11%"></colgroup>' +
-        '<thead><tr><th>ทางหลวง</th><th>ช่วง กม.</th><th>ฝั่ง</th><th>สภ.</th><th>ตำบล</th><th>อำเภอ</th><th>จังหวัด</th><th>หมู่บ้าน</th></tr></thead><tbody>';
+      h += '<div class="table-wrap" style="max-height:65vh;overflow-y:auto;overflow-x:hidden"><table class="zone-tbl"><colgroup><col style="width:10%"><col style="width:19%"><col style="width:13%"><col style="width:16%"><col style="width:13%"><col style="width:17%"><col style="width:12%"></colgroup>' +
+        '<thead><tr><th>ทางหลวง</th><th>ช่วง กม.</th><th class="g1">หมู่บ้าน</th><th class="g2">ตำบล</th><th class="g3">อำเภอ</th><th>สภ.</th><th>ฝั่ง</th></tr></thead><tbody>';
       shown.forEach(function (z) {
         h += '<tr class="' + (changed.has(z.id) ? 'changed' : '') + (S.owner ? ' clickable' : '') + '"' + (S.owner ? ' data-act="zone-edit" data-id="' + esc(z.id) + '" title="ดับเบิลคลิกเพื่อแก้ไข"' : '') + '>' +
           '<td><b>' + esc(z.highway) + '</b></td>' +
-          '<td class="km">' + esc(fmtKm(z.kmStart) + ' – ' + fmtKm(z.kmEnd)) + '</td><td>' + esc(z.side) + '</td><td>' + esc(z.station) + '</td>' +
-          '<td>' + esc(z.tambon) + '</td><td>' + esc(z.amphoe) + '</td><td>' + esc(z.changwat) + '</td><td class="wrap">' + esc((z.moobans || []).join(', ')) + '</td></tr>';
+          '<td class="km">' + esc(fmtKm(z.kmStart) + ' – ' + fmtKm(z.kmEnd)) + '</td>' +
+          '<td class="wrap g1">' + esc((z.moobans || []).join(', ')) + '</td><td class="g2">' + esc(z.tambon) + '</td><td class="g3">' + esc(z.amphoe) + '</td>' +
+          '<td>' + esc(z.station) + '</td><td>' + esc(z.side) + '</td></tr>';
       });
       h += '</tbody></table></div>';
     }
