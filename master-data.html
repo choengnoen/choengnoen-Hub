@@ -942,12 +942,11 @@
     });
     const changed = changedIds('rightofway', 'id');
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
-    if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มช่วง</button>';
-    h += '</div><div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:8px 0 4px">';
-    h += '<form id="row-km-form" style="display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:40px;border:1px solid var(--line,#d6d9de);border-radius:12px;background:#f5f5f3">' +
+    h += '<form id="row-km-form" style="display:inline-flex;align-items:center;gap:8px;margin-right:10px;padding:0 12px;height:40px;border:1px solid var(--line,#d6d9de);border-radius:12px;background:#f5f5f3">' +
       '<span aria-hidden="true">🔍</span>' +
       '<input id="row-km" type="text" autocomplete="off" placeholder="ค้นหา กม." title="พิมพ์ กม. เช่น 190+000" value="' + esc(S.rowKm) + '" style="width:92px;border:0;outline:0;background:transparent;font:inherit">' +
       (S.rowKm ? '<button type="button" data-act="row-km-clear" title="ล้าง" style="border:0;background:none;cursor:pointer;font-size:16px;color:#64748b">✕</button>' : '') + '</form>';
+    if (S.owner) h += '<button class="btn primary" type="button" data-act="row-add">+ เพิ่มบัญชีเขตทาง</button>';
     h += '</div><p class="meta">' + esc(docMeta('rightofway')) + '</p>';
     h += hwTabsHtml(all, hws, S.rowHw, 'row-hw', '<label class="chk"><input type="checkbox" id="row-area"' + (S.rowInArea ? ' checked' : '') + '> เฉพาะช่วงที่หมวดดูแล</label>');
     if (kmBad) h += '<div class="empty">รูปแบบ กม. ไม่ถูกต้อง พิมพ์เช่น 190+000 หรือ 190.5</div>';
@@ -1026,7 +1025,7 @@
     const changed = changedIds('surface', 'id');
     if (S.surfHw !== '*' && hws.indexOf(S.surfHw) < 0) S.surfHw = '*';
     let h = '<div class="panel"><div class="toolbar"><div class="grow"></div>';
-    if (S.owner) h += '<button class="btn primary" type="button" data-act="surf-add">+ เพิ่มช่วง</button>';
+    if (S.owner) h += '<button class="btn primary" type="button" data-act="surf-add">+ เพิ่มผิวทาง</button>';
     h += '</div><p class="meta">' + esc(docMeta('surface')) + '</p>';
     if (all.length) h += hwTabsHtml(all, hws, S.surfHw, 'surf-hw');
     if (!list.length) h += '<div class="empty">ยังไม่มีข้อมูลผิวทาง นำเข้าไฟล์ surface-seed.json ได้ที่แท็บ "นำเข้า / ส่งออก"</div>';
