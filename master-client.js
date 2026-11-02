@@ -22,6 +22,8 @@
      CNMaster.priceOn('mat-002', '2026-03-15')   // ราคาของรายการ ณ วันที่ (ใช้ปีงบของวันนั้น)
      CNMaster.onChange(function (what) { ... })  // เรียกเมื่อเจ้าของแก้ข้อมูลกลาง what = 'routes' | 'zones' | 'assets_2569' ...
      CNMaster.adminRoutes()                      // สายทางในรูปแบบของระบบบริหารหมวด (routeNo, ranges เป็นกิโลเมตร)
+     await CNMaster.loadDistrictRoutes()         // โหลดสายทางทั้งแขวง (ไม่โหลดให้อัตโนมัติ ระบบที่ไม่ได้ใช้จึงไม่ต้องอ่าน)
+     CNMaster.districtRoutes()                   // สายทางทั้งแขวงทุกหมวด [{ unit, highway, controlNo, section, kmRanges, status, ... }] — ไม่ใช่สายทางที่หมวดดูแล (ยังไม่ได้โหลด/ไม่มีข้อมูล = [])
 
      มาตรฐานงานจราจร (คู่มือกรมทางหลวง) — อ่านอย่างเดียว ทุกฟังก์ชันคืนค่าพร้อมที่มา { ref, page, pdfPage, src, manual, url, verify, note }
      (page = เลขหน้าในคู่มือ เช่น "1-6" · verify = true คือค่าที่ต้องตรวจสอบ ควรแสดงเตือนผู้ใช้) · ยังไม่มีข้อมูล/โหลดไม่ได้ คืน null
@@ -187,6 +189,10 @@
       };
     });
   };
+
+  /* ---------- สายทางทั้งแขวง ---------- */
+  M.loadDistrictRoutes = function () { return watchDoc('district_routes').then(function () { return list('district_routes'); }); };
+  M.districtRoutes = function () { return list('district_routes'); };
 
   /* ---------- เขตพื้นที่ ---------- */
   M.zones = function () { return list('zones'); };
