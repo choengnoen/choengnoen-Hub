@@ -146,6 +146,7 @@
 
   /* ตัวเลขสรุปด้านบนตาราง */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 4px 0 14px; }
+  .stats.six { grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); }
   .stat { background: linear-gradient(180deg, #F4F9FE, #FFFFFF); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; border-top: 3px solid var(--sky-1); }
   .stat .k { font-size: 0.8rem; color: var(--ink-light); }
   .stat .v { font-family: 'Kanit', sans-serif; font-size: 1.35rem; font-weight: 600; color: var(--blue-top); line-height: 1.3; font-variant-numeric: tabular-nums; }
@@ -857,9 +858,9 @@
     if (S.owner) h += '<button class="btn primary" type="button" data-act="dist-add">+ เพิ่มสายทาง</button>';
     h += '</div><p class="meta">บัญชีระยะทางในความควบคุมของแขวงทางหลวงระยอง' + (asOf ? ' · ข้อมูล ณ ' + esc(new Date(asOf).toLocaleDateString('th-TH', { dateStyle: 'medium' })) : '') +
       (S.master[DISTRICT_DOC] ? ' · ' + esc(docMeta(DISTRICT_DOC)) : '') + '</p>';
-    h += '<div class="stats">' + stat('สายทางทั้งแขวง', act.length, 'ตอน · ' + units.length + ' หมวด') + stat('ระยะทางจริง', fmtNum(sum[0], 3), 'กม.') +
+    h += '<div class="stats six">' + stat('สายทางทั้งแขวง', act.length, 'ตอน · ' + units.length + ' หมวด') + stat('ระยะทางจริง', fmtNum(sum[0], 3), 'กม.') +
       stat('เทียบ 2 ช่องจราจร', fmtNum(sum[1], 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum[2], 3), 'กม.') +
-      stat('ผิวคอนกรีต', fmtNum(sum[3], 3), 'กม.') + '</div>';
+      stat('ผิวคอนกรีต', fmtNum(sum[3], 3), 'กม.') + stat('Work Load', fmtNum(sum[4], 3), '') + '</div>';
     h += '<div class="table-wrap"><table class="compact dist-tbl"><thead><tr><th class="ctr" title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
       '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr">ปริมาณงาน</th>' +
       '</tr></thead><tbody>';
@@ -967,9 +968,9 @@
       // ตัวเลขรวมเฉพาะสายทางที่ยังดูแลอยู่
       const act = list.filter(function (r) { return r.status !== 'transferred'; });
       const sum = function (k) { return act.reduce(function (s, r) { return s + (Number(r[k]) || 0); }, 0); };
-      h += '<div class="stats">' + stat('สายทางที่ดูแล', act.length, 'ตอน') + stat('ระยะทางจริง', fmtNum(sum('distanceActual'), 3), 'กม.') +
+      h += '<div class="stats six">' + stat('สายทางที่ดูแล', act.length, 'ตอน') + stat('ระยะทางจริง', fmtNum(sum('distanceActual'), 3), 'กม.') +
         stat('เทียบ 2 ช่องจราจร', fmtNum(sum('distance2Lane'), 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum('asphalt'), 3), 'กม.') +
-        stat('ผิวคอนกรีต', fmtNum(sum('concrete'), 3), 'กม.') + '</div>';
+        stat('ผิวคอนกรีต', fmtNum(sum('concrete'), 3), 'กม.') + stat('Work Load', fmtNum(sum('workQty'), 3), '') + '</div>';
       h += '<div class="table-wrap"><table class="compact"><thead><tr><th class="ctr" title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
         '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr">ปริมาณงาน</th><th class="ctr">สถานะ</th>' +
         '</tr></thead><tbody>';
