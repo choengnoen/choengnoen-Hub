@@ -790,8 +790,11 @@
     ] }
   ];
 
+  // ตัวเลขในตารางสายทาง: ค่าที่เป็น 0 หรือไม่มีค่า เว้นช่องว่าง
+  function routeNum(v) { return Number(v) ? fmtNum(v, 3) : ''; }
+
   function routeScopeTabs() {
-    return '<div class="hw-tabs">' + [['mine', 'หมวดทางหลวงเชิงเนิน'], ['district', 'ทั้งแขวงทางหลวงระยอง']].map(function (t) {
+    return '<div class="hw-tabs">' + [['mine', 'หมวดทางหลวงเชิงเนิน'], ['district', 'แขวงทางหลวงระยอง']].map(function (t) {
       return '<button type="button" class="hw-tab' + (S.routeScope === t[0] ? ' on' : '') + '" data-act="route-scope" data-id="' + t[0] + '">' + esc(t[1]) + '</button>';
     }).join('') + '</div>';
   }
@@ -834,9 +837,9 @@
     const act = list.filter(function (r) { return r.status !== 'transferred'; });
     const out = list.filter(function (r) { return r.status === 'transferred'; });
     const totals = function (rows) {
-      return ['distanceActual', 'distance2Lane', 'asphalt', 'concrete', 'workQty'].map(function (k) { return rows.reduce(function (s, r) { return s + (Number(r[k]) || 0); }, 0); });
+      return ['distanceActual', 'asphalt', 'concrete', 'distance2Lane', 'workQty'].map(function (k) { return rows.reduce(function (s, r) { return s + (Number(r[k]) || 0); }, 0); });
     };
-    const numCells = function (vals) { return vals.map(function (n) { return '<td class="num">' + fmtNum(n, 3) + '</td>'; }).join(''); };
+    const numCells = function (vals) { return vals.map(function (n) { return '<td class="num">' + routeNum(n) + '</td>'; }).join(''); };
     // ประวัติการโอนแสดงเป็นบรรทัดเล็กใต้ชื่อตอน
     const transferText = function (r) {
       const head = r.status === 'transferred' ? 'โอนออกจากแขวงแล้ว' + (r.unit ? ' (เดิมหมวด' + r.unit + ')' : '') : (r.transferFrom ? 'รับโอนจากหมวด' + r.transferFrom : '');
@@ -859,10 +862,10 @@
     h += '</div><p class="meta">บัญชีระยะทางในความควบคุมของแขวงทางหลวงระยอง' + (asOf ? ' · ข้อมูล ณ ' + esc(new Date(asOf).toLocaleDateString('th-TH', { dateStyle: 'medium' })) : '') +
       (S.master[DISTRICT_DOC] ? ' · ' + esc(docMeta(DISTRICT_DOC)) : '') + '</p>';
     h += '<div class="stats six">' + stat('สายทางทั้งแขวง', act.length, 'ตอน · ' + units.length + ' หมวด') + stat('ระยะทางจริง', fmtNum(sum[0], 3), 'กม.') +
-      stat('เทียบ 2 ช่องจราจร', fmtNum(sum[1], 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum[2], 3), 'กม.') +
-      stat('ผิวคอนกรีต', fmtNum(sum[3], 3), 'กม.') + stat('Work Load', fmtNum(sum[4], 3), '') + '</div>';
+      stat('ผิวลาดยาง', fmtNum(sum[1], 3), 'กม.') + stat('ผิวคอนกรีต', fmtNum(sum[2], 3), 'กม.') +
+      stat('เทียบ 2 ช่องจราจร', fmtNum(sum[3], 3), 'กม.') + stat('Work Load', fmtNum(sum[4], 3), '') + '</div>';
     h += '<div class="table-wrap"><table class="compact dist-tbl"><thead><tr><th class="ctr" title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
-      '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr">ปริมาณงาน</th>' +
+      '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ปริมาณงาน</th>' +
       '</tr></thead><tbody>';
     units.forEach(function (u) {
       const rows = act.filter(function (r) { return r.unit === u; });
@@ -969,18 +972,18 @@
       const act = list.filter(function (r) { return r.status !== 'transferred'; });
       const sum = function (k) { return act.reduce(function (s, r) { return s + (Number(r[k]) || 0); }, 0); };
       h += '<div class="stats six">' + stat('สายทางที่ดูแล', act.length, 'ตอน') + stat('ระยะทางจริง', fmtNum(sum('distanceActual'), 3), 'กม.') +
-        stat('เทียบ 2 ช่องจราจร', fmtNum(sum('distance2Lane'), 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum('asphalt'), 3), 'กม.') +
-        stat('ผิวคอนกรีต', fmtNum(sum('concrete'), 3), 'กม.') + stat('Work Load', fmtNum(sum('workQty'), 3), '') + '</div>';
+        stat('ผิวลาดยาง', fmtNum(sum('asphalt'), 3), 'กม.') + stat('ผิวคอนกรีต', fmtNum(sum('concrete'), 3), 'กม.') +
+        stat('เทียบ 2 ช่องจราจร', fmtNum(sum('distance2Lane'), 3), 'กม.') + stat('Work Load', fmtNum(sum('workQty'), 3), '') + '</div>';
       h += '<div class="table-wrap"><table class="compact"><thead><tr><th class="ctr" title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
-        '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr">ปริมาณงาน</th><th class="ctr">สถานะ</th>' +
+        '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ปริมาณงาน</th><th class="ctr">สถานะ</th>' +
         '</tr></thead><tbody>';
       list.forEach(function (r) {
         const cls = [changed.has(r.id) ? 'changed' : '', r.status === 'transferred' ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ');
         h += '<tr class="' + cls + '"' + (S.owner ? ' data-act="route-edit" data-id="' + esc(r.id) + '" title="ดับเบิลคลิกเพื่อแก้ไข"' : '') + '>' +
           '<td><b>' + esc(r.highway) + '</b> <span class="ctl">' + esc(r.controlNo) + '</span></td><td>' + esc(r.section) + '</td>' +
           '<td>' + (r.kmRanges || []).map(function (k) { return '<span class="km">' + esc(fmtKm(k[0]) + ' – ' + fmtKm(k[1])) + '</span>'; }).join('') + '</td>' +
-          '<td class="num">' + fmtNum(r.distanceActual, 3) + '</td><td class="num">' + fmtNum(r.distance2Lane, 3) + '</td>' +
-          '<td class="num">' + fmtNum(r.asphalt, 3) + '</td><td class="num">' + fmtNum(r.concrete, 3) + '</td><td class="num">' + fmtNum(r.workQty, 3) + '</td>' +
+          '<td class="num">' + routeNum(r.distanceActual) + '</td><td class="num">' + routeNum(r.asphalt) + '</td>' +
+          '<td class="num">' + routeNum(r.concrete) + '</td><td class="num">' + routeNum(r.distance2Lane) + '</td><td class="num">' + routeNum(r.workQty) + '</td>' +
           '<td>' + (r.status === 'transferred' ? '<span class="pill off" title="' + esc([r.transferredDate, r.transferNote].filter(Boolean).join(' · ')) + '">' + (routeHolder(r) === OUTSIDE_UNIT ? 'โอนหน่วยงานอื่น' : 'โอนให้หมวด' + esc(routeHolder(r))) + '</span>' : '<span class="pill ok">ดูแลอยู่</span>') + '</td>' +
           '</tr>';
       });
