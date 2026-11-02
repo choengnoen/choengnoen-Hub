@@ -268,6 +268,11 @@
   table.compact th, table.compact td { padding: 8px 8px; }
   table.compact .km { display: block; white-space: nowrap; }
   table .ctl { color: var(--ink-light); font-size: 0.8rem; }
+  /* ตารางสายทางทั้งแขวง: แถวหัวหมวดพร้อมยอดรวม (ล็อกสีกันกฎลายตาราง/เมาส์ชี้ทับ) */
+  .toolbar .hw-tabs { margin: 0; }
+  .dist-tbl tbody tr.dist-group td, .dist-tbl tbody tr.dist-group:hover td, .dist-tbl tbody tr.dist-group:nth-child(even) td { background: #E4EEFA; color: var(--blue-top); font-weight: 600; }
+  .dist-tbl tbody tr.dist-group.mine td, .dist-tbl tbody tr.dist-group.mine:hover td, .dist-tbl tbody tr.dist-group.mine:nth-child(even) td { background: #C6DBF2; }
+  .dist-tbl tbody tr.dist-total td, .dist-tbl tbody tr.dist-total:hover td, .dist-tbl tbody tr.dist-total:nth-child(even) td { background: var(--blue-top); color: var(--white); font-weight: 600; }
   table.compact tr.clickable { cursor: pointer; }
   .btn.danger-link { margin-right: auto; color: var(--red); }
   .empty { padding: 36px 20px; text-align: center; color: var(--ink-light); }
@@ -535,6 +540,7 @@
     tab: 'routes',
     fy: currentFiscalYear(),
     assetSearch: '',
+    routeScope: 'mine', // แท็บสายทาง: 'mine' = หมวดเชิงเนิน, 'district' = ทั้งแขวงทางหลวงระยอง
     rowHw: '*',
     zoneHw: '*',        // กรองเขตพื้นที่ตามหมายเลขสายทาง
     rowInArea: true,    // แสดงเฉพาะช่วงที่ทับกับสายทางที่หมวดดูแล
@@ -691,7 +697,7 @@
   function renderTabs() {
     function tabBtn(t) {
       let n = 0;
-      if (t.key === 'routes' && S.drafts.routes) n = 1;
+      if (t.key === 'routes' && (S.drafts.routes || S.drafts[DISTRICT_DOC])) n = 1;
       if (t.key === 'zones' && S.drafts.zones) n = 1;
       if (t.key === 'rightofway' && S.drafts.rightofway) n = 1;
       if (t.key === 'surface' && S.drafts.surface) n = 1;
@@ -724,6 +730,7 @@
   }
   function docTitle(docId) {
     if (docId === 'routes') return 'สายทาง';
+    if (docId === DISTRICT_DOC) return 'สายทางทั้งแขวง';
     if (docId === 'zones') return 'เขตพื้นที่';
     if (docId === 'rightofway') return 'บัญชีเขตทาง';
     if (docId === 'surface') return 'ผิวทาง';
@@ -735,14 +742,223 @@
   }
 
   /* ----- สายทาง ----- */
+  // ข้อมูลตั้งต้นจากบัญชีระยะทางในความควบคุมของแขวงทางหลวงระยอง (ฉบับปรับใหม่) สถานะ 29 ต.ค. 2567
+  // ใช้แสดงจนกว่าจะมีการบันทึกครั้งแรก จากนั้นข้อมูลจริงอยู่ที่เอกสาร master/district_routes (ระบบงานอื่นไม่ได้อ่านเอกสารนี้)
+  // แถว: [ทางหลวง, ตอน, ชื่อตอน, ช่วง กม. (เมตร), ระยะจริง, เทียบ 2 ช่องจราจร, ลาดยาง, คอนกรีต, ปริมาณงาน, รับโอนจากหมวด]
+  const DISTRICT_DOC = 'district_routes';
+  const MY_UNIT = 'เชิงเนิน';
+  const DISTRICT_SEED = [
+    { name: 'บ้านฉาง', rows: [
+      ['3', '0501', 'พลูตาหลวง-มาบตาพุด', [[186307, 207000]], 20.693, 49.400, 47.610, 1.790, 165.152],
+      ['36', '0201', 'มะขามคู่-มาบข่า', [[21592, 36887]], 15.295, 38.544, 38.544, 0, 154.947],
+      ['332', '0200', 'ทุ่งโปร่ง-สำนักท้อน', [[11880, 14487]], 2.607, 6.714, 6.314, 0.400, 20.204],
+      ['3376', '0100', 'บ้านฉาง-ถนนซอย 13 ของนิคมสร้างตนเองจังหวัดระยอง', [[1000, 30742]], 29.742, 65.728, 65.728, 0, 188.640]
+    ] },
+    { name: 'ทับมา', rows: [
+      ['3', '0502', 'มาบตาพุด-ระยอง', [[207000, 216990]], 9.990, 39.660, 0, 39.660, 138.810],
+      ['36', '0202', 'มาบข่า-ทับมา', [[36887, 49369]], 12.482, 53.905, 0, 53.905, 180.043],
+      ['363', '0100', 'ศูนย์ราชการระยอง-นิคมอุตสาหกรรมมาบตาพุด', [[0, 7949]], 7.949, 18.838, 0, 18.838, 63.861],
+      ['364', '0100', 'ทางเลี่ยงเมืองระยอง', [[0, 3909]], 3.909, 7.818, 7.818, 0, 30.999],
+      ['3191', '0101', 'มาบตาพุด-แยกนิคมพัฒนา', [[0, 13600]], 13.600, 40.800, 0, 40.800, 167.280]
+    ] },
+    { name: 'ปลวกแดง', rows: [
+      ['3191', '0102', 'แยกนิคมพัฒนา-อ่างเก็บน้ำหนองปลาไหล', [[13600, 25545]], 11.945, 23.890, 23.890, 0, 83.377],
+      ['3245', '0100', 'อ่างเก็บน้ำหนองปลาไหล-หนองเสือช้าง', [[0, 22142]], 22.142, 44.284, 44.284, 0, 156.154],
+      ['3574', '0201', 'เขาคันทรง-บ้านค่าย', [[6318, 43000]], 36.682, 79.458, 74.330, 5.128, 282.647],
+      ['3578', '0100', 'ทางรอบอ่างเก็บน้ำหนองปลาไหล', [[0, 6040]], 6.040, 6.342, 6.342, 0, 21.088]
+    ] },
+    { name: 'เชิงเนิน', rows: [
+      ['3', '0503', 'ระยอง-กะเฉด', [[223650, 247902]], 24.252, 52.201, 52.201, 0, 166.352],
+      ['36', '0203', 'ทับมา-ปลวกเกตุ', [[49369, 57021]], 7.652, 33.760, 0, 33.760, 112.758],
+      ['3139', '0100', 'บ้านแลง-หาดใหญ่', [[0, 21234]], 21.234, 21.234, 21.234, 0, 69.542],
+      ['3140', '0100', 'ทางเข้าบ้านเพ', [[0, 100]], 0.100, 0.200, 0, 0.200, 0.687],
+      ['3143', '0100', 'บ้านค่าย-หนองละลอก', [[0, 14041]], 14.041, 17.501, 17.501, 0, 64.229],
+      ['3574', '0202', 'บ้านค่าย-ระยอง', [[43000, 57161]], 14.161, 32.187, 27.415, 4.772, 115.712],
+      ['3575', '0100', 'ทางเข้าบ้านค่าย', [[0, 1308], [2346, 3292]], 2.254, 2.254, 2.254, 0, 7.879]
+    ] },
+    { name: 'แกลง', rows: [
+      ['3', '0504', 'กะเฉด-นายายอาม', [[247902, 287889]], 39.987, 90.637, 87.335, 3.302, 299.841],
+      ['344', '0202', 'ทางเกรียน-แกลง', [[98916, 102181]], 3.265, 15.374, 11.832, 3.542, 55.143],
+      ['3145', '0101', 'บ้านเพ-ท่าเรือแกลง', [[2575, 10500]], 7.925, 7.925, 7.925, 0, 21.636, 'เชิงเนิน'],
+      ['3145', '0102', 'ท่าเรือแกลง-แหลมแม่พิมพ์', [[10500, 27515]], 17.015, 18.915, 18.915, 0, 51.638],
+      ['3648', '0100', 'ทางเลี่ยงเมืองแกลง', [[0, 11533]], 11.533, 15.283, 8.383, 6.900, 26.115]
+    ] },
+    { name: 'วังจันทร์', rows: [
+      ['344', '0201', 'คลองเขต-ทางเกรียน', [[62600, 98916]], 36.316, 72.452, 72.452, 0, 251.125],
+      ['3471', '0100', 'บางบุตร-ชุมแสง', [[0, 30416]], 30.416, 56.911, 47.258, 9.653, 128.261]
+    ] }
+  ];
+
+  function routeScopeTabs() {
+    return '<div class="hw-tabs">' + [['mine', 'หมวดทางหลวงเชิงเนิน'], ['district', 'ทั้งแขวงทางหลวงระยอง']].map(function (t) {
+      return '<button type="button" class="hw-tab' + (S.routeScope === t[0] ? ' on' : '') + '" data-act="route-scope" data-id="' + t[0] + '">' + esc(t[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function districtSeedItems() {
+    const out = [];
+    DISTRICT_SEED.forEach(function (g) {
+      g.rows.forEach(function (r) {
+        out.push({
+          id: routeId({ highway: r[0], controlNo: r[1] }), unit: g.name, highway: r[0], controlNo: r[1], section: r[2], kmRanges: r[3],
+          distanceActual: r[4], distance2Lane: r[5], asphalt: r[6], concrete: r[7], workQty: r[8],
+          status: 'active', transferFrom: r[9] || '', transferredDate: '', transferNote: '', asOf: '2024-10-29'
+        });
+      });
+    });
+    return out;
+  }
+  function districtItems() { return (S.drafts[DISTRICT_DOC] || S.master[DISTRICT_DOC]) ? items(DISTRICT_DOC) : districtSeedItems(); }
+  // แถวที่ต่างจากฉบับที่บันทึกไว้ (ยังไม่เคยบันทึก = เทียบกับข้อมูลตั้งต้น)
+  function districtChanged() {
+    const out = new Set();
+    if (!S.drafts[DISTRICT_DOC]) return out;
+    const base = {};
+    (S.master[DISTRICT_DOC] ? S.master[DISTRICT_DOC].items : districtSeedItems()).forEach(function (x) { base[x.id] = JSON.stringify(x); });
+    items(DISTRICT_DOC).forEach(function (x) { if (base[x.id] !== JSON.stringify(x)) out.add(x.id); });
+    return out;
+  }
+  function districtUnits(list) {
+    const units = DISTRICT_SEED.map(function (g) { return g.name; });
+    list.forEach(function (x) { if (x.unit && units.indexOf(x.unit) < 0) units.push(x.unit); });
+    return units;
+  }
+
+  function renderDistrictRoutes(v) {
+    const list = districtItems().slice().sort(function (a, b) {
+      return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo));
+    });
+    const changed = districtChanged();
+    // ตัวเลขรวมเฉพาะสายทางที่ยังอยู่ในแขวง (โอนออกแล้วไม่นับ)
+    const act = list.filter(function (r) { return r.status !== 'transferred'; });
+    const out = list.filter(function (r) { return r.status === 'transferred'; });
+    const totals = function (rows) {
+      return ['distanceActual', 'distance2Lane', 'asphalt', 'concrete', 'workQty'].map(function (k) { return rows.reduce(function (s, r) { return s + (Number(r[k]) || 0); }, 0); });
+    };
+    const numCells = function (vals) { return vals.map(function (n) { return '<td class="num">' + fmtNum(n, 3) + '</td>'; }).join(''); };
+    // ประวัติการโอนแสดงเป็นบรรทัดเล็กใต้ชื่อตอน
+    const transferText = function (r) {
+      const head = r.status === 'transferred' ? 'โอนออกจากแขวงแล้ว' + (r.unit ? ' (เดิมหมวด' + r.unit + ')' : '') : (r.transferFrom ? 'รับโอนจากหมวด' + r.transferFrom : '');
+      const date = r.transferredDate ? new Date(r.transferredDate).toLocaleDateString('th-TH', { dateStyle: 'medium' }) : '';
+      return head ? [head, date, r.transferNote].filter(Boolean).join(' · ') : '';
+    };
+    const rowHtml = function (r) {
+      const cls = [changed.has(r.id) ? 'changed' : '', r.status === 'transferred' ? 'muted' : '', S.owner ? 'clickable' : ''].join(' ');
+      const note = transferText(r);
+      return '<tr class="' + cls + '"' + (S.owner ? ' data-act="dist-edit" data-id="' + esc(r.id) + '" title="ดับเบิลคลิกเพื่อแก้ไข"' : '') + '>' +
+        '<td><b>' + esc(r.highway) + '</b> <span class="ctl">' + esc(r.controlNo) + '</span></td><td class="wrap">' + esc(r.section) + (note ? '<div class="ctl">' + esc(note) + '</div>' : '') + '</td>' +
+        '<td>' + (r.kmRanges || []).map(function (k) { return '<span class="km">' + esc(fmtKm(k[0]) + ' – ' + fmtKm(k[1])) + '</span>'; }).join('') + '</td>' +
+        numCells(totals([r])) + '</tr>';
+    };
+    const sum = totals(act);
+    const units = districtUnits(list).filter(function (u) { return act.some(function (r) { return r.unit === u; }); });
+    const asOf = list.reduce(function (m, r) { return r.asOf && r.asOf > m ? r.asOf : m; }, '');
+    let h = '<div class="panel"><div class="toolbar">' + routeScopeTabs() + '<div class="grow"></div>';
+    if (S.owner) h += '<button class="btn primary" type="button" data-act="dist-add">+ เพิ่มสายทาง</button>';
+    h += '</div><p class="meta">บัญชีระยะทางในความควบคุมของแขวงทางหลวงระยอง' + (asOf ? ' · ข้อมูล ณ ' + esc(new Date(asOf).toLocaleDateString('th-TH', { dateStyle: 'medium' })) : '') +
+      (S.master[DISTRICT_DOC] ? ' · ' + esc(docMeta(DISTRICT_DOC)) : '') + '</p>';
+    h += '<div class="stats">' + stat('สายทางทั้งแขวง', act.length, 'ตอน · ' + units.length + ' หมวด') + stat('ระยะทางจริง', fmtNum(sum[0], 3), 'กม.') +
+      stat('เทียบ 2 ช่องจราจร', fmtNum(sum[1], 3), 'กม.') + stat('ผิวลาดยาง', fmtNum(sum[2], 3), 'กม.') +
+      stat('ผิวคอนกรีต', fmtNum(sum[3], 3), 'กม.') + '</div>';
+    h += '<div class="table-wrap"><table class="compact dist-tbl"><thead><tr><th class="ctr" title="ทางหลวง / ตอนควบคุม">ทล. / ตอน</th><th>ชื่อตอน</th><th>ช่วง กม.</th>' +
+      '<th class="num ctr" title="ระยะจริง (กม.)">ระยะจริง</th><th class="num ctr" title="ระยะเทียบ 2 ช่องจราจร (กม.)">2 ช่องจราจร</th><th class="num ctr">ลาดยาง</th><th class="num ctr">คอนกรีต</th><th class="num ctr">ปริมาณงาน</th>' +
+      '</tr></thead><tbody>';
+    units.forEach(function (u) {
+      const rows = act.filter(function (r) { return r.unit === u; });
+      h += '<tr class="dist-group' + (u === MY_UNIT ? ' mine' : '') + '"><td colspan="3">หมวดทางหลวง' + esc(u) + ' · ' + rows.length + ' ตอน</td>' + numCells(totals(rows)) + '</tr>';
+      rows.forEach(function (r) { h += rowHtml(r); });
+    });
+    h += '<tr class="dist-total"><td colspan="3">รวมทั้งแขวงทางหลวงระยอง</td>' + numCells(sum) + '</tr>';
+    if (out.length) {
+      h += '<tr class="dist-group"><td colspan="8">โอนออกจากแขวงแล้ว · ' + out.length + ' ตอน (ไม่นับรวมในยอดด้านบน)</td></tr>';
+      out.forEach(function (r) { h += rowHtml(r); });
+    }
+    v.innerHTML = h + '</tbody></table></div></div>';
+  }
+
+  // รายการหมวดในช่อง "หมวดที่ดูแล" ค่า OUTSIDE_UNIT = โอนออกนอกแขวง
+  const OUTSIDE_UNIT = '__outside';
+  function unitOptions(cur, withNew) {
+    let h = cur ? '' : '<option value="" selected>เลือกหมวด</option>';
+    h += districtUnits(districtItems()).map(function (u) { return '<option value="' + esc(u) + '"' + (cur === u ? ' selected' : '') + '>หมวด' + esc(u) + '</option>'; }).join('');
+    if (withNew) h += '<option value="__new">เพิ่มหมวดใหม่…</option>';
+    return h + '<option value="' + OUTSIDE_UNIT + '"' + (cur === OUTSIDE_UNIT ? ' selected' : '') + '>หน่วยงานอื่น (นอกแขวง)</option>';
+  }
+  // หมวดที่รับโอนสายทางของเราไป: ใช้ค่าที่บันทึกไว้ ถ้าไม่มีให้ดูจากบัญชีแขวง
+  function routeHolder(r) {
+    if (r.status !== 'transferred') return MY_UNIT;
+    if (r.transferTo) return r.transferTo;
+    const d = districtItems().find(function (x) { return x.id === routeId(r); });
+    return d && d.status !== 'transferred' && d.unit !== MY_UNIT ? d.unit : OUTSIDE_UNIT;
+  }
+
+  function districtForm(r) {
+    const isNew = !r;
+    const list = districtItems();
+    r = r || { status: 'active', kmRanges: [], asOf: todayIso() };
+    openModal((isNew ? 'เพิ่มสายทางของแขวง' : 'แก้ไขสายทาง ' + r.highway + ' ตอน ' + r.controlNo),
+      '<div class="form-grid">' +
+      '<label class="f">หมวดที่ดูแล *<select name="unit">' + unitOptions(r.status === 'transferred' ? OUTSIDE_UNIT : (r.unit || ''), true) + '</select></label>' +
+      '<label class="f" id="dist-new-unit" style="display:none">ชื่อหมวดใหม่ *<input name="newUnit" type="text" placeholder="เช่น บ้านค่าย"></label>' +
+      '<datalist id="dist-units">' + districtUnits(list).map(function (u) { return '<option value="' + esc(u) + '"></option>'; }).join('') + '</datalist>' +
+      field('highway', 'หมายเลขทางหลวง *', r.highway, 'text', isNew ? '' : 'readonly') +
+      field('controlNo', 'ตอนควบคุม *', r.controlNo, 'text', isNew ? '' : 'readonly') +
+      field('section', 'ชื่อตอน', r.section, 'text', '', 'full') +
+      field('kmRanges', 'ช่วง กม. *', fmtRanges(r.kmRanges), 'text', 'placeholder="เช่น 2+346 – 3+292 (หลายช่วงคั่นด้วย ,)"', 'full') +
+      field('distanceActual', 'ระยะทางจริง (กม.)', r.distanceActual, 'number', 'step="0.001" placeholder="เว้นว่าง = คำนวณจากช่วง กม."') +
+      field('distance2Lane', 'ระยะเทียบ 2 ช่องจราจร (กม.)', r.distance2Lane, 'number', 'step="0.001" placeholder="เว้นว่าง = ลาดยาง + คอนกรีต"') +
+      field('asphalt', 'ผิวลาดยาง (กม.)', r.asphalt, 'number', 'step="0.001"') +
+      field('concrete', 'ผิวคอนกรีต (กม.)', r.concrete, 'number', 'step="0.001"') +
+      field('workQty', 'ปริมาณงาน', r.workQty, 'number', 'step="0.001"') +
+      field('asOf', 'ข้อมูล ณ วันที่', r.asOf, 'date') +
+      field('transferFrom', 'รับโอนจากหมวด (ถ้ามี)', r.transferFrom, 'text', 'list="dist-units"') +
+      field('transferredDate', 'วันที่โอน', r.transferredDate, 'date') +
+      field('transferNote', 'หมายเหตุการโอน', r.transferNote, 'text', '', 'full') +
+      '</div>',
+      function (f) {
+        const round3 = function (n) { return Math.round(n * 1000) / 1000; };
+        const outside = f.unit === OUTSIDE_UNIT;
+        // โอนออกนอกแขวง: คงชื่อหมวดเดิมไว้เป็นประวัติ
+        const unit = outside ? (r.unit || '') : (f.unit === '__new' ? f.newUnit.trim().replace(/^หมวด(ทางหลวง)?\s*/, '') : f.unit);
+        const o = {
+          unit: unit, highway: f.highway.trim(), controlNo: f.controlNo.trim(), section: f.section.trim(),
+          kmRanges: parseRanges(f.kmRanges),
+          distanceActual: num(f.distanceActual), distance2Lane: num(f.distance2Lane),
+          asphalt: num(f.asphalt) || 0, concrete: num(f.concrete) || 0, workQty: num(f.workQty),
+          status: outside ? 'transferred' : 'active', transferFrom: f.transferFrom.trim().replace(/^หมวด(ทางหลวง)?\s*/, ''),
+          transferredDate: f.transferredDate || '', transferNote: f.transferNote.trim(), asOf: f.asOf || ''
+        };
+        if (!f.unit) return 'กรุณาเลือกหมวดที่ดูแล';
+        if (!outside && !o.unit) return 'กรุณาใส่ชื่อหมวดใหม่';
+        if (!o.highway || !o.controlNo) return 'กรุณาใส่หมายเลขทางหลวงและตอนควบคุม';
+        if (!o.kmRanges.length || o.kmRanges.some(function (x) { return !x; })) return 'ช่วง กม. ไม่ถูกต้อง (ต้องเป็น "เริ่ม – สิ้นสุด" และเริ่มน้อยกว่าสิ้นสุด)';
+        if (o.distanceActual == null) o.distanceActual = round3(o.kmRanges.reduce(function (s, k) { return s + (k[1] - k[0]) / 1000; }, 0));
+        if (o.distance2Lane == null) o.distance2Lane = round3(o.asphalt + o.concrete);
+        // ย้ายหมวดภายในแขวง: จำหมวดเดิมไว้ให้อัตโนมัติ ถ้ายังไม่ได้ระบุ
+        if (!isNew && r.unit && o.unit !== r.unit && !o.transferFrom) o.transferFrom = r.unit;
+        o.id = routeId(o);
+        const next = list.slice();
+        if (isNew && next.some(function (x) { return x.id === o.id; })) return 'มีสายทาง ' + o.highway + ' ตอน ' + o.controlNo + ' อยู่แล้ว';
+        if (isNew) next.push(o); else next[next.findIndex(function (x) { return x.id === r.id; })] = o;
+        draft(DISTRICT_DOC, next, (isNew ? 'เพิ่ม' : 'แก้ไข') + 'สายทาง ' + o.highway + ' ตอน ' + o.controlNo + (outside ? ' (โอนออกนอกแขวง)' : ' (หมวด' + o.unit + ')'));
+      });
+    const unitSel = $('modal-root').querySelector('select[name="unit"]');
+    unitSel.addEventListener('change', function () { $('dist-new-unit').style.display = unitSel.value === '__new' ? '' : 'none'; });
+    if (!isNew) {
+      const acts = $('modal-root').querySelector('.modal-actions');
+      if (acts) acts.insertAdjacentHTML('afterbegin', '<button type="button" class="btn danger-link" data-act="dist-del" data-id="' + esc(r.id) + '">ลบสายทางนี้</button>');
+    }
+  }
+
   function renderRoutes(v) {
+    if (S.routeScope === 'district') { renderDistrictRoutes(v); return; }
     const list = items('routes').slice().sort(function (a, b) {
       if ((a.status === 'transferred') !== (b.status === 'transferred')) return a.status === 'transferred' ? 1 : -1;
       return Number(a.highway) - Number(b.highway) || String(a.controlNo).localeCompare(String(b.controlNo));
     });
     const changed = changedIds('routes', 'id');
     let h = '<div class="panel">';
-    h += '<div class="toolbar"><div class="grow"></div>';
+    h += '<div class="toolbar">' + routeScopeTabs() + '<div class="grow"></div>';
     if (S.owner && items('surface').length) h += '<button class="btn" type="button" data-act="route-calc" title="คำนวณระยะเทียบ 2 ช่องจราจร / ลาดยาง / คอนกรีต จากแท็บผิวทาง">คำนวณจากข้อมูลผิวทาง</button>';
     if (S.owner) h += '<button class="btn primary" type="button" data-act="route-add">+ เพิ่มสายทาง</button>';
     h += '</div><p class="meta">' + esc(docMeta('routes')) + '</p>';
@@ -764,7 +980,7 @@
           '<td>' + (r.kmRanges || []).map(function (k) { return '<span class="km">' + esc(fmtKm(k[0]) + ' – ' + fmtKm(k[1])) + '</span>'; }).join('') + '</td>' +
           '<td class="num">' + fmtNum(r.distanceActual, 3) + '</td><td class="num">' + fmtNum(r.distance2Lane, 3) + '</td>' +
           '<td class="num">' + fmtNum(r.asphalt, 3) + '</td><td class="num">' + fmtNum(r.concrete, 3) + '</td><td class="num">' + fmtNum(r.workQty, 3) + '</td>' +
-          '<td>' + (r.status === 'transferred' ? '<span class="pill off" title="' + esc(r.transferNote || '') + '">โอนแล้ว ' + esc(r.transferredDate || '') + '</span>' : '<span class="pill ok">ดูแลอยู่</span>') + '</td>' +
+          '<td>' + (r.status === 'transferred' ? '<span class="pill off" title="' + esc([r.transferredDate, r.transferNote].filter(Boolean).join(' · ')) + '">' + (routeHolder(r) === OUTSIDE_UNIT ? 'โอนหน่วยงานอื่น' : 'โอนให้หมวด' + esc(routeHolder(r))) + '</span>' : '<span class="pill ok">ดูแลอยู่</span>') + '</td>' +
           '</tr>';
       });
       h += '</tbody></table></div>';
@@ -791,19 +1007,21 @@
       field('concrete', 'ผิวคอนกรีต (กม.)', r.concrete, 'number', 'step="0.001"') +
       field('workQty', 'ปริมาณงาน', r.workQty, 'number', 'step="0.001"') +
       field('asOf', 'ข้อมูล ณ วันที่', r.asOf, 'date') +
-      '<label class="f">สถานะ<select name="status"><option value="active"' + (r.status !== 'transferred' ? ' selected' : '') + '>ดูแลอยู่</option>' +
-        '<option value="transferred"' + (r.status === 'transferred' ? ' selected' : '') + '>โอนให้หน่วยงานอื่นแล้ว</option></select></label>' +
+      '<label class="f">หมวดที่ดูแล<select name="holder">' + unitOptions(routeHolder(r), false) + '</select></label>' +
       field('transferredDate', 'วันที่โอน', r.transferredDate, 'date') +
       field('transferNote', 'หมายเหตุการโอน', r.transferNote, 'text', '', 'full') +
       '</div>',
       function (f) {
+        // ระบบงานอื่นอ่าน status เดิม จึงยังเก็บไว้: หมวดเรา = active, หมวดอื่น/นอกแขวง = transferred
+        const moved = f.holder !== MY_UNIT;
         const o = {
           highway: f.highway.trim(), controlNo: f.controlNo.trim(), section: f.section.trim(),
           kmRanges: parseRanges(f.kmRanges),
           distanceActual: num(f.distanceActual), distance2Lane: num(f.distance2Lane),
           asphalt: num(f.asphalt) || 0, concrete: num(f.concrete) || 0, workQty: num(f.workQty),
-          status: f.status, transferredDate: f.status === 'transferred' ? f.transferredDate : '',
-          transferNote: f.status === 'transferred' ? f.transferNote.trim() : '', asOf: f.asOf || ''
+          status: moved ? 'transferred' : 'active', transferTo: moved && f.holder !== OUTSIDE_UNIT ? f.holder : '',
+          transferredDate: moved ? f.transferredDate : '',
+          transferNote: moved ? f.transferNote.trim() : '', asOf: f.asOf || ''
         };
         if (!o.highway || !o.controlNo) return 'กรุณาใส่หมายเลขทางหลวงและตอนควบคุม';
         if (!o.kmRanges.length || o.kmRanges.some(function (x) { return !x; })) return 'ช่วง กม. ไม่ถูกต้อง (ต้องเป็น "เริ่ม – สิ้นสุด" และเริ่มน้อยกว่าสิ้นสุด)';
@@ -1433,6 +1651,8 @@
   const VCATS = [
     { cat: 'zone-bad', title: 'เขตพื้นที่: ช่วง กม. ผิดรูปแบบ', tab: 'zones' },
     { cat: 'route-bad', title: 'สายทาง: ช่วง กม. ผิดรูปแบบ / รหัสซ้ำ', tab: 'routes' },
+    { cat: 'district-bad', title: 'สายทางทั้งแขวง: ช่วง กม. ผิดรูปแบบ / รหัสซ้ำ', tab: 'routes' },
+    { cat: 'district-diff', title: 'สายทางของหมวดไม่ตรงกับบัญชีของแขวง', tab: 'routes' },
     { cat: 'row-reversed', title: 'บัญชีเขตทาง: กม. เริ่ม > สิ้นสุด (กลับด้าน)', tab: 'rightofway' },
     { cat: 'surf-bad', title: 'ผิวทาง: ช่วง กม. ผิดรูปแบบ / จำนวนช่องจราจร', tab: 'surface' },
     { cat: 'dup-id', title: 'รหัสอ้างอิงซ้ำ (เขตพื้นที่ / บัญชีเขตทาง / ผิวทาง)', tab: 'zones' },
@@ -1592,6 +1812,36 @@
       if (seenRoute[r.id]) add('err', 'route-bad', ['routes'], nm + ' มีรหัสสายทางซ้ำ (' + r.id + ')');
       seenRoute[r.id] = true;
     });
+
+    // --- สายทางทั้งแขวง ---
+    const distDoc = get(DISTRICT_DOC), dist = distDoc.length ? distDoc : districtSeedItems();
+    const seenDist = {};
+    dist.forEach(function (r) {
+      const nm = 'บัญชีแขวง ทล.' + r.highway + ' ตอน ' + r.controlNo;
+      (r.kmRanges || []).forEach(function (p) {
+        if (!validKm(p[0], p[1]) || p[0] >= p[1]) add('err', 'district-bad', [DISTRICT_DOC], nm + ' ช่วง กม. ' + kmTxt(p[0]) + ' – ' + kmTxt(p[1]) + ' ไม่ถูกต้อง (เริ่ม ≥ สิ้นสุด)');
+      });
+      if (seenDist[r.id]) add('err', 'district-bad', [DISTRICT_DOC], nm + ' มีรหัสสายทางซ้ำ (' + r.id + ')');
+      seenDist[r.id] = true;
+    });
+    // แถวของหมวดเราในบัญชีแขวงเก็บแยกจากแท็บสายทาง จึงต้องเตือนเมื่อสองชุดไม่ตรงกัน
+    if (routes.length) {
+      const mineDist = dist.filter(function (r) { return r.unit === MY_UNIT && r.status !== 'transferred'; });
+      const mineRoutes = routes.filter(function (r) { return r.status !== 'transferred'; });
+      const diffDocs = ['routes', DISTRICT_DOC];
+      mineDist.forEach(function (d) {
+        const nm = 'ทล.' + d.highway + ' ตอน ' + d.controlNo;
+        const r = mineRoutes.find(function (x) { return routeId(x) === d.id; });
+        if (!r) { add('warn', 'district-diff', diffDocs, nm + ' อยู่ในบัญชีแขวงเป็นของหมวด' + MY_UNIT + ' แต่แท็บสายทางของหมวดไม่มีหรือโอนแล้ว'); return; }
+        [['distanceActual', 'ระยะจริง'], ['distance2Lane', '2 ช่องจราจร'], ['asphalt', 'ลาดยาง'], ['concrete', 'คอนกรีต'], ['workQty', 'ปริมาณงาน']].forEach(function (f) {
+          const a = Number(r[f[0]]) || 0, b = Number(d[f[0]]) || 0;
+          if (Math.abs(a - b) >= 0.0005) add('warn', 'district-diff', diffDocs, nm + ' ' + f[1] + ': หมวด ' + fmtNum(a, 3) + ' / บัญชีแขวง ' + fmtNum(b, 3));
+        });
+      });
+      mineRoutes.forEach(function (r) {
+        if (!mineDist.some(function (d) { return d.id === routeId(r); })) add('warn', 'district-diff', diffDocs, 'ทล.' + r.highway + ' ตอน ' + r.controlNo + ' อยู่ในแท็บสายทางของหมวด แต่บัญชีแขวงไม่ได้จัดให้หมวด' + MY_UNIT);
+      });
+    }
 
     // --- เขตพื้นที่ ---
     zones.forEach(function (z) {
@@ -1923,7 +2173,7 @@
       distanceActual: num(isAdmin ? r.distActual : r.distanceActual),
       distance2Lane: num(isAdmin ? r.dist2Lane : r.distance2Lane),
       asphalt: num(r.asphalt) || 0, concrete: num(r.concrete) || 0, workQty: num(r.workQty),
-      status: r.status === 'transferred' ? 'transferred' : 'active',
+      status: r.status === 'transferred' ? 'transferred' : 'active', transferTo: r.transferTo || '',
       transferredDate: r.transferredDate || '', transferNote: r.transferNote || '',
       asOf: r.asOf || r.updatedAt || ''
     };
@@ -2012,6 +2262,7 @@
       const report = [];
       const zonesIn = Array.isArray(data) ? data : data.zones;
       if (data.routes) report.push(mergeInto('routes', data.routes.map(normRoute), 'id', mode, null, 'สายทาง'));
+      if (data.district_routes) report.push(mergeInto(DISTRICT_DOC, data.district_routes.filter(function (x) { return x && x.id && x.unit; }), 'id', mode, null, 'สายทางทั้งแขวง'));
       if (zonesIn && zonesIn.length) report.push(mergeInto('zones', zonesIn.map(function (z) { return normZone(z, items('routes')); }), 'id', mode, null, 'เขตพื้นที่'));
       if (data.surface) report.push(mergeInto('surface', data.surface.map(normSurface), 'id', mode, null, 'ผิวทาง'));
       if (data.rightofway) report.push(mergeInto('rightofway', data.rightofway.map(normRow), 'id', mode, null, 'บัญชีเขตทาง'));
@@ -2035,7 +2286,7 @@
   function doExport() {
     const assets = {};
     fiscalYears().forEach(function (y) { const a = items(assetDocId(y)); if (a.length) assets[y] = a; });
-    const data = { format: 'cn-master', exportedAt: new Date().toISOString(), routes: items('routes'), zones: items('zones'), rightofway: items('rightofway'), surface: items('surface'), workcodes: items('workcodes'), manuals: items('manuals'), assets: assets };
+    const data = { format: 'cn-master', exportedAt: new Date().toISOString(), routes: items('routes'), district_routes: districtItems(), zones: items('zones'), rightofway: items('rightofway'), surface: items('surface'), workcodes: items('workcodes'), manuals: items('manuals'), assets: assets };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -2191,7 +2442,7 @@
       case 'route-edit': routeForm(items('routes').find(function (x) { return x.id === id; })); break;
       case 'route-del': {
         const r = items('routes').find(function (x) { return x.id === id; });
-        if (confirm('ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo + ' ออกจากฐานข้อมูลกลาง?\n\nถ้าโอนสายทางให้หน่วยงานอื่น แนะนำให้กด "แก้ไข" แล้วเปลี่ยนสถานะเป็น "โอนแล้ว" แทน')) {
+        if (confirm('ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo + ' ออกจากฐานข้อมูลกลาง?\n\nถ้าโอนสายทางให้หน่วยงานอื่น แนะนำให้กด "แก้ไข" แล้วเปลี่ยน "หมวดที่ดูแล" แทน')) {
           draft('routes', items('routes').filter(function (x) { return x.id !== id; }), 'ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo);
           $('modal-root').innerHTML = '';
         }
@@ -2204,6 +2455,17 @@
         const z = items('zones').find(function (x) { return x.id === id; });
         if (confirm('ลบเขตพื้นที่ ทล.' + z.highway + ' ' + fmtKm(z.kmStart) + '–' + fmtKm(z.kmEnd) + '?')) {
           draft('zones', items('zones').filter(function (x) { return x.id !== id; }), 'ลบเขตพื้นที่ ทล.' + z.highway + ' ' + fmtKm(z.kmStart) + '–' + fmtKm(z.kmEnd));
+          $('modal-root').innerHTML = '';
+        }
+        break;
+      }
+      case 'route-scope': S.routeScope = id; render(); break;
+      case 'dist-add': districtForm(null); break;
+      case 'dist-edit': districtForm(districtItems().find(function (x) { return x.id === id; })); break;
+      case 'dist-del': {
+        const r = districtItems().find(function (x) { return x.id === id; });
+        if (confirm('ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo + ' ออกจากบัญชีของแขวง?\n\nถ้าโอนให้หมวดอื่นหรือหน่วยงานนอกแขวง ให้เปลี่ยน "หมวดที่ดูแล" แทนการลบ')) {
+          draft(DISTRICT_DOC, districtItems().filter(function (x) { return x.id !== id; }), 'ลบสายทาง ' + r.highway + ' ตอน ' + r.controlNo + ' (หมวด' + r.unit + ')');
           $('modal-root').innerHTML = '';
         }
         break;
